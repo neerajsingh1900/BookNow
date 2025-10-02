@@ -133,6 +133,7 @@
 //    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 //app.Run();
+
 using BookNow.DataAccess.Data;
 using BookNow.Utility;
 using Microsoft.AspNetCore.Identity;
@@ -155,6 +156,15 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
     options.Password.RequiredLength = 6;
 }).AddDefaultTokenProviders()
 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+//google stuff
+builder.Services.AddAuthentication()
+    .AddGoogle(googleOptions =>
+{
+    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+});
+
 
 // Configure cookie paths
 builder.Services.ConfigureApplicationCookie(options => {

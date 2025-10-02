@@ -123,6 +123,21 @@
                     </p>
                 </div>
             </form>
+
+            <!-- External Login Section -->
+            <hr />
+            <div class="text-center mt-3">
+                <p>Or login using:</p>
+                @foreach (var provider in Model.ExternalLogins)
+                {
+                    <form method="post" asp-page="./ExternalLogin" asp-route-provider="@provider.Name" asp-route-returnUrl="@Model.ReturnUrl">
+                        <button type="submit" class="btn btn-outline-danger w-100 mb-2">
+                            @provider.DisplayName
+                        </button>
+                    </form>
+                }
+            </div>
+
         </div>
     </div>
 </div>

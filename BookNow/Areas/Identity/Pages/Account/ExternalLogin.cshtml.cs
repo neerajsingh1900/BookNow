@@ -2,6 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using BookNow.Models;
+using BookNow.Utility;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -9,14 +19,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Identity;
 
 namespace BookNow.Areas.Identity.Pages.Account
 {
@@ -118,6 +120,7 @@ namespace BookNow.Areas.Identity.Pages.Account
                 _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
                 return LocalRedirect(returnUrl);
             }
+
             if (result.IsLockedOut)
             {
                 return RedirectToPage("./Lockout");
@@ -125,6 +128,71 @@ namespace BookNow.Areas.Identity.Pages.Account
             else
             {
                 // If the user does not have an account, then ask the user to create an account.
+                //ReturnUrl = returnUrl;
+                //ProviderDisplayName = info.ProviderDisplayName;
+                //if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                //{
+                //    Input = new InputModel
+                //    {
+                //        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                //    };
+                //}
+                //return Page();
+
+                // Auto-register Google user if not exists
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                var picture = info.Principal.FindFirstValue("picture");
+
+
+
+                if (email != null)
+                {
+                    var existingUser = await _userManager.FindByEmailAsync(email);
+                    if (existingUser != null)
+                    {
+                        // 2️ Link the Google login to the existing user
+                        var loginResult = await _userManager.AddLoginAsync(existingUser, info);
+                        if (loginResult.Succeeded)
+                        {
+                            await _signInManager.SignInAsync(existingUser, isPersistent: false);
+                            _logger.LogInformation("Existing user logged in via {LoginProvider}", info.LoginProvider);
+                            return LocalRedirect(returnUrl);
+                        }
+                        else
+                        {
+                            foreach (var error in loginResult.Errors)
+                                ModelState.AddModelError(string.Empty, error.Description);
+                            return Page();
+                        }
+                    }
+
+                    var user = new ApplicationUser
+                    {
+                        UserName = email,
+                        Email = email,
+                        Name = name ?? email,
+                        GoogleId = info.ProviderKey,
+                        ProfileImageUrl = picture,
+                        EmailConfirmed = true
+                    };
+
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (createResult.Succeeded)
+                    {
+                        await _userManager.AddLoginAsync(user, info);
+                        await _userManager.AddToRoleAsync(user, SD.Role_Customer);
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+
+                        return LocalRedirect(returnUrl);
+                    }
+
+                    foreach (var error in createResult.Errors)
+                        ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                // fallback if something failed
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
@@ -197,11 +265,11 @@ namespace BookNow.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private IdentityUser CreateUser()
+        private ApplicationUser CreateUser()
         {
             try
             {
-                return Activator.CreateInstance<IdentityUser>();
+                return Activator.CreateInstance<ApplicationUser>();
             }
             catch
             {
