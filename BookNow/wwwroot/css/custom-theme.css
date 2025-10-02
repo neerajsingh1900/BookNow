@@ -1,0 +1,105 @@
+﻿/* ============================
+   Final Refined Booking Theme
+   (Clean, Interactive, User-Friendly)
+   ============================ */
+
+/* Brand Colors */
+:root {
+    --brand-primary: #E53935; /* Material Red 600 – balanced, energetic */
+    --brand-primary-dark: #B71C1C;
+    --text-color: #212121;
+    --bg-light: #f9f9f9;
+}
+
+/* Body */
+body.light-theme {
+    background-color: var(--bg-light) !important;
+    color: var(--text-color) !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Card */
+.light-theme .card {
+    background-color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 2rem;
+}
+
+/* Inputs */
+.light-theme .form-control {
+    background-color: #fff;
+    border: 1px solid #dcdcdc !important;
+    border-radius: 0.5rem;
+    color: var(--text-color) !important;
+    padding: 0.75rem;
+    caret-color: var(--brand-primary) !important;
+    transition: border-color 0.2s ease;
+}
+
+    .light-theme .form-control::placeholder {
+        color: #888 !important;
+    }
+
+    .light-theme .form-control:focus {
+        border-color: var(--brand-primary) !important;
+        outline: none !important;
+        box-shadow: none !important; /* no glow */
+    }
+
+/* Buttons */
+.light-theme .btn-primary,
+.btn-primary {
+    background-color: var(--brand-primary) !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600;
+    color: #fff !important;
+    padding: 0.75rem 1.5rem;
+    width: 100%;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+    /* Hover */
+    .light-theme .btn-primary:hover,
+    .btn-primary:hover {
+        background-color: var(--brand-primary-dark) !important;
+        transform: translateY(-1px);
+    }
+
+    /* Active (click) */
+    .light-theme .btn-primary:active,
+    .btn-primary:active {
+        background-color: var(--brand-primary-dark) !important;
+        transform: scale(0.98);
+        box-shadow: none !important;
+    }
+
+    /* Focus */
+    .light-theme .btn-primary:focus,
+    .btn-primary:focus {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+/* Links */
+.light-theme a,
+a {
+    color: var(--brand-primary) !important;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+    .light-theme a:hover,
+    a:hover {
+        color: var(--brand-primary-dark) !important;
+        text-decoration: underline;
+    }
+
+    .light-theme a:focus,
+    a:focus {
+        outline: none !important;
+    }
