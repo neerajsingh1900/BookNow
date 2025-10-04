@@ -1,0 +1,33 @@
+﻿/* BookNow.Web/wwwroot/css/producer/dashboard.css */
+
+/* Custom styles complementing the site.css theme */
+
+.sidebar .active {
+    /* Use the primary color for the active link background */
+    background-color: var(--brand-primary);
+    color: white !important;
+}
+
+.text-muted {
+    /* Ensure muted text is visible against the light background */
+    color: #616161 !important;
+}
+
+/* Data Table Styling (Using custom card style) */
+.data-table-card {
+    padding: 0; /* Remove padding because the table adds its own spacing */
+}
+
+    .data-table-card .table thead th {
+        background-color: var(--bg-light);
+        color: var(--text-color);
+        font-weight: 600;
+    }
+
+    .data-table-card .table {
+        margin-bottom: 0;
+    }
+
+    .data-table-card .table-hover tbody tr:hover {
+        background-color: #f0f0f0;
+    }

@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BookNow.Application\BookNow.Application.csproj" />
     <ProjectReference Include="..\BookNow.Models\BookNow.Models.csproj" />
-    <ProjectReference Include="..\BookNow.Utility\BookNow.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>

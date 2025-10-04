@@ -75,7 +75,7 @@ namespace BookNow.DataAccess.Repositories
 
         public void Update(T entity)
         {
-            _db.Entry(entity).State = EntityState.Modified;
+            dbSet.Update(entity);
         }
 
         public void Remove(T entity)

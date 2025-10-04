@@ -1,0 +1,49 @@
+﻿@model IEnumerable<BookNow.Application.DTOs.MovieDTOs.MovieReadDTO>
+@using BookNow.Utility
+
+@{
+    ViewData["Title"] = "Manage Movies";
+}
+
+<div class="container py-4">
+    <div class="row pb-3">
+        <div class="col-8">
+            <h2 class="text-primary">Movie Inventory</h2>
+        </div>
+        <div class="col-4 text-end">
+            @* Link to the Upsert view for creating a new movie *@
+            <a asp-area="Producer" asp-controller="Movie" asp-action="Upsert" class="btn btn-primary d-inline-flex align-items-center" style="width: auto;">
+                <i class="fas fa-plus-circle me-1"></i> Create New Movie
+            </a>
+        </div>
+    </div>
+
+    @* Movie List Table - Will be populated by DataTables (movie.js) *@
+    <div class="card shadow-sm p-0 light-theme">
+        <div class="card-body p-0">
+            <table id="tblData" class="table table-hover table-striped w-100">
+                <thead>
+                    <tr class="text-center">
+                        <th style="width: 10%;">Poster</th>
+                        <th style="width: 5%;">MovieID</th>
+                        <th style="width: 20%;">Title</th>
+                        <th style="width: 10%;">Genre</th>
+                        <th style="width: 10%;">Language</th>
+                        <th style="width: 10%;">Duration (min)</th>
+                        <th style="width: 15%;">Release Date</th>
+                        <th style="width: 20%;">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Include the client-side DataTables library *@
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @* Reference the specific JavaScript file for this page's logic *@
+    <script src="~/js/producer/movie.js"></script>
+}

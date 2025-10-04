@@ -8,9 +8,10 @@ namespace BookNow.Models.Interfaces
 {
     public interface IMovieRepository : IRepository<Movie>
     {
-       
-        IEnumerable<Movie> GetCurrentlyShowingMovies(int cityId);
 
-        void UpdateMovieStatus(int movieId, string newStatus);
+        IEnumerable<Movie> GetAllMoviesByProducer(string producerId);
+
+        Movie GetMovieByProducer(int movieId, string producerId);
+      
     }
 }

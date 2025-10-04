@@ -1,0 +1,80 @@
+﻿@model BookNow.Application.DTOs.MovieDTOs.MovieCreateDTO
+
+@{
+    ViewData["Title"] = ViewData["MovieId"] != null && (int)ViewData["MovieId"] != 0 ? "Edit Movie" : "Create Movie";
+}
+
+<div class="card p-4 light-theme my-4 mx-auto" style="max-width: 800px;">
+    <div class="card-header bg-white border-0 text-center">
+        <h3 class="text-primary">@((int)ViewData["MovieId"] != 0 ? "Edit Movie: " + Model.Title : "Create New Movie")</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" asp-action="Upsert">
+            @* HIDDEN INPUT FIX: Always render the hidden input for the ID (0 for Create, actual ID for Edit) *@
+            <input type="hidden" name="id" value="@ViewData["MovieId"]" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @* 1. Title *@
+            <div class="form-floating mb-3">
+                <input asp-for="Title" class="form-control" placeholder="Title" />
+                <label asp-for="Title">Title</label>
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            @* 2. Genre *@
+            <div class="form-floating mb-3">
+                <input asp-for="Genre" class="form-control" placeholder="Genre" />
+                <label asp-for="Genre">Genre</label>
+                <span asp-validation-for="Genre" class="text-danger"></span>
+            </div>
+
+            @* 3. Language *@
+            <div class="form-floating mb-3">
+                <input asp-for="Language" class="form-control" placeholder="Language" />
+                <label asp-for="Language">Language</label>
+                <span asp-validation-for="Language" class="text-danger"></span>
+            </div>
+
+            @* 4. Duration *@
+            <div class="form-floating mb-3">
+                <input asp-for="Duration" class="form-control" placeholder="Duration (minutes)" />
+                <label asp-for="Duration">Duration (minutes)</label>
+                <span asp-validation-for="Duration" class="text-danger"></span>
+            </div>
+
+            @* 5. Release Date *@
+            <div class="form-floating mb-3">
+                @* Use type="date" for a clean browser-based date picker *@
+                <input asp-for="ReleaseDate" type="date" class="form-control" placeholder="Release Date"
+                       value="@(Model.ReleaseDate.HasValue? Model.ReleaseDate.Value.ToString("yyyy-MM-dd") : "")" />
+                <label asp-for="ReleaseDate">Release Date</label>
+                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+            </div>
+
+            @* 6. Poster URL *@
+            <div class="form-floating mb-4">
+                <input asp-for="PosterUrl" class="form-control" placeholder="Poster URL" />
+                <label asp-for="PosterUrl">Poster URL</label>
+                <span asp-validation-for="PosterUrl" class="text-danger"></span>
+            </div>
+
+            <div class="row pt-2">
+                <div class="col-6">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> @((int)ViewData["MovieId"] != 0 ? "Update" : "Create")
+                    </button>
+                </div>
+                <div class="col-6">
+                    <a asp-controller="Movie" asp-action="Index" class="btn btn-outline-secondary w-100">
+                        Back to List
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

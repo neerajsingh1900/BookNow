@@ -19,6 +19,11 @@ namespace BookNow.DataAccess.Repositories
             _db = db;
         }
 
+        public IEnumerable<Movie> GetAllMoviesByProducer(string producerId)
+        {
+            return _db.Movies.Where(m => m.ProducerId == producerId).ToList();
+        }
+
         public IEnumerable<Movie> GetCurrentlyShowingMovies(int cityId)
         {
             return _db.Movies
@@ -32,14 +37,11 @@ namespace BookNow.DataAccess.Repositories
                 .ToList();
         }
 
-        public void UpdateMovieStatus(int movieId, string newStatus)
+        public Movie GetMovieByProducer(int movieId, string producerId)
         {
-            var movieFromDb = _db.Movies.FirstOrDefault(m => m.MovieId == movieId);
-            if (movieFromDb != null)
-            {
-                movieFromDb.UpdatedAt = DateTime.Now;
-                base.Update(movieFromDb);
-            }
+            return _db.Movies.FirstOrDefault(m => m.MovieId == movieId && m.ProducerId == producerId);
         }
+
+      
     }
 }
