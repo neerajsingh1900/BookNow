@@ -1,5 +1,4 @@
-﻿using BookNow.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +8,9 @@ namespace BookNow.Models.Interfaces
 {
     public interface IMovieRepository : IRepository<Movie>
     {
-        void Update(Movie movie);
+       
+        IEnumerable<Movie> GetCurrentlyShowingMovies(int cityId);
+
+        void UpdateMovieStatus(int movieId, string newStatus);
     }
 }

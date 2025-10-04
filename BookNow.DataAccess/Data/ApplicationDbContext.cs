@@ -92,7 +92,7 @@ namespace BookNow.DataAccess.Data
 
             // 5. Set Decimal Precision (for consistency)
             foreach (var property in modelBuilder.Model.GetEntityTypes()
-                .SelectMany(t => t.GetProperties())
+                .SelectMany(t => t.GetProperties()) 
                 .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
             {
                 property.SetPrecision(10);
