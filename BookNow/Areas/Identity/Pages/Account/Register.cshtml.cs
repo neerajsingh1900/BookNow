@@ -198,6 +198,12 @@ namespace BookNow.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+
+                        if (!string.IsNullOrEmpty(Input.Role) && Input.Role == SD.Role_Producer)
+                        {
+                            return RedirectToAction("Index", "Movie", new { area = "Producer" });
+                        }
+
                         return LocalRedirect(returnUrl);
                     }
                 }
@@ -207,7 +213,7 @@ namespace BookNow.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
+           
             return Page();
         }
 
