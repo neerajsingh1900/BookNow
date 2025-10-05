@@ -5,6 +5,7 @@ using BookNow.DataAccess.Repositories;
 using BookNow.DataAccess.UnitOfWork;
 using BookNow.Models.Interfaces;
 using BookNow.Utility;
+using BookNow.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -92,6 +93,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register the core business logic service for the Producer flow
 builder.Services.AddScoped<IMovieService, MovieService>();
+
+builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
 
 var app = builder.Build();
 

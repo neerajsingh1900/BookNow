@@ -15,5 +15,9 @@ namespace BookNow.Application.Interfaces
         MovieReadDTO GetProducerMovieById(int movieId, string producerId);
         void UpdateProducerMovie(int movieId, MovieUpdateDTO movieDto, string producerId);
         void DeleteProducerMovie(int movieId, string producerId);
+
+        IEnumerable<MovieReadDTO> GetAllMovies();
+
+
     }
 }

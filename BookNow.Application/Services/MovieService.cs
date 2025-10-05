@@ -56,6 +56,23 @@ namespace BookNow.Application.Services
             return MapToReadDTO(movie);
         }
 
+
+        public IEnumerable<MovieReadDTO> GetAllMovies()
+        {
+            var movies = _unitOfWork.Movie.GetAll(); // fetch all movies
+            return movies.Select(m => new MovieReadDTO
+            {
+                MovieId = m.MovieId,
+                Title = m.Title,
+                Genre = m.Genre,
+                Language = m.Language,
+                Duration = m.Duration,
+                PosterUrl = m.PosterUrl,
+                ReleaseDate = m.ReleaseDate.ToDateTime(TimeOnly.MinValue)
+            });
+           
+        }
+
         public IEnumerable<MovieReadDTO> GetProducerMovies(string producerId)
         {
             var movies = _unitOfWork.Movie.GetAllMoviesByProducer(producerId);

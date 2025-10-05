@@ -4,19 +4,19 @@
     $(document).ready(function () {
         loadDataTable();
     });
-
+        
     function loadDataTable() {
-        // Destroy previous instance if exists
+       
         if ($.fn.DataTable.isDataTable('#tblData')) {
             $('#tblData').DataTable().destroy();
         }
 
         dataTable = $('#tblData').DataTable({
             "ajax": {
-                "url": "/api/Producer/MovieApi",  // API endpoint
+                "url": "/api/Producer/MovieApi",  
                 "type": "GET",
                 "datatype": "json",
-                "dataSrc": "" // <-- IMPORTANT: your API returns an array at root
+                "dataSrc": "" 
             },
             "columns": [
                 {
@@ -28,7 +28,7 @@
                     },
                     "width": "10%"
                 },
-                { "data": "movieId", "width": "5%" },
+               
                 { "data": "title", "width": "20%" },
                 { "data": "genre", "width": "10%" },
                 { "data": "language", "width": "10%" },
@@ -70,7 +70,7 @@
         });
     }
 
-    // Expose Delete globally
+  
     window.DeleteMovie = function (movieId) {
         if (!movieId) return;
 

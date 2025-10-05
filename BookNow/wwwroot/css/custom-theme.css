@@ -49,41 +49,25 @@ body.light-theme {
         outline: none !important;
         box-shadow: none !important; /* no glow */
     }
-
 /* Buttons */
-.light-theme .btn-primary,
+/* Buttons */
 .btn-primary {
-    background-color: var(--brand-primary) !important;
-    border: none !important;
-    border-radius: 0.5rem !important;
+    background-color: var(--brand-primary) !important; /* red */
+    color: #fff !important; /* white text */
+    border: none;
+    border-radius: 0.5rem;
     font-weight: 600;
-    color: #fff !important;
     padding: 0.75rem 1.5rem;
-    width: 100%;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-    /* Hover */
-    .light-theme .btn-primary:hover,
     .btn-primary:hover {
         background-color: var(--brand-primary-dark) !important;
-        transform: translateY(-1px);
+        color: #fff !important;
+        box-shadow: 0 4px 12px rgba(183,28,28,0.4);
     }
 
-    /* Active (click) */
-    .light-theme .btn-primary:active,
-    .btn-primary:active {
-        background-color: var(--brand-primary-dark) !important;
-        transform: scale(0.98);
-        box-shadow: none !important;
-    }
 
-    /* Focus */
-    .light-theme .btn-primary:focus,
-    .btn-primary:focus {
-        outline: none !important;
-        box-shadow: none !important;
-    }
 
 /* Links */
 .light-theme a,
@@ -96,7 +80,7 @@ a {
     .light-theme a:hover,
     a:hover {
         color: var(--brand-primary-dark) !important;
-        text-decoration: underline;
+        text-decoration: none;
     }
 
     .light-theme a:focus,

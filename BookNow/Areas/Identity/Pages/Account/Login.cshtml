@@ -34,20 +34,19 @@
                     <p>
                         <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a new user</a>
                     </p>
-                    <p>
-                        <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
+                 
                 </div>
             </form>
 
             <!-- External Login Section -->
-            <hr />
+           
             <div class="text-center mt-3">
-                <p>Or login using:</p>
+              
                 @foreach (var provider in Model.ExternalLogins)
                 {
                     <form method="post" asp-page="./ExternalLogin" asp-route-provider="@provider.Name" asp-route-returnUrl="@Model.ReturnUrl">
-                        <button type="submit" class="btn btn-outline-danger w-100 mb-2">
+                        <button type="submit" class="w-100 mb-2" style="color:#0d6efd; font-weight:bold;border:none; border-radius:0;
+    max-width: 250px; width: 100%; text-align: center; padding: 0.5rem 1rem; cursor: pointer;">
                             @provider.DisplayName
                         </button>
                     </form>

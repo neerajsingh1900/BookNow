@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,7 +15,9 @@ namespace BookNow.Application.DTOs.MovieDTOs
         [Required] public string Language { get; set; }
         [Range(30, 300)] public int Duration { get; set; }
         public DateTime? ReleaseDate { get; set; }
-        public string PosterUrl { get; set; }
+        public string ?PosterUrl { get; set; }
+
+        public IFormFile? PosterFile { get; set; }
     }
 
 }

@@ -11,30 +11,32 @@ namespace BookNow.Web.Areas.Producer.Controllers
 {
     [Area("Producer")]
     [Authorize(Roles = "Producer")]
-    public class MovieController : Controller // Inherits from Controller
+    public class MovieController : Controller 
     {
         private readonly IMovieService _movieService;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IFileStorageService _fileStorage;
 
-        public MovieController(IMovieService movieService, UserManager<IdentityUser> userManager)
+        public MovieController(IMovieService movieService, UserManager<IdentityUser> userManager
+            , IFileStorageService fileStorage)
         {
             _movieService = movieService;
             _userManager = userManager;
+            _fileStorage = fileStorage;
         }
 
-        // Helper to securely get the authenticated Producer's UserId
+       
         private string GetCurrentProducerId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
-        // GET /Producer/Movie/Index 
         public IActionResult Index()
         {
             return View();
         }
 
-        // GET /Producer/Movie/Upsert?id={id} 
+        
         public IActionResult Upsert(int? id)
         {
             MovieCreateDTO movieDto = new();
@@ -42,18 +44,18 @@ namespace BookNow.Web.Areas.Producer.Controllers
 
             if (id == null || id == 0)
             {
-                // Create mode: Set MovieId to 0 for hidden input
+                
                 ViewData["MovieId"] = 0;
                 return View(movieDto);
             }
             else
             {
-                // Edit mode: fetch existing movie data
+             
                 try
                 {
                     var movieReadDto = _movieService.GetProducerMovieById(id.Value, producerId);
 
-                    // Map ReadDTO data to CreateDTO model for form display
+                    
                     movieDto.Title = movieReadDto.Title;
                     movieDto.Genre = movieReadDto.Genre;
                     movieDto.Language = movieReadDto.Language;
@@ -61,7 +63,7 @@ namespace BookNow.Web.Areas.Producer.Controllers
                     movieDto.ReleaseDate = movieReadDto.ReleaseDate;
                     movieDto.PosterUrl = movieReadDto.PosterUrl;
 
-                    // Pass the ID explicitly for the form Post action
+                    
                     ViewData["MovieId"] = id.Value;
 
                     return View(movieDto);
@@ -73,52 +75,81 @@ namespace BookNow.Web.Areas.Producer.Controllers
             }
         }
 
-        // POST /Producer/Movie/Upsert (Handles the form submission and redirect)
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(MovieCreateDTO movieDto, int? id)
+        public async Task<IActionResult> Upsert(MovieCreateDTO movieDto, int? id)
         {
-            // Server-side form validation
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                string producerId = GetCurrentProducerId();
-
-                if (id == null || id == 0)
-                {
-                    // CREATE path
-                    _movieService.CreateMovie(movieDto, producerId);
-                    TempData["success"] = "Movie created successfully!";
-                }
-                else
-                {
-                    // UPDATE path
-                    var updateDto = new MovieUpdateDTO
-                    {
-                        Title = movieDto.Title,
-                        Genre = movieDto.Genre,
-                        Language = movieDto.Language,
-                        Duration = movieDto.Duration,
-                        ReleaseDate = movieDto.ReleaseDate,
-                        PosterUrl = movieDto.PosterUrl
-                    };
-
-                    try
-                    {
-                        _movieService.UpdateProducerMovie(id.Value, updateDto, producerId);
-                        TempData["success"] = "Movie updated successfully!";
-                    }
-                    catch (NotFoundException)
-                    {
-                        return NotFound();
-                    }
-                }
-
-                return RedirectToAction(nameof(Index));
+                ViewData["MovieId"] = id;
+                return View(movieDto);
             }
 
-            // If model state is invalid, retain the MovieId for re-submission in Edit mode
-            ViewData["MovieId"] = id;
-            return View(movieDto);
+            string producerId = GetCurrentProducerId();
+
+          
+            if (movieDto.PosterFile != null && movieDto.PosterFile.Length > 0)
+            {
+               
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                var fileExt = Path.GetExtension(movieDto.PosterFile.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(fileExt))
+                {
+                    ModelState.AddModelError("PosterFile", "Allowed file types: jpg, jpeg, png, webp.");
+                    ViewData["MovieId"] = id;
+                    return View(movieDto);
+                }
+
+               
+                if (movieDto.PosterFile.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("PosterFile", "Max file size is 5 MB.");
+                    ViewData["MovieId"] = id;
+                    return View(movieDto);
+                }
+
+               
+                using var stream = movieDto.PosterFile.OpenReadStream();
+                string savedUrl = await _fileStorage.SaveFileAsync(stream, movieDto.PosterFile.FileName, "posters");
+
+            
+                movieDto.PosterUrl = savedUrl;
+            }
+
+         
+            if (id == null || id == 0)
+            {
+
+                // CREATE
+                _movieService.CreateMovie(movieDto, producerId);
+                TempData["success"] = "Movie created successfully!";
+            }
+            else
+            {
+                // UPDATE
+                var updateDto = new MovieUpdateDTO
+                {
+                    Title = movieDto.Title,
+                    Genre = movieDto.Genre,
+                    Language = movieDto.Language,
+                    Duration = movieDto.Duration,
+                    ReleaseDate = movieDto.ReleaseDate,
+                    PosterUrl = movieDto.PosterUrl
+                };
+
+                try
+                {
+                     _movieService.UpdateProducerMovie(id.Value, updateDto, producerId);
+                    TempData["success"] = "Movie updated successfully!";
+                }
+                catch (NotFoundException)
+                {
+                    return NotFound();
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

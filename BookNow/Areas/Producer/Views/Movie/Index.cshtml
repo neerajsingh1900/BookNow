@@ -5,6 +5,38 @@
     ViewData["Title"] = "Manage Movies";
 }
 
+<style>
+    /* Only for buttons on this Producer page */
+    a.btn-primary,
+    button.btn-primary {
+        background-color: var(--brand-primary) !important; /* red base */
+        color: #fff !important; /* make text visible */
+        text-decoration: none !important; /* remove underline */
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+
+        a.btn-primary:hover,
+        button.btn-primary:hover {
+            background-color: #ff6666 !important; /* lighter red on hover */
+            color: #fff !important; /* text stays visible */
+            text-decoration: none !important; /* remove underline */
+        }
+
+        a.btn-primary:active,
+        button.btn-primary:active {
+            background-color: var(--brand-primary-dark) !important;
+            color: #fff !important;
+            transform: scale(0.98);
+        }
+
+        a.btn-primary:focus,
+        button.btn-primary:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(229,57,53,0.3);
+        }
+</style>
+
 <div class="container py-4">
     <div class="row pb-3">
         <div class="col-8">
@@ -25,8 +57,8 @@
                 <thead>
                     <tr class="text-center">
                         <th style="width: 10%;">Poster</th>
-                        <th style="width: 5%;">MovieID</th>
-                        <th style="width: 20%;">Title</th>
+                        @* <th style="width: 5%;">MovieID</th> *@
+                        <th style="width: 10%;">Title</th>
                         <th style="width: 10%;">Genre</th>
                         <th style="width: 10%;">Language</th>
                         <th style="width: 10%;">Duration (min)</th>

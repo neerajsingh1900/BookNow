@@ -1,8 +1,12 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@model IEnumerable<BookNow.Web.ViewModels.CustomerMovieViewModel>
+
 
 <style>
+ 
+
     :root {
         --brand-primary: #E53935; /* BookMyShow / Material Red */
         --brand-primary-dark: #B71C1C;
@@ -53,35 +57,7 @@
       
 
 
-    /* Buttons – clean, no shadow */
-    .btn-primary {
-        background-color: #E53935 !important;
-        color: #fff !important;
-        border: none;
-        border-radius: 0.5rem;
-        font-weight: 600;
-        padding: 0.75rem 1.5rem;
-        width: auto; /* ensure button width is proper */
-        transition: background-color 0.2s ease;
-        box-shadow: none !important; /* no box effect */
-        position: relative; /* ensure above overlay */
-    }
-
-
-        .btn-primary:hover {
-            background-color: #B71C1C !important;
-        }
-
-        .btn-primary:active {
-            background-color: var(--brand-primary-dark) !important;
-            transform: none; /* no press effect */
-            box-shadow: none !important;
-        }
-
-        .btn-primary:focus {
-            outline: none !important;
-            box-shadow: none !important;
-        }
+   
 
     /* Section Heading */
     .section-title {
@@ -92,19 +68,27 @@
     }
 
     /* Movie Cards */
+    .row .col-md-4 {
+        display: flex;
+        justify-content: center; /* center cards in column */
+    }
+
     .card {
-        background-color: var(--card-bg);
-        border: 1px solid #e0e0e0;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        transition: none; /* no hover effect */
-        text-align: center;
+        width: 90%; /* smaller than full column */
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
         .card img {
             width: 100%;
+            height: 300px; /* reduced from 400px */
+            object-fit: cover;
             border-bottom: 1px solid #e0e0e0;
+            border-radius: 0.5rem 0.5rem 0 0;
         }
+
+
 
     .card-title {
         font-size: 1.2rem;
@@ -124,45 +108,33 @@
     <div class="hero-content">
         <h1>Welcome to BookNow</h1>
         <p>Your ultimate destination for movies & events.</p>
-        <a asp-area="" asp-controller="Home" asp-action="Privacy" class="btn btn-primary btn-lg mt-4">
+        <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg mt-4 w-auto">
             Browse Movies
         </a>
+
     </div>
 </div>
 
 <!-- Movies Section -->
+
 <div class="container my-5">
     <h2 class="section-title">Now Showing</h2>
     <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x600.png?text=Movie+Poster" alt="Movie Poster">
-                <div class="card-body">
-                    <h5 class="card-title">Movie Title</h5>
-                    <p class="card-text">Genre • Duration</p>
-                    <a href="#" class="btn btn-primary w-100">Book Now</a>
+        @foreach (var movie in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="@(movie.PosterUrl != null ? movie.PosterUrl : "https://via.placeholder.com/400x600.png?text=No+Poster")"
+                         alt="@movie.Title" class="card-img-top" />
+                    <div class="card-body">
+                        <h5 class="card-title">@movie.Title</h5>
+                        <p class="card-text">@movie.Genre • @movie.Duration min</p>
+<a asp-area="Customer" asp-controller="Booking" asp-action="BookNow" asp-route-id="@movie.MovieId" class="btn btn-primary w-100">
+    Book Now
+</a>
+</div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x600.png?text=Movie+Poster" alt="Movie Poster">
-                <div class="card-body">
-                    <h5 class="card-title">Movie Title</h5>
-                    <p class="card-text">Genre • Duration</p>
-                    <a href="#" class="btn btn-primary w-100">Book Now</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x600.png?text=Movie+Poster" alt="Movie Poster">
-                <div class="card-body">
-                    <h5 class="card-title">Movie Title</h5>
-                    <p class="card-text">Genre • Duration</p>
-                    <a href="#" class="btn btn-primary w-100">Book Now</a>
-                </div>
-            </div>
-        </div>
+        }
     </div>
 </div>

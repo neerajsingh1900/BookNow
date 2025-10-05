@@ -1,17 +1,16 @@
-﻿// BookNow.Web/Areas/Customer/Controllers/HomeController.cs
-
-using BookNow.Application.Interfaces;
+﻿using BookNow.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using BookNow.Web.ViewModels;
 
 namespace BookNow.Web.Areas.Customer.Controllers
 {
-    // Designate this controller for the Customer Area
+    
     [Area("Customer")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IMovieService _movieService; // Injecting IMovieService for future use
+        private readonly IMovieService _movieService;
 
         public HomeController(ILogger<HomeController> logger, IMovieService movieService)
         {
@@ -19,21 +18,30 @@ namespace BookNow.Web.Areas.Customer.Controllers
             _movieService = movieService;
         }
 
-        // GET /Customer/Home/Index
+       
         public IActionResult Index()
         {
-            _logger.LogInformation("Loading Customer Home Index.");
-            // Later, we will use _movieService to fetch current movies for the homepage
-            return View();
+            var movies = _movieService.GetAllMovies()
+            .Select(m => new CustomerMovieViewModel
+            {
+                MovieId = m.MovieId,
+                Title = m.Title,
+                Genre = m.Genre,
+                Language = m.Language,
+                Duration = m.Duration,
+                PosterUrl = m.PosterUrl,
+                ReleaseDate = m.ReleaseDate
+            }).ToList();
+
+            return View(movies);
         }
 
-        // GET /Customer/Home/Privacy
+       
         public IActionResult Privacy()
         {
             return View();
         }
 
-        // GET /Customer/Home/About
        
     }
 }
