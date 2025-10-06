@@ -118,6 +118,16 @@ namespace BookNow.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
+                if (user != null)
+                {
+                    // 2. Check if the user is in the "Producer" role
+                    if (await _userManager.IsInRoleAsync(user, "Producer"))
+                    {
+                        return RedirectToAction("Index", "Movie", new { area = "Producer" });
+                    }
+                }
                 return LocalRedirect(returnUrl);
             }
 
