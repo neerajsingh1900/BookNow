@@ -24,17 +24,17 @@ namespace BookNow.Models
         [Url]
         public string? PosterUrl { get; set; } // varchar
 
-        // Foreign Key to Users (ProducerId varchar [ref: > Users.UserId])
+    
         public string ProducerId { get; set; } = null!; // string (to match IdentityUser PK)
 
-        // Navigation property for Producer (Many-to-One)
+        
         [ForeignKey("ProducerId")]
         public virtual ApplicationUser Producer { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; } // datetime
         public DateTime UpdatedAt { get; set; } // datetime
 
-        // Navigation collections
+      
         public virtual ICollection<Show> Shows { get; set; } = new List<Show>();
     }
 }

@@ -33,9 +33,8 @@ namespace BookNow.DataAccess.Repositories
             var theatreFromDb = _db.Theatres.FirstOrDefault(t => t.TheatreId == theatreId);
             if (theatreFromDb != null)
             {
-                // The 'Status' column exists in the Theatres schema, so we update it directly.
                 theatreFromDb.Status = status;
-                base.Update(theatreFromDb); // Calls generic update logic
+                base.Update(theatreFromDb);
             }
         }
     }

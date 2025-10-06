@@ -127,18 +127,7 @@ namespace BookNow.Areas.Identity.Pages.Account
             }
             else
             {
-                // If the user does not have an account, then ask the user to create an account.
-                //ReturnUrl = returnUrl;
-                //ProviderDisplayName = info.ProviderDisplayName;
-                //if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-                //{
-                //    Input = new InputModel
-                //    {
-                //        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                //    };
-                //}
-                //return Page();
-
+              
                 // Auto-register Google user if not exists
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
                 var name = info.Principal.FindFirstValue(ClaimTypes.Name);

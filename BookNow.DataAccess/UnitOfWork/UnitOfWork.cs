@@ -16,7 +16,7 @@ namespace BookNow.DataAccess.UnitOfWork
         public IMovieRepository Movie { get; private set; }
         public IBookingRepository Booking { get; private set; }
         public ITheatreRepository Theatre { get; private set; }
-        // The property must be the specific interface type:
+        
         public IPaymentTransactionRepository PaymentTransaction { get; private set; }
 
         // Generic Repositories 
@@ -28,9 +28,7 @@ namespace BookNow.DataAccess.UnitOfWork
         public IRepository<SeatInstance> SeatInstance { get; private set; }
         public IRepository<BookingSeat> BookingSeat { get; private set; }
 
-        // REMOVED: IRepository<PaymentTransaction> IUnitOfWork.PaymentTransaction => PaymentTransaction;
-
-
+       
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;

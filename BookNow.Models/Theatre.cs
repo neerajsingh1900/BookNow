@@ -13,20 +13,20 @@ namespace BookNow.Models
         [Key]
         public int TheatreId { get; set; } // pk, increment
 
-        // Foreign Key to Users (OwnerId varchar [ref: > Users.UserId])
+       
         public string OwnerId { get; set; } = null!;
 
-        // Navigation property for Owner (Many-to-One)
+        
         [ForeignKey("OwnerId")]
         public virtual ApplicationUser Owner { get; set; } = null!;
 
         [Required]
         public string TheatreName { get; set; } = null!; // varchar
 
-        // Foreign Key to Cities (ref: > Cities.CityId)
+     
         public int CityId { get; set; }
 
-        // Navigation property for City (Many-to-One)
+        
         [ForeignKey("CityId")]
         public virtual City City { get; set; } = null!;
 

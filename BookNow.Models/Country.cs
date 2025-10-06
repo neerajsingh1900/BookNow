@@ -16,7 +16,7 @@ namespace BookNow.Models
 
         public string Code { get; set; } = null!; // varchar(3)
 
-        // Navigation property for Cities (One-to-Many)
+      
         public virtual ICollection<City> Cities { get; set; } = new List<City>();
     }
 }

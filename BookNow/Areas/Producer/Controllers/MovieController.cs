@@ -6,7 +6,7 @@ using BookNow.Application.DTOs.MovieDTOs;
 using BookNow.Application.Exceptions;
 using System;
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.AspNetCore.Http;
 namespace BookNow.Web.Areas.Producer.Controllers
 {
     [Area("Producer")]

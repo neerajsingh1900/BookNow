@@ -15,10 +15,10 @@ namespace BookNow.Models
         [Key]
         public int PaymentTxnId { get; set; } // pk, increment
 
-        // Foreign Key to Bookings (ref: > Bookings.BookingId)
+        
         public int BookingId { get; set; }
 
-        // Navigation property for Booking (Many-to-One)
+      
         [ForeignKey("BookingId")]
         public virtual Booking Booking { get; set; } = null!;
 
@@ -40,7 +40,7 @@ namespace BookNow.Models
         [Column(TypeName = "nvarchar(MAX)")]
         public string? RawResponse { get; set; } // json
 
-        // [unique] constraint handled by [Index] attribute
+        
         public string IdempotencyKey { get; set; } = null!; // varchar
 
         [Timestamp]

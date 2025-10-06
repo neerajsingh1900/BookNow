@@ -18,7 +18,7 @@ namespace BookNow.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        // --- Mapping Helpers (You would replace this with AutoMapper) ---
+       
         private Movie MapToModel(MovieCreateDTO dto, string producerId) => new Movie
         {
             Title = dto.Title,

@@ -7,7 +7,7 @@
 <div class="row justify-content-center mt-5">
     <div class="col-md-6 col-lg-4">
         <div class="card p-4">
-            <h2 class="text-center mb-4">Log in to BookNow</h2>
+            <h2 class="text-center mb-4">Log in  to BookNow</h2>
             <form id="account" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                 <div class="form-floating mb-3">
@@ -32,7 +32,7 @@
                         <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
                     </p> *@
                     <p>
-                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a new user</a>
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a producer</a>
                     </p>
                  
                 </div>
@@ -50,6 +50,7 @@
                             @provider.DisplayName
                         </button>
                     </form>
+                   
                 }
             </div>
 

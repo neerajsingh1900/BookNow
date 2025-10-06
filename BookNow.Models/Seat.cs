@@ -20,8 +20,7 @@ namespace BookNow.Models
         [ForeignKey("ScreenId")]
         public virtual Screen Screen { get; set; } = null!;
 
-        // SeatNumber is part of the unique composite index (ScreenId, SeatNumber)
-        public string SeatNumber { get; set; } = null!; // varchar
+      public string SeatNumber { get; set; } = null!; // varchar
 
         public string? RowLabel { get; set; } // varchar
         public int SeatIndex { get; set; } // int (physical index for sorting)

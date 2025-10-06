@@ -13,17 +13,17 @@ namespace BookNow.Models
         [Key]
         public int ShowId { get; set; } // pk, increment
 
-        // Foreign Key to Screens (ref: > Screens.ScreenId)
+        
         public int ScreenId { get; set; }
 
-        // Navigation property for Screen (Many-to-One)
+       
         [ForeignKey("ScreenId")]
         public virtual Screen Screen { get; set; } = null!;
 
-        // Foreign Key to Movies (ref: > Movies.MovieId)
+       
         public int MovieId { get; set; }
 
-        // Navigation property for Movie (Many-to-One)
+       
         [ForeignKey("MovieId")]
         public virtual Movie Movie { get; set; } = null!;
 

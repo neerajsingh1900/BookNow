@@ -16,34 +16,34 @@ namespace BookNow.Models
         [Key]
         public int BookingId { get; set; } // pk, increment
 
-        // Foreign Key to Users (UserId varchar [ref: > Users.UserId])
+        
         public string UserId { get; set; } = null!;
 
-        // Navigation property for User (Many-to-One)
+       
         [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; } = null!;
 
-        // Foreign Key to Shows (ref: > Shows.ShowId)
+       
         public int ShowId { get; set; }
 
-        // Navigation property for Show (Many-to-One)
+       
         [ForeignKey("ShowId")]
         public virtual Show Show { get; set; } = null!;
 
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal TotalAmount { get; set; } // decimal(10, 2)
+        public decimal TotalAmount { get; set; } 
 
         public string BookingStatus { get; set; } = "Pending"; // varchar (e.g., Pending, Confirmed, Cancelled)
 
         public DateTime CreatedAt { get; set; } // datetime
 
-        // [unique] constraint handled by [Index] attribute
+      
         public string TicketNumber { get; set; } = null!; // varchar
 
         public string? TicketUrl { get; set; } // varchar
         public string? QRCodeUrl { get; set; } // varchar
 
-        // [unique] constraint handled by [Index] attribute
+       
         public string IdempotencyKey { get; set; } = null!; // varchar
 
         [Timestamp]

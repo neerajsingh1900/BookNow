@@ -6,6 +6,7 @@ using BookNow.DataAccess.UnitOfWork;
 using BookNow.Models.Interfaces;
 using BookNow.Utility;
 using BookNow.Web.Services;
+using BulkyBook.Utility;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
+   
 }).AddDefaultTokenProviders()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -46,7 +48,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Add Razor Pages (for Identity UI)
 builder.Services.AddRazorPages();
-builder.Services.AddScoped<IEmailSender, EmailSender>();
+
 
 // Register IUnitOfWork to its concrete implementation
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -55,7 +57,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 
 builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
-
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 var app = builder.Build();
 
 // Middleware pipeline
@@ -74,7 +77,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
-
 
 app.MapControllerRoute(
     name: "default",
