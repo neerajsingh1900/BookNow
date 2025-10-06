@@ -9,11 +9,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
 namespace BookNow.Areas.Identity.Pages.Account
@@ -23,12 +26,14 @@ namespace BookNow.Areas.Identity.Pages.Account
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IEmailSender _emailSender;
         public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger
-            , UserManager<IdentityUser> userManager)
+            , UserManager<IdentityUser> userManager, IEmailSender emailSender)
         {
             _signInManager = signInManager;
             _logger = logger;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         /// <summary>
@@ -120,10 +125,9 @@ namespace BookNow.Areas.Identity.Pages.Account
                     _logger.LogInformation("User logged in.");
                     // return LocalRedirect(returnUrl);
                     var user = await _userManager.FindByEmailAsync(Input.Email);
-
+                   
                     if (user != null)
                     {
-                      
                         if (await _userManager.IsInRoleAsync(user, "Producer"))
                         {
                           
@@ -132,6 +136,34 @@ namespace BookNow.Areas.Identity.Pages.Account
                     }
                
                    return LocalRedirect(returnUrl); 
+                }
+                else if (result.IsNotAllowed)
+                {
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    if (user != null && !await _userManager.IsEmailConfirmedAsync(user))
+                    {
+                        var userId = await _userManager.GetUserIdAsync(user);
+                        // 1. GENERATE THE RAW TOKEN
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                        // 2. ENCODE THE TOKEN TO MAKE IT URL-SAFE (This is crucial)
+                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+                        var callbackUrl = Url.Page(
+                            "/Account/ConfirmEmail",
+                            pageHandler: null,
+                            values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                            protocol: Request.Scheme);
+
+                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email (Resent)",
+                                     $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>. " +
+                                     $"This email was sent because you attempted to log in without confirming your address.");
+
+                        return RedirectToPage("./RegisterConfirmation", new { email = Input.Email, isResend = true });
+                    }
+
+                    ModelState.AddModelError(string.Empty, "Login not allowed. Please check your account status.");
+                    return Page();
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -145,8 +177,8 @@ namespace BookNow.Areas.Identity.Pages.Account
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    //return Page();
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+                    return Page();
+                  //  return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
                 }
             }
 

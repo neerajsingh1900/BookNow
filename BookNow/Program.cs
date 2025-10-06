@@ -6,7 +6,6 @@ using BookNow.DataAccess.UnitOfWork;
 using BookNow.Models.Interfaces;
 using BookNow.Utility;
 using BookNow.Web.Services;
-using BulkyBook.Utility;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +24,8 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
-   
+    options.SignIn.RequireConfirmedAccount = true;
+
 }).AddDefaultTokenProviders()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 

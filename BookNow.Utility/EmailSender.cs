@@ -8,7 +8,7 @@ using System;
 using System.Threading.Tasks;
 // Note: Removed redundant and conflicting using statements like System.Net.Mail
 
-namespace BulkyBook.Utility // Use your actual namespace
+namespace BookNow.Utility // Use your actual namespace
 {
     public class EmailSender : IEmailSender
     {
