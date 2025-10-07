@@ -8,7 +8,7 @@ namespace BookNow.Models.Interfaces
 {
     public interface ITheatreRepository : IRepository<Theatre>
     {
-        IEnumerable<Theatre> GetTheatresByOwner(string ownerId);
+        IEnumerable<Theatre> GetTheatresByOwner(string ownerId, string? includeProperties = null);
         void UpdateTheatreStatus(int theatreId, string status);
     }
 }

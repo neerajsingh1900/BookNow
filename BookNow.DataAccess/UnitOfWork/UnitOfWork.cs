@@ -16,19 +16,26 @@ namespace BookNow.DataAccess.UnitOfWork
         public IMovieRepository Movie { get; private set; }
         public IBookingRepository Booking { get; private set; }
         public ITheatreRepository Theatre { get; private set; }
-        
+        public IScreenRepository Screen => _screenRepository ??= new ScreenRepository(_db); 
+        public ISeatRepository Seat => _seatRepository ??= new SeatRepository(_db);        
+
+
         public IPaymentTransactionRepository PaymentTransaction { get; private set; }
 
         // Generic Repositories 
         public IRepository<Country> Country { get; private set; }
         public IRepository<City> City { get; private set; }
-        public IRepository<Screen> Screen { get; private set; }
-        public IRepository<Seat> Seat { get; private set; }
+      
         public IRepository<Show> Show { get; private set; }
         public IRepository<SeatInstance> SeatInstance { get; private set; }
         public IRepository<BookingSeat> BookingSeat { get; private set; }
 
-       
+
+     
+        private IScreenRepository? _screenRepository;
+        private ISeatRepository? _seatRepository;
+
+
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
@@ -43,11 +50,11 @@ namespace BookNow.DataAccess.UnitOfWork
             // 2. Initialize Generic Repositories
             Country = new Repository<Country>(_db);
             City = new Repository<City>(_db);
-            Screen = new Repository<Screen>(_db);
-            Seat = new  Repository<Seat>(_db);
+           
             Show = new Repository<Show>(_db);
             SeatInstance = new Repository<SeatInstance>(_db);
             BookingSeat = new Repository<BookingSeat>(_db);
+
         }
 
         public void Save()

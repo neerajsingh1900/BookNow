@@ -28,6 +28,11 @@ namespace BookNow.DataAccess.Repositories
                 .ToList();
         }
 
+        public IEnumerable<Theatre> GetTheatresByOwner(string ownerId, string? includeProperties = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public void UpdateTheatreStatus(int theatreId, string status)
         {
             var theatreFromDb = _db.Theatres.FirstOrDefault(t => t.TheatreId == theatreId);

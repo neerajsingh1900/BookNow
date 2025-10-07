@@ -16,14 +16,16 @@ namespace BookNow.Models.Interfaces
 
         IRepository<Country> Country { get; }
         IRepository<City> City { get; }
-        IRepository<Screen> Screen { get; }
-        IRepository<Seat> Seat { get; }
+      
         IRepository<Show> Show { get; }
         IRepository<SeatInstance> SeatInstance { get; }
         IRepository<BookingSeat> BookingSeat { get; }
 
         // FIX: Change to the specific repository interface for custom payment methods
         IPaymentTransactionRepository PaymentTransaction { get; }
+
+        IScreenRepository Screen { get; } 
+        ISeatRepository Seat { get; }    
 
         void Save();
         Task SaveAsync();

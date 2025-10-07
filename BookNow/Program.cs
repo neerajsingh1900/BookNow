@@ -55,7 +55,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register the core business logic service for the Producer flow
 builder.Services.AddScoped<IMovieService, MovieService>();
-
+builder.Services.AddScoped<ITheatreService, TheatreService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
