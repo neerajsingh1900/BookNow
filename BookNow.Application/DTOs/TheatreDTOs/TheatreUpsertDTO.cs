@@ -34,7 +34,7 @@
 // BookNow.Application/DTOs/TheatreDTOs/TheatreUpsertDTO.cs
 namespace BookNow.Application.DTOs.TheatreDTOs
 {
-    // No Data Annotations here!
+    
     public class TheatreUpsertDTO
     {
         public int? TheatreId { get; set; }

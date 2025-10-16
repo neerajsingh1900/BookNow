@@ -42,7 +42,7 @@ function loadTheatreDashboard() {
                         pendingCount++;
                     }
 
-                    // Function to dynamically render the status badge
+                   
                     const getStatusBadge = (status) => {
                         let badgeClass = 'bg-secondary';
                         if (status === 'PendingApproval') badgeClass = 'bg-warning text-dark';
@@ -98,7 +98,8 @@ function initializeTheatreUpsert() {
     // --- Cascading Dropdown Functions ---
 
     function loadCountries() {
-     //   console.log('Loading countries...');
+
+   const selectedCountryId = window.theatreEditData ? window.theatreEditData.countryId : null;
 
         fetch(`${LOCATION_API}/countries`)
             .then(response => response.json())
@@ -107,9 +108,14 @@ function initializeTheatreUpsert() {
                 countries.forEach(c => {
                     $countrySelect.append($('<option>', {
                         value: c.id,
-                        text: c.name
+                        text: c.name,
+                        selected: c.id === selectedCountryId
                     }));
                 });
+
+                if (selectedCountryId && window.theatreEditData) {
+                    loadCities(selectedCountryId, window.theatreEditData.CityId);
+                }
             })
             .catch(error => {
                 console.error('Error loading countries:', error);
@@ -118,7 +124,7 @@ function initializeTheatreUpsert() {
     }
 
     function loadCities(countryId, selectedCityId = null) {
-      //  console.log('Loading cities for countryId:', countryId);
+      
         $citySelect.prop('disabled', true).empty().append('<option value="">Loading Cities...</option>');
 
         if (!countryId) {
@@ -145,23 +151,22 @@ function initializeTheatreUpsert() {
             });
     }
 
-    // --- Event Handlers ---
-
-    // Country Change Event
+   
     $countrySelect.on('change', function () {
         const countryId = $(this).val();
-        //loadCities(countryId ? parseInt(countryId) : null);
+    
         if (countryId) {
-            loadCities(countryId); // pass string, let API handle parsing
+            loadCities(countryId);
         } else {
-            loadCities(null); // resets city dropdown
+            loadCities(null); 
         }
     });
 
-    // Form Submission Handler
+    
     $form.on('submit', function (e) {
         e.preventDefault();
 
+        console.log("hitting");
         // Custom validation for mandatory CityId
         if (!$citySelect.val()) {
             $validationSummary.text('Please select both a Country and a City.').removeClass('d-none');
@@ -176,7 +181,7 @@ function initializeTheatreUpsert() {
         $validationSummary.addClass('d-none').text('');
 
         const isUpdate = $('#TheatreId').val();
-
+        console.log("update", isUpdate);
         const formData = {
             theatreId: isUpdate ? parseInt(isUpdate) : null,
             theatreName: $('#TheatreName').val(),
@@ -216,11 +221,10 @@ function initializeTheatreUpsert() {
             });
     });
 
-    // --- Initialization ---
+  
     loadCountries();
 }
 
-// Map the initialization functions to the correct pages when the document is ready
 $(document).ready(function () {
     if (document.getElementById('tblTheatres')) {
         loadTheatreDashboard();

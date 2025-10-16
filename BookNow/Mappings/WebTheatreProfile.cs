@@ -13,6 +13,8 @@ namespace BookNow.Web.Mappings
 
             // Upsert mapping: ViewModel -> DTO (for POST/PUT)
             CreateMap<TheatreUpsertVM, TheatreUpsertDTO>();
+
+         
         }
     }
 }

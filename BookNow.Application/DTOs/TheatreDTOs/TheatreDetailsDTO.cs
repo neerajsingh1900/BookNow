@@ -12,9 +12,15 @@ namespace BookNow.Application.DTOs.TheatreDTOs
         public string TheatreName { get; set; } = null!;
         public string Address { get; set; } = null!;
         public string CityName { get; set; } = null!;
+
+        public int CityId { get; set; }
         public string CountryName { get; set; } = null!;
+       
         public string Status { get; set; } = null!;
         public string OwnerId { get; set; } = null!;
         public int ScreenCount { get; set; }
+
+        public string PhoneNumber { get; set; } = null!; // if stored in DB
+        public string Email { get; set; } = null!;
     }
 }

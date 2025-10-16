@@ -59,6 +59,7 @@ namespace BookNow.Application.Services
 
             return _mapper.Map<TheatreDetailDTO>(fullTheatre); 
         }
+    
         public async Task<TheatreDetailDTO> UpdateTheatreAsync(int theatreId, TheatreUpsertDTO dto, string ownerId)
         {   
             var theatre = await _unitOfWork.Theatre.GetAsync(t => t.TheatreId == theatreId);
@@ -71,6 +72,8 @@ namespace BookNow.Application.Services
 
             theatre.UpdateDetails(dto.TheatreName, dto.Address, dto.CityId,
                 dto.PhoneNumber, dto.Email);
+
+             _unitOfWork.Theatre.Update(theatre);
             await _unitOfWork.SaveAsync();
 
             var fullTheatre = await _unitOfWork.Theatre.GetAsync(
@@ -98,19 +101,9 @@ namespace BookNow.Application.Services
             var theatres = await _unitOfWork.Theatre.GetAllAsync(
                filter: t => t.OwnerId == ownerId,
                includeProperties: "City.Country,Screens");
-            //var theatreDtos = theatres.Select(t => new TheatreDetailDTO
-            //{
-            //    TheatreId = t.TheatreId,
-            //    TheatreName = t.TheatreName,
-            //    Address = t.Address,
-            //    CityName = t.City?.Name ?? "Unknown",
-            //    CountryName = t.City?.Country?.Name ?? "Unknown",
-            //    Status = t.Status,
-            //    OwnerId = t.OwnerId,
-            //    ScreenCount = t.Screens?.Count ?? 0
-            //});
+          
               return  _mapper.Map<IEnumerable<TheatreDetailDTO>>(theatres);
-           // return theatreDtos;
+           
         }
 
         // --- 2. Add Screen and Seats ---
@@ -255,5 +248,6 @@ namespace BookNow.Application.Services
 
             return theatre != null;
         }
+  
     }
 }

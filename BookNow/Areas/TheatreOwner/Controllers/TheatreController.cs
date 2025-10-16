@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre;
@@ -30,18 +31,23 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
         [ServiceFilter(typeof(TheatreOwnershipFilter))]
         public async Task<IActionResult> Upsert(int? id)
         {
-            TheatreUpsertVM vm;
+            TheatreUpsertDTO dto;
+           
             if (id.HasValue)
             {
                 var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var dto = await _theatreService.GetTheatreByIdAsync(id.Value, ownerId);
-                vm = _mapper.Map<TheatreUpsertVM>(dto);
+                var theatreDetail = await _theatreService.GetTheatreByIdAsync(id.Value, ownerId);
+
+                
+                dto = _mapper.Map<TheatreUpsertDTO>(theatreDetail);
             }
             else
             {
-                vm = new TheatreUpsertVM();
+                dto = new TheatreUpsertDTO();
             }
-            return View(vm);
+
+            return View(dto);
         }
+    
     }
 }

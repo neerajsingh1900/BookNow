@@ -44,6 +44,8 @@ namespace BookNow.Application.Mappings
                 .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.Name))
                 .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.City.Country.Name))
                 .ForMember(dest => dest.ScreenCount, opt => opt.MapFrom(src => src.Screens.Count));
+          
+            CreateMap<TheatreDetailDTO, TheatreUpsertDTO>();
         }
     }
-}
+}   

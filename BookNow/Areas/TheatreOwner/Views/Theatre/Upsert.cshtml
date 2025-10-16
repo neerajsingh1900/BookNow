@@ -129,7 +129,8 @@
     </script>
 } *@
 
-@model BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre.TheatreUpsertVM
+@* @model BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre.TheatreUpsertVM *@
+@model BookNow.Application.DTOs.TheatreDTOs.TheatreUpsertDTO
 @using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre
 @{
     ViewData["Title"] = Model.TheatreId.HasValue ? "Edit Theatre" : "Register New Theatre";
@@ -218,6 +219,11 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+  
+    <script>
+        // Pass the TheatreUpsertVM model to JS
+        window.theatreEditData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+    </script>
     <!-- Load the dedicated modular JavaScript file -->
     <script src="~/js/theatre/theatreOwner.js" asp-append-version="true"></script>
 }
