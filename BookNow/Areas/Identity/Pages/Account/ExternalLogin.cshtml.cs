@@ -125,6 +125,10 @@ namespace BookNow.Areas.Identity.Pages.Account
                     {
                         return RedirectToAction("Index", "Movie", new { area = "Producer" });
                     }
+                    if (await _userManager.IsInRoleAsync(user, "TheatreOwner"))
+                    {
+                        return RedirectToAction("Index", "Theatre", new { area = "TheatreOwner" });
+                    }
                 }
                 return LocalRedirect(returnUrl);
             }

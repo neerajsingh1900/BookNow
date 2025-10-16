@@ -1,0 +1,109 @@
+﻿@model ShowCreationVM
+@{
+    ViewData["Title"] = "Schedule New Show";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h2 class="fw-bold mb-4 text-center">Schedule Show on Screen #@Model.ScreenId</h2>
+                <p class="text-muted text-center mb-4">Set the movie, date, and duration for this screen.</p>
+
+                <form id="showScheduleForm" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" asp-for="ScreenId" />
+
+                    <div class="mb-3">
+                        <label asp-for="MovieId" class="form-label">Select Movie</label>
+                        <select asp-for="MovieId" asp-items="Model.MovieList" class="form-control">
+                            <option value="">-- Choose Movie --</option>
+                        </select>
+                        <span asp-validation-for="MovieId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="StartTime" class="form-label">Start Date & Time</label>
+                            <input asp-for="StartTime" type="datetime-local" class="form-control" />
+                            <span asp-validation-for="StartTime" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DurationMinutes" class="form-label">Total Duration (Mins)</label>
+                            <input asp-for="DurationMinutes" type="number" min="30" max="480" class="form-control" placeholder="E.g., 150 (includes cleanup time)" />
+                            <span asp-validation-for="DurationMinutes" class="text-danger small"></span>
+                            <small class="text-muted">Must include movie run-time and cleanup interval.</small>
+                        </div>
+                    </div>
+
+                    <div id="serverValidationSummary" class="alert alert-danger d-none" role="alert"></div>
+
+                    <div class="d-grid mt-4">
+                        <button id="submitButton" type="submit" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus me-1"></i> Schedule Show & Create Tickets
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            const $form = $('#showScheduleForm');
+            const $submitButton = $('#submitButton');
+            const $serverSummary = $('#serverValidationSummary');
+
+            // --- Form Submission (Robust API Interaction) ---
+            $form.on('submit', function (e) {
+                e.preventDefault();
+
+                if (!$form.valid()) return;
+
+                $submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Scheduling...');
+                $serverSummary.addClass('d-none').text('');
+
+                const formData = {
+                    screenId: parseInt($('#ScreenId').val()),
+                    movieId: parseInt($('#MovieId').val()),
+                    startTime: $('#StartTime').val(), // ISO 8601 string
+                    durationMinutes: parseInt($('#DurationMinutes').val())
+                };
+
+                fetch('/TheatreOwner/api/show/schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(async response => {
+                    $submitButton.prop('disabled', false).html('<i class="fas fa-calendar-plus me-1"></i> Schedule Show & Create Tickets');
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        const errorData = await response.json();
+                        // This handles the crucial TIME CONFLICT (ValidationException) error
+                        throw new Error(errorData.message || 'Error occurred while scheduling the show.');
+                    }
+                })
+                .then(data => {
+                    console.log('Show scheduled successfully:', data);
+                    // UX Improvement: Success message and redirect to the screen's show list
+                    alert('Show Scheduled! Seat inventory created successfully.');
+                    window.location.href = `/TheatreOwner/Screen/Index/${// NOTE: Need Theatre ID to redirect properly.
+                        // Since we only have ScreenId, we rely on the user navigating back or passing TheatreId via ViewData.
+                        // For a quick fix, let's redirect to the main Theatre dashboard:
+                        'TheatreOwner/Theatre/Index'
+                    }`;
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                    $serverSummary.text(error.message).removeClass('d-none');
+                });
+            });
+        });
+    </script>
+}

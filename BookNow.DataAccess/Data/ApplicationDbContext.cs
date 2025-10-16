@@ -52,7 +52,6 @@ namespace BookNow.DataAccess.Data
                 .HasForeignKey(si => si.ShowId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Fix 4 (FINAL FIX): BookingSeat -> SeatInstance set to RESTRICT (Breaks the final cascade cycle involving transactional data)
             modelBuilder.Entity<BookingSeat>()
                 .HasOne(bs => bs.SeatInstance)
                 .WithMany(si => si.BookingSeats)
@@ -60,15 +59,12 @@ namespace BookNow.DataAccess.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            // 2. Configure ApplicationUser (Custom Properties Index)
-            // This ensures GoogleId is unique across existing users.
             modelBuilder.Entity<ApplicationUser>()
                 .HasIndex(u => u.GoogleId)
                 .IsUnique()
                 .HasFilter("[GoogleId] IS NOT NULL");
 
-            // 3. Configure Composite Unique Indexes
-
+          
             modelBuilder.Entity<Seat>()
                 .HasIndex(s => new { s.ScreenId, s.SeatNumber })
                 .IsUnique();
@@ -77,7 +73,6 @@ namespace BookNow.DataAccess.Data
                 .HasIndex(s => new { s.ScreenId, s.StartTime })
                 .IsUnique();
 
-            // 4. Configure RowVersion (Timestamp) for Optimistic Concurrency
             modelBuilder.Entity<SeatInstance>()
                 .Property(si => si.RowVersion)
                 .IsRowVersion();
@@ -90,7 +85,6 @@ namespace BookNow.DataAccess.Data
                 .Property(pt => pt.RowVersion)
                 .IsRowVersion();
 
-            // 5. Set Decimal Precision (for consistency)
             foreach (var property in modelBuilder.Model.GetEntityTypes()
                 .SelectMany(t => t.GetProperties()) 
                 .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))

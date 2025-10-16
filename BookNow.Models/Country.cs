@@ -12,9 +12,9 @@ namespace BookNow.Models
         [Key]
         public int CountryId { get; set; } // pk, increment
 
-        public string Name { get; set; } = null!; // varchar
+        public string Name { get; set; } = null!; 
 
-        public string Code { get; set; } = null!; // varchar(3)
+        public string Code { get; set; } = null!;
 
       
         public virtual ICollection<City> Cities { get; set; } = new List<City>();

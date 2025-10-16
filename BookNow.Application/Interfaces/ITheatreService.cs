@@ -1,34 +1,24 @@
-﻿using BookNow.Application.DTOs.CommonDTOs;
-using BookNow.Application.DTOs.TheatreDTOs;
-using BookNow.Application.DTOs.TheatreDTOs;
-using System;
+﻿using BookNow.Application.DTOs.TheatreDTOs;
+using BookNow.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BookNow.Application.Interfaces
 {
     public interface ITheatreService
     {
-        Task<TheatreDetailsDTO> CreateTheatreAsync(CreateTheatreDTO dto);
+        Task<TheatreDetailDTO> AddTheatreAsync(string ownerId, TheatreUpsertDTO dto);
+        Task<IEnumerable<TheatreDetailDTO>> GetOwnerTheatresAsync(string ownerId);
 
-        // Fetches theatres owned by a specific user (TheatreOwner)
-        Task<IEnumerable<TheatreDetailsDTO>> GetOwnerTheatresAsync(string ownerId);
+        Task<int> AddScreenAndSeatsAsync(int theatreId, ScreenUpsertDTO dto);
+        Task<IEnumerable<Screen>> GetTheatreScreensAsync(int theatreId);
 
-        // Handles creating the screen and generating all associated seats
-        Task<ScreenDetailsDTO> AddScreenToTheatreAsync(CreateScreenDTO dto);
+        Task<Show> AddShowAsync(ShowCreationDTO dto);
+        Task<IEnumerable<Show>> GetScreenShowsAsync(int screenId);
+        Task<bool> IsOwnerOfTheatreAsync(string userId, int theatreId);
 
-        // Utility method to get data for dropdowns
-        Task<IEnumerable<CityDTO>> GetCitiesByCountryAsync(string countryCode);
+        Task<TheatreDetailDTO> GetTheatreByIdAsync(int theatreId, string ownerId);
+        Task<TheatreDetailDTO> UpdateTheatreAsync(int theatreId, TheatreUpsertDTO dto, string ownerId);
 
-        Task<IEnumerable<CountryDTO>> GetCountriesAsync();
-    }
-
-    // You'll need a simple City DTO in a shared DTO folder (e.g., CommonDTOs)
-    public class CityDTO
-    {
-        public int CityId { get; set; }
-        public string Name { get; set; } = null!;
     }
 }

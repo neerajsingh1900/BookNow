@@ -31,7 +31,7 @@ namespace BookNow.Models
         [ForeignKey("ProducerId")]
         public virtual ApplicationUser Producer { get; set; } = null!;
 
-        public DateTime CreatedAt { get; set; } // datetime
+        public DateTime CreatedAt { get; set; } // datetime 
         public DateTime UpdatedAt { get; set; } // datetime
 
       

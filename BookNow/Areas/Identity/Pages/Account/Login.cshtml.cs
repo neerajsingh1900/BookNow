@@ -117,13 +117,11 @@ namespace BookNow.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    // return LocalRedirect(returnUrl);
+                    
                     var user = await _userManager.FindByEmailAsync(Input.Email);
                    
                     if (user != null)
@@ -133,8 +131,13 @@ namespace BookNow.Areas.Identity.Pages.Account
                           
                             return RedirectToAction("Index", "Movie", new { area = "Producer" });
                         }
+                        if (await _userManager.IsInRoleAsync(user, "TheatreOwner"))
+                        {
+
+                            return RedirectToAction("Index", "Theatre", new { area = "TheatreOwner" });
+                        }
                     }
-               
+                
                    return LocalRedirect(returnUrl); 
                 }
                 else if (result.IsNotAllowed)
@@ -143,11 +146,10 @@ namespace BookNow.Areas.Identity.Pages.Account
                     if (user != null && !await _userManager.IsEmailConfirmedAsync(user))
                     {
                         var userId = await _userManager.GetUserIdAsync(user);
-                        // 1. GENERATE THE RAW TOKEN
+                       
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-                        // 2. ENCODE THE TOKEN TO MAKE IT URL-SAFE (This is crucial)
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                       code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
                         var callbackUrl = Url.Page(
                             "/Account/ConfirmEmail",

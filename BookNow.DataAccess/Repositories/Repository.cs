@@ -22,25 +22,7 @@ namespace BookNow.DataAccess.Repositories
             this.dbSet = _db.Set<T>();
         }
 
-        //public T Get(
-        //    Expression<Func<T, bool>> filter,
-        //    string? includeProperties = null,
-        //    bool tracked = false)
-        //{
-        //    IQueryable<T> query = tracked ? dbSet : dbSet.AsNoTracking();
-
-        //    query = query.Where(filter);
-
-        //    if (!string.IsNullOrEmpty(includeProperties))
-        //    {
-        //        foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-        //        {
-        //            query = query.Include(includeProp);
-        //        }
-        //    }
-
-        //    return query.FirstOrDefault();
-        //}
+       
         public async Task<T?> GetAsync(
           Expression<Func<T, bool>> filter,
           string? includeProperties = null,
@@ -50,10 +32,10 @@ namespace BookNow.DataAccess.Repositories
 
             query = query.Where(filter);
 
-            // [Robustness: Clean LINQ Inclusion]
+           
             query = ApplyIncludes(query, includeProperties);
 
-            // [Performance] Execute query asynchronously
+           
             return await query.FirstOrDefaultAsync();
         }
 
@@ -83,10 +65,7 @@ namespace BookNow.DataAccess.Repositories
             return query.ToList();
         }
 
-        //public void Add(T entity)
-        //{
-        //    dbSet.Add(entity);
-        //}
+       
         public async Task AddAsync(T entity)
         {
             await dbSet.AddAsync(entity);
@@ -111,22 +90,15 @@ namespace BookNow.DataAccess.Repositories
         {
             dbSet.RemoveRange(entities);
         }
-        //public void AddRange(IEnumerable<T> entities)
-        //{
-        //    dbSet.AddRange(entities);
-        //}
-     
-        // ------------------ NEW: Private Helper Method (C# Clean Code) ------------------
-        // Helper method to consolidate the string splitting and Include logic
-        // This method shows good SRP (Single Responsibility Principle)
+      
         private IQueryable<T> ApplyIncludes(IQueryable<T> query, string? includeProperties)
         {
             if (!string.IsNullOrEmpty(includeProperties))
             {
-                // [C# Showcase: String SplitOptions]
+              
                 foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    query = query.Include(includeProp.Trim()); // Add Trim() for robustness
+                    query = query.Include(includeProp.Trim()); 
                 }
             }
             return query;
@@ -142,25 +114,27 @@ namespace BookNow.DataAccess.Repositories
             if (filter != null)
                 query = query.Where(filter);
 
-            // [Robustness: Clean LINQ Inclusion]
+          
             query = ApplyIncludes(query, includeProperties);
 
-            // Note: We leave this as AsNoTracking() is for Get/FirstOrDefault
+          
 
             if (orderBy != null)
             {
-                // [Performance] Execute ordered query asynchronously
+               
                 return await orderBy(query).ToListAsync();
             }
 
-            // [Performance] Execute query asynchronously
             return await query.ToListAsync();
         }
 
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter)
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            query = query.Where(filter);
+            return await query.AnyAsync();
+        }
 
-        // Note on existing Sync methods:
-        // You can now clean up the old 'Get' and 'GetAll' methods by calling ApplyIncludes(query, includeProperties);
-        // This is a safe refactor. The rest of the original sync methods should remain unchanged for minimal risk.
-    }
+        }
 }
 

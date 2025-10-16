@@ -1,28 +1,24 @@
 ﻿using BookNow.DataAccess.Data;
 using BookNow.Models;
 using BookNow.Models.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BookNow.DataAccess.Repositories
 {
     public class ScreenRepository : Repository<Screen>, IScreenRepository
     {
-        private readonly ApplicationDbContext _db;
+        // The base class constructor handles the _db context.
 
-        public ScreenRepository(ApplicationDbContext db) : base(db)
-        {
-            _db = db;
-        }
+        public ScreenRepository(ApplicationDbContext db) : base(db) { }
 
-        public IEnumerable<Screen> GetScreensByTheatre(int theatreId, string? includeProperties = null)
+        public async Task<bool> IsScreenNumberUniqueAsync(int theatreId, string screenNumber, int? excludeScreenId = null)
         {
-            return GetAll(s => s.TheatreId == theatreId, includeProperties: includeProperties);
-        }
-
-        public bool IsScreenNumberUnique(int theatreId, string screenNumber, int? excludeScreenId = null)
-        {
-            var query = dbSet.Where(s => s.TheatreId == theatreId && s.ScreenNumber == screenNumber);
+            // Optimization: Use AsNoTracking for a simple existence check.
+            var query = dbSet.AsNoTracking()
+                .Where(s => s.TheatreId == theatreId && s.ScreenNumber == screenNumber);
 
             if (excludeScreenId.HasValue)
             {
@@ -30,7 +26,15 @@ namespace BookNow.DataAccess.Repositories
                 query = query.Where(s => s.ScreenId != excludeScreenId.Value);
             }
 
-            return !query.Any();
+            return !await query.AnyAsync();
+        }
+
+        public async Task<IEnumerable<Screen>> GetScreensByTheatreAsync(int theatreId, string? includeProperties = null)
+        {
+            // Uses the base Repository's GetAllAsync method
+            return await GetAllAsync(
+               filter: s => s.TheatreId == theatreId,
+               includeProperties: includeProperties);
         }
     }
 }

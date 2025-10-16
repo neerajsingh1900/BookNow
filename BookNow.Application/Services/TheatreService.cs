@@ -1,235 +1,259 @@
-﻿using BookNow.Application.DTOs.CommonDTOs;
+﻿using AutoMapper; 
 using BookNow.Application.DTOs.TheatreDTOs;
-using BookNow.Application.Exceptions;
+using BookNow.Application.Exceptions; 
 using BookNow.Application.Interfaces;
 using BookNow.Models;
 using BookNow.Models.Interfaces;
+using BookNow.Utility;
+using Microsoft.AspNetCore.Identity;
+using SendGrid.Helpers.Errors.Model;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Security;
-
+using System.Threading.Tasks;
 
 namespace BookNow.Application.Services
 {
     public class TheatreService : ITheatreService
     {
         private readonly IUnitOfWork _unitOfWork;
-      
-        public TheatreService(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        private readonly TheatreUpsertDTOValidator _validator;
+
+        public TheatreService(IUnitOfWork unitOfWork, IMapper mapper, TheatreUpsertDTOValidator validator)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _validator = validator;
         }
 
-        public async Task<TheatreDetailsDTO> CreateTheatreAsync(CreateTheatreDTO dto)
+        // --- 1. Add Theatre ---
+        public async Task<TheatreDetailDTO> AddTheatreAsync(string ownerId, TheatreUpsertDTO dto)
         {
-            var user = _unitOfWork.ApplicationUser.Get(u => u.Id == dto.OwnerId);
-            if (user == null || user.Role != "Owner")
-            {
-                throw new SecurityException("User does not have the required 'Owner' role to create a theatre.");
-                // Note: Assuming you have a custom SecurityException or use a standard one like UnauthorizedAccessException
-            }
 
-            var existingTheatre = _unitOfWork.Theatre.Get(t => t.Email == dto.Email);
-            if (existingTheatre != null)
+            var validationResult = await _validator.ValidateAsync(dto);
+          
+            if (!validationResult.IsValid)
             {
-                throw new ValidationException($"A theatre with the email '{dto.Email}' already exists.");
-            }
+                var errorMessages = validationResult.Errors.Select(e => e.ErrorMessage);
+                throw new ApplicationValidationException(string.Join(" | ", errorMessages));
+            }   
 
-            var city = _unitOfWork.City.Get(c => c.CityId == dto.CityId);
-            if (city == null)
-            {
-                throw new NotFoundException($"City with ID {dto.CityId} not found.");
-            }
-           
-            
-            // 2. Model Creation
-            var theatre = new Theatre
-            {
-                OwnerId = dto.OwnerId,
-                TheatreName = dto.TheatreName,
-                CityId = dto.CityId,
-                Address = dto.Address,
-                PhoneNumber = dto.PhoneNumber,
-                Email = dto.Email,
-                Status = "Pending Approval" // Initial status
-            };
+            var theatre = Theatre.CreateNew(
+            dto.TheatreName,
+            dto.Email,
+            dto.PhoneNumber,
+            dto.CityId,
+            dto.Address,
+            ownerId, 
+            SD.Status_PendingApproval 
+        );
 
-            // 3. Persistence
-            _unitOfWork.Theatre.Add(theatre);
+            await _unitOfWork.Theatre.AddAsync(theatre);
             await _unitOfWork.SaveAsync();
 
-            // 4. Return DTO
-            return new TheatreDetailsDTO
-            {
-                TheatreId = theatre.TheatreId,
-                TheatreName = theatre.TheatreName,
-                CityName = city.Name,
-                CountryName = city.Country?.Name ?? "N/A", // Requires 'Country' to be included in City repository's Get method
-                Address = theatre.Address,
-                Status = theatre.Status
-            };
-        }
+          
+            var fullTheatre = await _unitOfWork.Theatre.GetAsync(
+                t => t.TheatreId == theatre.TheatreId,
+                includeProperties: "City.Country,Screens"); 
 
-        public async Task<ScreenDetailsDTO> AddScreenToTheatreAsync(CreateScreenDTO dto)
-        {
-            // 1. Validation (Theatre existence, ScreenNumber uniqueness)
-            var theatre = _unitOfWork.Theatre.Get(t => t.TheatreId == dto.TheatreId);
+            return _mapper.Map<TheatreDetailDTO>(fullTheatre); 
+        }
+        public async Task<TheatreDetailDTO> UpdateTheatreAsync(int theatreId, TheatreUpsertDTO dto, string ownerId)
+        {   
+            var theatre = await _unitOfWork.Theatre.GetAsync(t => t.TheatreId == theatreId);
             if (theatre == null)
-            {
-                throw new NotFoundException($"Theatre with ID {dto.TheatreId} not found.");
-            }
+                throw new NotFoundException($"Theatre with ID {theatreId} not found.");
 
-            if (!_unitOfWork.Screen.IsScreenNumberUnique(dto.TheatreId, dto.ScreenNumber))
-            {
-                throw new ValidationException($"Screen number '{dto.ScreenNumber}' already exists in this theatre.");
-            }
-            if (dto.NumberOfRows <= 0 || dto.SeatsPerRow <= 0)
-            {
-                throw new ValidationException("Number of rows and seats per row must be positive.");
-            }
-            int totalSeats = dto.NumberOfRows * dto.SeatsPerRow;
-            // 2. Create Screen Model
-            var screen = new Screen
-            {
-                TheatreId = dto.TheatreId,
-                ScreenNumber = dto.ScreenNumber,
-                TotalSeats = totalSeats,
-                DefaultSeatPrice = dto.DefaultSeatPrice
-            };
-            _unitOfWork.Screen.Add(screen);
-            await _unitOfWork.SaveAsync(); // Save to get the generated ScreenId
 
-            // 3. Generate and Persist Seats (The crucial part)
-            var seats = GenerateSeatsForScreen(screen.ScreenId, dto.NumberOfRows, dto.SeatsPerRow);
-            _unitOfWork.Seat.AddRange(seats);
-            await _unitOfWork.SaveAsync(); // Save seats in bulk
+            if (theatre.OwnerId != ownerId)
+                throw new UnauthorizedAccessException();
 
-            // 4. Return DTO
-            return new ScreenDetailsDTO
-            {
-                ScreenId = screen.ScreenId,
-                ScreenNumber = screen.ScreenNumber,
-                TotalSeats = screen.TotalSeats,
-                DefaultSeatPrice = screen.DefaultSeatPrice
-            };
+            theatre.UpdateDetails(dto.TheatreName, dto.Address, dto.CityId,
+                dto.PhoneNumber, dto.Email);
+            await _unitOfWork.SaveAsync();
+
+            var fullTheatre = await _unitOfWork.Theatre.GetAsync(
+                t => t.TheatreId == theatreId,
+                includeProperties: "City.Country,Screens");
+
+            return _mapper.Map<TheatreDetailDTO>(fullTheatre);
         }
-
-        // Helper Method for generating seats (can be in a separate class, but keep it here for now)
-        // Inside BookNow.Application/Services/TheatreService.cs
-
-        private List<Seat> GenerateSeatsForScreen(int screenId, int numberOfRows, int seatsPerRow)
+        public async Task<TheatreDetailDTO> GetTheatreByIdAsync(int theatreId, string ownerId)
         {
-            var seats = new List<Seat>();
-            int seatIndex = 1;
-            char startRowChar = 'A'; // Start row labeling from 'A'
-
-            for (int row = 0; row < numberOfRows; row++)
-            {
-                // Calculate the current Row Label (A, B, C...)
-                string rowLabel = ((char)(startRowChar + row)).ToString();
-
-                for (int col = 1; col <= seatsPerRow; col++)
-                {
-                    seats.Add(new Seat
-                    {
-                        ScreenId = screenId,
-                        SeatNumber = col.ToString(), // Column number is the Seat Number (1, 2, 3...)
-                        RowLabel = rowLabel,         // Row label is the letter (A, B, C...)
-                        SeatIndex = seatIndex        // Sequential index
-                    });
-                    seatIndex++;
-                }
-            }
-
-            // Optional: Basic integrity check
-            if (seatIndex - 1 != (numberOfRows * seatsPerRow))
-            {
-                throw new InvalidOperationException("Seat generation calculation error.");
-            }
-
-            return seats;
-        }
-
-        public async Task<IEnumerable<TheatreDetailsDTO>> GetOwnerTheatresAsync(string ownerId)
-        {
-            // Load Theatres, including City, Country, and Screens for the DTO
-            var theatres = _unitOfWork.Theatre.GetTheatresByOwner(
-                ownerId,
+            var theatre = await _unitOfWork.Theatre.GetAsync(
+                t => t.TheatreId == theatreId && t.OwnerId == ownerId,
                 includeProperties: "City.Country,Screens"
             );
 
-            if (theatres == null)
+            if (theatre == null)
+                throw new NotFoundException($"Theatre with ID {theatreId} not found or you are not the owner.");
+
+            return _mapper.Map<TheatreDetailDTO>(theatre);
+        }
+
+
+        public async Task<IEnumerable<TheatreDetailDTO>> GetOwnerTheatresAsync(string ownerId)
+        {
+            var theatres = await _unitOfWork.Theatre.GetAllAsync(
+               filter: t => t.OwnerId == ownerId,
+               includeProperties: "City.Country,Screens");
+            //var theatreDtos = theatres.Select(t => new TheatreDetailDTO
+            //{
+            //    TheatreId = t.TheatreId,
+            //    TheatreName = t.TheatreName,
+            //    Address = t.Address,
+            //    CityName = t.City?.Name ?? "Unknown",
+            //    CountryName = t.City?.Country?.Name ?? "Unknown",
+            //    Status = t.Status,
+            //    OwnerId = t.OwnerId,
+            //    ScreenCount = t.Screens?.Count ?? 0
+            //});
+              return  _mapper.Map<IEnumerable<TheatreDetailDTO>>(theatres);
+           // return theatreDtos;
+        }
+
+        // --- 2. Add Screen and Seats ---
+        public async Task<int> AddScreenAndSeatsAsync(int theatreId, ScreenUpsertDTO dto)
+        {
+            // Defensive Check 1: Theatre Existence
+            var theatre = await _unitOfWork.Theatre.GetAsync(t => t.TheatreId == theatreId);
+            if (theatre == null)
             {
-                return Enumerable.Empty<TheatreDetailsDTO>();
+                throw new ApplicationValidationException($"Theatre with ID {theatreId} not found.");
             }
 
-            // Map Models to DTOs
-            var theatreDTOs = theatres.Select(t => new TheatreDetailsDTO
+            // Defensive Check 2: Screen Number Uniqueness
+            // Note: The ownerId check for security must be done in the Controller layer!
+            if (!await _unitOfWork.Screen.IsScreenNumberUniqueAsync(theatreId, dto.ScreenNumber, dto.ScreenId))
             {
-                TheatreId = t.TheatreId,
-                TheatreName = t.TheatreName,
-                Address = t.Address,
-                Status = t.Status,
+                throw new ValidationException($"Screen number '{dto.ScreenNumber}' already exists in this theatre.");
+            }
 
-                CityName = t.City?.Name ?? "N/A",
-                CountryName = t.City?.Country?.Name ?? "N/A",
+            // 1. Create Screen Entity
+            var screen = new Screen
+            {
+                TheatreId = theatreId,
+                ScreenNumber = dto.ScreenNumber,
+                TotalSeats = dto.NumberOfRows * dto.SeatsPerRow,
+                DefaultSeatPrice = dto.DefaultSeatPrice
+            };
+            await _unitOfWork.Screen.AddAsync(screen);
+            // Save now to get the ScreenId for seat generation
+            await _unitOfWork.SaveAsync();
 
-                // Map list of screens
-                Screens = t.Screens?.Select(s => new ScreenDetailsDTO
+            // 2. Generate Seat Entities (Row by Row, Column by Column)
+            var seatsToGenerate = new List<Seat>();
+            for (int r = 1; r <= dto.NumberOfRows; r++)
+            {
+                // Generate Row Label (e.g., A, B, C...)
+                char rowLabel = (char)('A' + r - 1);
+                for (int c = 1; c <= dto.SeatsPerRow; c++)
                 {
-                    ScreenId = s.ScreenId,
-                    ScreenNumber = s.ScreenNumber,
-                    TotalSeats = s.TotalSeats,
-                    DefaultSeatPrice = s.DefaultSeatPrice
-                }).ToList() ?? new List<ScreenDetailsDTO>()
-
-            }).ToList();
-
-            return await Task.FromResult(theatreDTOs);
-        }
-
-        public async Task<IEnumerable<CountryDTO>> GetCountriesAsync()
-        {
-            // 1. Fetch all countries (which is already limited to 5 by your DB data)
-            var countries = _unitOfWork.Country.GetAll();
-
-            // 2. Map Models to DTOs
-            var countryDTOs = countries.Select(c => new CountryDTO
-            {
-                CountryId = c.CountryId,
-                Name = c.Name,
-                Code = c.Code
-            }).ToList();
-
-            return await Task.FromResult(countryDTOs);
-        }
-
-        // Implementation of GetOwnerTheatresAsync and GetCitiesByCountryAsync go here...
-        // They will rely on ITheatreRepository.GetTheatresByOwner and IRepository<City>.GetAll, respectively.
-        public async Task<IEnumerable<CityDTO>> GetCitiesByCountryAsync(string countryCode)
-        {
-            // 1. Fetch the Country entity by its Code to get its ID
-            var country = _unitOfWork.Country.Get(c => c.Code.ToLower() == countryCode.ToLower());
-
-            if (country == null)
-            {
-                return Enumerable.Empty<CityDTO>();
+                    seatsToGenerate.Add(new Seat
+                    {
+                        ScreenId = screen.ScreenId,
+                        RowLabel = rowLabel.ToString(),
+                        SeatNumber = $"{rowLabel}{c}",
+                        SeatIndex = c
+                    });
+                }
             }
 
-            // 2. Fetch City entities filtered by the CountryId
-            var cities = _unitOfWork.City.GetAll(c => c.CountryId == country.CountryId);
+            // 3. Add Seats
+            await _unitOfWork.Seat.AddRangeAsync(seatsToGenerate);
+            await _unitOfWork.SaveAsync();
 
-            // 3. Map Models to DTOs
-            var cityDTOs = cities.Select(c => new CityDTO
-            {
-                CityId = c.CityId,
-                Name = c.Name
-            }).ToList();
+            return screen.ScreenId;
+        }
 
-            return await Task.FromResult(cityDTOs);
+        public async Task<IEnumerable<Screen>> GetTheatreScreensAsync(int theatreId)
+        {
+            // Note: The ownerId check for security must be done in the Controller layer!
+            return await _unitOfWork.Screen.GetScreensByTheatreAsync(theatreId);
         }
 
 
+        // --- 3. Add Show and Generate Seat Instances ---
+        public async Task<Show> AddShowAsync(ShowCreationDTO dto)
+        {
+            // Calculate EndTime
+            var endTime = dto.StartTime.AddMinutes(dto.DurationMinutes);
+
+            // Defensive Check 1: Screen Existence
+            var screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == dto.ScreenId);
+            if (screen == null)
+            {
+                throw new ApplicationValidationException($"Screen with ID {dto.ScreenId} not found.");
+            }
+
+            // Defensive Check 2: Movie Existence
+            var movie = await _unitOfWork.Movie.GetAsync(m => m.MovieId == dto.MovieId);
+            if (movie == null)
+            {
+                throw new ApplicationValidationException($"Movie with ID {dto.MovieId} not found.");
+            }
+
+            // Defensive Check 3: Time Conflict
+            if (await _unitOfWork.Show.IsShowTimeConflictingAsync(dto.ScreenId, dto.StartTime, endTime))
+            {
+                throw new ValidationException("A show is already scheduled on this screen during the specified time.");
+            }
+
+            // 1. Create Show Entity
+            var show = new Show
+            {
+                ScreenId = dto.ScreenId,
+                MovieId = dto.MovieId,
+                StartTime = dto.StartTime,
+                EndTime = endTime
+            };
+            await _unitOfWork.Show.AddAsync(show);
+            // Save now to get the ShowId
+            await _unitOfWork.SaveAsync();
+
+            // 2. Get Seats for the Screen
+            var seats = await _unitOfWork.Seat.GetSeatsByScreenAsync(dto.ScreenId);
+
+            // 3. Generate Seat Instances
+            var seatInstances = new List<SeatInstance>();
+            foreach (var seat in seats)
+            {
+                seatInstances.Add(new SeatInstance
+                {
+                    ShowId = show.ShowId,
+                    SeatId = seat.SeatId,
+                    State = SD.State_Available,
+                    LastUpdated = DateTime.UtcNow
+                    // RowVersion will be handled by the database
+                });
+            }
+
+            // 4. Add Seat Instances
+            await _unitOfWork.SeatInstance.AddRangeAsync(seatInstances);
+            await _unitOfWork.SaveAsync();
+
+            return show;
+        }
+
+        public async Task<IEnumerable<Show>> GetScreenShowsAsync(int screenId)
+        {
+            // This method might need to be implemented on the repository side for efficiency
+            var shows = await _unitOfWork.Show.GetAllAsync(
+                filter: s => s.ScreenId == screenId,
+                orderBy: q => q.OrderBy(s => s.StartTime),
+                includeProperties: "Movie"); // Include Movie details
+
+            return shows;
+        }
+        public async Task<bool> IsOwnerOfTheatreAsync(string userId, int theatreId)
+        {
+            // Use AsNoTracking for an efficient read-only check
+            var theatre = await _unitOfWork.Theatre.GetAsync(
+                t => t.TheatreId == theatreId && t.OwnerId == userId,
+                tracked: false);
+
+            return theatre != null;
+        }
     }
-
-
 }

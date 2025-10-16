@@ -2,7 +2,6 @@
 using BookNow.DataAccess.Repositories;
 using BookNow.Models;
 using BookNow.Models.Interfaces;
-using System;
 using System.Threading.Tasks;
 
 namespace BookNow.DataAccess.UnitOfWork
@@ -11,55 +10,44 @@ namespace BookNow.DataAccess.UnitOfWork
     {
         private readonly ApplicationDbContext _db;
 
-        // Specific Repositories 
-        public IApplicationUserRepository ApplicationUser { get; private set; }
-        public IMovieRepository Movie { get; private set; }
-        public IBookingRepository Booking { get; private set; }
-        public ITheatreRepository Theatre { get; private set; }
-        public IScreenRepository Screen => _screenRepository ??= new ScreenRepository(_db); 
-        public ISeatRepository Seat => _seatRepository ??= new SeatRepository(_db);        
-
-
-        public IPaymentTransactionRepository PaymentTransaction { get; private set; }
-
-        // Generic Repositories 
-        public IRepository<Country> Country { get; private set; }
-        public IRepository<City> City { get; private set; }
-      
-        public IRepository<Show> Show { get; private set; }
-        public IRepository<SeatInstance> SeatInstance { get; private set; }
-        public IRepository<BookingSeat> BookingSeat { get; private set; }
-
-
-     
+        private IApplicationUserRepository? _applicationUserRepository;
+        private IMovieRepository? _movieRepository;
+        private IBookingRepository? _bookingRepository;
+        private ITheatreRepository? _theatreRepository;
+        private IPaymentTransactionRepository? _paymentTransactionRepository;
         private IScreenRepository? _screenRepository;
         private ISeatRepository? _seatRepository;
+        private IShowRepository? _showRepository;
+        private ISeatInstanceRepository? _seatInstanceRepository;
+
+
+        private IRepository<Country>? _countryRepository;
+        private IRepository<City>? _cityRepository;
+        //private IRepository<Show>? _showRepository;
+        //private IRepository<SeatInstance>? _seatInstanceRepository;
+        private IRepository<BookingSeat>? _bookingSeatRepository;
+
+      
+        public IApplicationUserRepository ApplicationUser => _applicationUserRepository ??= new ApplicationUserRepository(_db);
+        public IMovieRepository Movie => _movieRepository ??= new MovieRepository(_db);
+        public IBookingRepository Booking => _bookingRepository ??= new BookingRepository(_db);
+        public ITheatreRepository Theatre => _theatreRepository ??= new TheatreRepository(_db);
+        public IPaymentTransactionRepository PaymentTransaction => _paymentTransactionRepository ??= new PaymentTransactionRepository(_db);
+        public IScreenRepository Screen => _screenRepository ??= new ScreenRepository(_db);
+        public ISeatRepository Seat => _seatRepository ??= new SeatRepository(_db);
+        public IShowRepository Show => _showRepository ??= new ShowRepository(_db);
+        public ISeatInstanceRepository SeatInstance => _seatInstanceRepository ??= new SeatInstanceRepository(_db);
+
+        public IRepository<Country> Country => _countryRepository ??= new Repository<Country>(_db);
+        public IRepository<City> City => _cityRepository ??= new Repository<City>(_db);
+        //public IRepository<Show> Show => _showRepository ??= new Repository<Show>(_db);
+        //public IRepository<SeatInstance> SeatInstance => _seatInstanceRepository ??= new Repository<SeatInstance>(_db);
+        public IRepository<BookingSeat> BookingSeat => _bookingSeatRepository ??= new Repository<BookingSeat>(_db);
 
 
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
-
-            // 1. Initialize Specific Repositories
-            ApplicationUser = new ApplicationUserRepository(_db);
-            Movie = new MovieRepository(_db);
-            Booking = new BookingRepository(_db);
-            Theatre = new TheatreRepository(_db);
-            PaymentTransaction = new PaymentTransactionRepository(_db);
-
-            // 2. Initialize Generic Repositories
-            Country = new Repository<Country>(_db);
-            City = new Repository<City>(_db);
-           
-            Show = new Repository<Show>(_db);
-            SeatInstance = new Repository<SeatInstance>(_db);
-            BookingSeat = new Repository<BookingSeat>(_db);
-
-        }
-
-        public void Save()
-        {
-            _db.SaveChanges();
         }
 
         public async Task SaveAsync()

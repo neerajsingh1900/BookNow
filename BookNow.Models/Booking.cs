@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace BookNow.Models
 {
-    [Index(nameof(TicketNumber), IsUnique = true)] // Unique constraint
-    [Index(nameof(IdempotencyKey), IsUnique = true)] // Unique constraint
+    [Index(nameof(TicketNumber), IsUnique = true)] 
+    [Index(nameof(IdempotencyKey), IsUnique = true)] 
     public class Booking
     {
         [Key]
-        public int BookingId { get; set; } // pk, increment
+        public int BookingId { get; set; } 
 
         
         public string UserId { get; set; } = null!;
@@ -38,18 +38,18 @@ namespace BookNow.Models
         public DateTime CreatedAt { get; set; } // datetime
 
       
-        public string TicketNumber { get; set; } = null!; // varchar
+        public string TicketNumber { get; set; } = null!; 
 
-        public string? TicketUrl { get; set; } // varchar
-        public string? QRCodeUrl { get; set; } // varchar
+        public string? TicketUrl { get; set; } 
+        public string? QRCodeUrl { get; set; } 
 
        
-        public string IdempotencyKey { get; set; } = null!; // varchar
+        public string IdempotencyKey { get; set; } = null!; 
 
         [Timestamp]
         public byte[] RowVersion { get; set; } = null!;
 
-        // Navigation collections
+       
         public virtual ICollection<BookingSeat> BookingSeats { get; set; } = new List<BookingSeat>();
         public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
     }

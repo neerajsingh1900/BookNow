@@ -105,7 +105,7 @@ namespace BookNow.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
-            public string? Role { get; set; }
+            public string Role { get; set; } = null!;
             [Required]
             public string Name { get; set; }
 
@@ -203,7 +203,10 @@ namespace BookNow.Areas.Identity.Pages.Account
                         {
                             return RedirectToAction("Index", "Movie", new { area = "Producer" });
                         }
-
+                        else if (!string.IsNullOrEmpty(Input.Role) && Input.Role == SD.Role_Theatre_Owner)
+                        {
+                            return RedirectToAction("Index", "Theatre", new { area = "TheatreOwner" });
+                        }
                         return LocalRedirect(returnUrl);
                     }
                 }

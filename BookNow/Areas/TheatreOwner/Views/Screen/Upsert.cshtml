@@ -1,0 +1,149 @@
+﻿@model ScreenUpsertVM
+@{
+    ViewData["Title"] = Model.ScreenId.HasValue ? "Edit Screen" : "Add New Screen";
+    var actionType = Model.ScreenId.HasValue ? "Update" : "Create";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card p-4">
+                <h2 class="fw-bold mb-4 text-center">@actionType Screen (Theatre ID: @Model.TheatreId)</h2>
+                <p class="text-muted text-center mb-4">Define the screen identity and seating configuration.</p>
+
+                <form id="screenUpsertForm" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" asp-for="ScreenId" />
+                    <input type="hidden" asp-for="TheatreId" />
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="ScreenNumber" class="form-label">Screen Identifier</label>
+                            <input asp-for="ScreenNumber" class="form-control" placeholder="E.g., Screen 1, Dolby Cinema" />
+                            <span asp-validation-for="ScreenNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DefaultSeatPrice" class="form-label">Default Seat Price ($)</label>
+                            <input asp-for="DefaultSeatPrice" class="form-control" type="number" step="0.01" min="0.01" placeholder="25.00" />
+                            <span asp-validation-for="DefaultSeatPrice" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3 border-bottom pb-2">Seating Layout Configuration</h4>
+                    <p class="text-muted small">The system will automatically generate individual seat records based on the configuration below.</p>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="NumberOfRows" class="form-label">Number of Rows (A, B, C...)</label>
+                            <input asp-for="NumberOfRows" class="form-control" type="number" min="1" max="50" placeholder="10" />
+                            <span asp-validation-for="NumberOfRows" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SeatsPerRow" class="form-label">Seats per Row (1, 2, 3...)</label>
+                            <input asp-for="SeatsPerRow" class="form-control" type="number" min="1" max="100" placeholder="20" />
+                            <span asp-validation-for="SeatsPerRow" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div id="totalSeatsSummary" class="alert alert-info text-center d-none" role="alert">
+                        This configuration will create <span class="fw-bold" id="calculatedSeats">0</span> total seats.
+                    </div>
+
+                    <div id="serverValidationSummary" class="alert alert-danger d-none" role="alert"></div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a asp-action="Index" asp-route-theatreId="@Model.TheatreId" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button id="submitButton" type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> @actionType Screen
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            const $form = $('#screenUpsertForm');
+            const $submitButton = $('#submitButton');
+            const $serverSummary = $('#serverValidationSummary');
+            const $rowsInput = $('#NumberOfRows');
+            const $seatsInput = $('#SeatsPerRow');
+            const $calculatedSeats = $('#calculatedSeats');
+            const $seatsSummary = $('#totalSeatsSummary');
+
+            // --- Seat Calculation Logic (UX Improvement) ---
+            const calculateSeats = () => {
+                const rows = parseInt($rowsInput.val()) || 0;
+                const seats = parseInt($seatsInput.val()) || 0;
+                const total = rows * seats;
+
+                $calculatedSeats.text(total);
+                if (total > 0) {
+                    $seatsSummary.removeClass('d-none');
+                } else {
+                    $seatsSummary.addClass('d-none');
+                }
+            };
+            $rowsInput.on('input', calculateSeats);
+            $seatsInput.on('input', calculateSeats);
+            calculateSeats(); // Initial calculation
+
+            // --- Form Submission (Robust API Interaction) ---
+            $form.on('submit', function (e) {
+                e.preventDefault();
+
+                if (!$form.valid()) return;
+
+                $submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
+                $serverSummary.addClass('d-none').text('');
+
+                const formData = {
+                    screenId: $('#ScreenId').val() || null,
+                    theatreId: parseInt($('#TheatreId').val()),
+                    screenNumber: $('#ScreenNumber').val(),
+                    numberOfRows: parseInt($rowsInput.val()),
+                    seatsPerRow: parseInt($seatsInput.val()),
+                    defaultSeatPrice: parseFloat($('#DefaultSeatPrice').val())
+                };
+
+                const url = '/TheatreOwner/api/screen/add';
+                // NOTE: For simplicity, we use POST for both Add and Edit in this example
+                // In a true PUT/Edit, you'd use a separate PUT endpoint.
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Include CSRF token if enabled
+                        // 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(async response => {
+                    $submitButton.prop('disabled', false).html('<i class="fas fa-save me-1"></i> @actionType Screen');
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        const errorData = await response.json();
+                        // ValidationException from service comes here
+                        throw new Error(errorData.message || 'Error occurred while creating the screen.');
+                    }
+                })
+                .then(data => {
+                    console.log('@actionType successful:', data);
+                    // Redirect to the screen list after successful creation
+                    window.location.href = `/TheatreOwner/Screen/Index/${formData.theatreId}`;
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                    $serverSummary.text(error.message).removeClass('d-none');
+                });
+            });
+
+            // Omitted: Client-side data loading for Edit mode (fetch screen details).
+        });
+    </script>
+}

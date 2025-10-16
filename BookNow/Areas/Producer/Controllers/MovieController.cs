@@ -1,155 +1,342 @@
-﻿using BookNow.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿//using BookNow.Application.DTOs.MovieDTOs;
+//using BookNow.Application.Exceptions;
+//using BookNow.Application.Interfaces;
+//using BookNow.Models;
+//using Microsoft.AspNetCore.Authorization;
+//using Microsoft.AspNetCore.Http;
+//using Microsoft.AspNetCore.Identity;
+//using Microsoft.AspNetCore.Mvc;
+//using System;
+//using System.ComponentModel.DataAnnotations;
+//using System.Diagnostics;
+//using System.Security.Claims;
+
+//namespace BookNow.Web.Areas.Producer.Controllers
+//{
+//    [Area("Producer")]
+//    [Authorize(Roles = "Producer")]
+//    public class MovieController : Controller
+//    {
+//        private readonly IMovieService _movieService;
+//        private readonly UserManager<IdentityUser> _userManager;
+//        private readonly IFileStorageService _fileStorage;
+
+
+//        public MovieController(IMovieService movieService, UserManager<IdentityUser> userManager, IFileStorageService fileStorage)
+//        {
+//            _movieService = movieService;
+//            _userManager = userManager;
+//            _fileStorage = fileStorage;
+//        }
+
+//        private string? GetCurrentProducerId()
+//        {
+//            return User?.FindFirstValue(ClaimTypes.NameIdentifier);
+//        }
+//        public IActionResult Index()
+//        {
+//            return View();
+//        }
+
+
+
+//        public async Task<IActionResult> Upsert(int? id)
+//        {
+//            MovieCreateDTO movieDto = new();
+
+//            var producerId = GetCurrentProducerId();
+//            if (string.IsNullOrEmpty(producerId))
+//                return Unauthorized("User is not authenticated.");
+
+//            if (id == null || id == 0)
+//            {
+//                ViewData["MovieId"] = 0;
+//                return View(movieDto);
+//            }
+//            else
+//            {
+//                try
+//                {
+
+//                    var movieReadDto = await _movieService.GetProducerMovieByIdAsync(id.Value, producerId);
+
+
+//                    movieDto.Title = movieReadDto.Title!;
+//                    movieDto.Genre = movieReadDto.Genre!;
+//                    movieDto.Language = movieReadDto.Language!;
+//                    movieDto.Duration = movieReadDto.Duration!;
+//                    movieDto.ReleaseDate = movieReadDto.ReleaseDate!;
+
+//                    movieDto.PosterUrl = movieReadDto.PosterUrl;
+
+//                    ViewData["MovieId"] = id.Value;
+//                    return View(movieDto);
+//                }
+
+//                catch (NotFoundException ex)
+//                {
+//                    ModelState.AddModelError(string.Empty, ex.Message);
+//                    ViewData["MovieId"] = id;
+//                    return View(movieDto);
+//                }
+//                catch (Exception ex)
+//                {
+//                    ModelState.AddModelError(string.Empty, "An unexpected error occurred: " + ex.Message);
+//                    ViewData["MovieId"] = id;
+//                    return View(movieDto);
+//                }
+//            }
+//        }
+
+
+//        [HttpPost]
+//        [ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Upsert(MovieCreateDTO movieDto, int? id)
+//        {
+//            if (!ModelState.IsValid)
+//            {
+//                ViewData["MovieId"] = id;
+//                return View(movieDto);
+//            }
+
+//            var producerId = GetCurrentProducerId();
+//            if (string.IsNullOrEmpty(producerId))
+//                return Unauthorized("User is not authenticated.");
+
+
+//            if (movieDto.PosterFile != null && movieDto.PosterFile.Length > 0)
+//            {
+
+//                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+//                var fileExt = Path.GetExtension(movieDto.PosterFile.FileName).ToLowerInvariant();
+//                if (!allowedExtensions.Contains(fileExt))
+//                {
+//                    ModelState.AddModelError("PosterFile", "Allowed file types: jpg, jpeg, png, webp.");
+//                    ViewData["MovieId"] = id;
+//                    return View(movieDto);
+//                }
+
+
+//                if (movieDto.PosterFile.Length > 5 * 1024 * 1024)
+//                {
+//                    ModelState.AddModelError("PosterFile", "Max file size is 5 MB.");
+//                    ViewData["MovieId"] = id;
+//                    return View(movieDto);
+//                }
+
+
+
+//                using (var stream = movieDto.PosterFile.OpenReadStream())
+//                {
+
+//                    string savedUrl = await _fileStorage.SaveFileAsync(stream, movieDto.PosterFile.FileName, "posters");
+//                    movieDto.PosterUrl = savedUrl;
+//                }
+//            }
+//            try
+//            {
+
+//                if (id == null || id == 0)
+//                {
+
+//                    await _movieService.CreateMovieAsync(movieDto, producerId);
+//                    TempData["success"] = "Movie created successfully!";
+//                }
+
+//                else
+//                {
+
+//                    var updateDto = new MovieUpdateDTO
+//                    {
+
+//                        Title = movieDto.Title,
+//                        Genre = movieDto.Genre,
+
+//                        Language = movieDto.Language,
+//                        Duration = movieDto.Duration,
+//                        ReleaseDate = movieDto.ReleaseDate,
+
+//                        PosterUrl = movieDto.PosterUrl
+//                    };
+
+
+
+//                    await _movieService.UpdateProducerMovieAsync(id.Value, updateDto, producerId);
+//                    TempData["success"] = "Movie updated successfully!";
+
+//                }
+
+//                return RedirectToAction(nameof(Index));
+//            }
+
+//            catch (ValidationException ex)
+//            {
+//                ModelState.AddModelError(string.Empty, ex.Message);
+//                ViewData["MovieId"] = id;
+//                return View(movieDto);
+//            }
+//            catch (NotFoundException ex)
+//            {
+//                ModelState.AddModelError(string.Empty, ex.Message);
+//                ViewData["MovieId"] = id;
+//                return View(movieDto);
+//            }
+//            catch (Exception ex)
+//            {
+//                ModelState.AddModelError(string.Empty, "An unexpected error occurred: " + ex.Message);
+//                ViewData["MovieId"] = id;
+//                return View(movieDto);
+//            }
+
+
+//        }
+
+//    }
+
+//}
+
 using BookNow.Application.DTOs.MovieDTOs;
 using BookNow.Application.Exceptions;
-using System;
+using BookNow.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+
 namespace BookNow.Web.Areas.Producer.Controllers
 {
     [Area("Producer")]
     [Authorize(Roles = "Producer")]
-    public class MovieController : Controller 
+    public class MovieController : Controller
     {
         private readonly IMovieService _movieService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IFileStorageService _fileStorage;
 
-        public MovieController(IMovieService movieService, UserManager<IdentityUser> userManager
-            , IFileStorageService fileStorage)
+        public MovieController(IMovieService movieService, UserManager<IdentityUser> userManager, IFileStorageService fileStorage)
         {
             _movieService = movieService;
             _userManager = userManager;
             _fileStorage = fileStorage;
         }
 
-       
-        private string GetCurrentProducerId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
+        private string? GetCurrentProducerId() => User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
-        
-        public IActionResult Upsert(int? id)
+        public async Task<IActionResult> Upsert(int? id)
         {
-            MovieCreateDTO movieDto = new();
-            string producerId = GetCurrentProducerId();
+            var movieDto = new MovieCreateDTO();
+            var producerId = GetCurrentProducerId();
+            if (string.IsNullOrEmpty(producerId))
+                return Unauthorized("User is not authenticated.");
+
+            ViewData["MovieId"] = id ?? 0;
 
             if (id == null || id == 0)
+                return View(movieDto);
+
+            try
             {
-                
-                ViewData["MovieId"] = 0;
+                var movieReadDto = await _movieService.GetProducerMovieByIdAsync(id.Value, producerId);
+
+                movieDto.Title = movieReadDto.Title!;
+                movieDto.Genre = movieReadDto.Genre!;
+                movieDto.Language = movieReadDto.Language!;
+                movieDto.Duration = movieReadDto.Duration!;
+                movieDto.ReleaseDate = movieReadDto.ReleaseDate!;
+                movieDto.PosterUrl = movieReadDto.PosterUrl;
+
                 return View(movieDto);
             }
-            else
+            catch (ApplicationValidationException ex)
             {
-             
-                try
-                {
-                    var movieReadDto = _movieService.GetProducerMovieById(id.Value, producerId);
-
-                    
-                    movieDto.Title = movieReadDto.Title;
-                    movieDto.Genre = movieReadDto.Genre;
-                    movieDto.Language = movieReadDto.Language;
-                    movieDto.Duration = movieReadDto.Duration;
-                    movieDto.ReleaseDate = movieReadDto.ReleaseDate;
-                    movieDto.PosterUrl = movieReadDto.PosterUrl;
-
-                    
-                    ViewData["MovieId"] = id.Value;
-
-                    return View(movieDto);
-                }
-                catch (NotFoundException)
-                {
-                    return NotFound();
-                }
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(movieDto);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "An unexpected error occurred: " + ex.Message);
+                return View(movieDto);
             }
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(MovieCreateDTO movieDto, int? id)
         {
+            var producerId = GetCurrentProducerId();
+            if (string.IsNullOrEmpty(producerId))
+                return Unauthorized("User is not authenticated.");
+
+            ViewData["MovieId"] = id ?? 0;
+
             if (!ModelState.IsValid)
-            {
-                ViewData["MovieId"] = id;
                 return View(movieDto);
-            }
 
-            string producerId = GetCurrentProducerId();
-
-          
+            // Poster file validation
             if (movieDto.PosterFile != null && movieDto.PosterFile.Length > 0)
             {
-               
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-                var fileExt = Path.GetExtension(movieDto.PosterFile.FileName).ToLowerInvariant();
-                if (!allowedExtensions.Contains(fileExt))
+                var ext = Path.GetExtension(movieDto.PosterFile.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(ext))
                 {
                     ModelState.AddModelError("PosterFile", "Allowed file types: jpg, jpeg, png, webp.");
-                    ViewData["MovieId"] = id;
                     return View(movieDto);
                 }
 
-               
                 if (movieDto.PosterFile.Length > 5 * 1024 * 1024)
                 {
                     ModelState.AddModelError("PosterFile", "Max file size is 5 MB.");
-                    ViewData["MovieId"] = id;
                     return View(movieDto);
                 }
 
-               
                 using var stream = movieDto.PosterFile.OpenReadStream();
-                string savedUrl = await _fileStorage.SaveFileAsync(stream, movieDto.PosterFile.FileName, "posters");
-
-            
-                movieDto.PosterUrl = savedUrl;
+                movieDto.PosterUrl = await _fileStorage.SaveFileAsync(stream, movieDto.PosterFile.FileName, "posters");
             }
 
-         
-            if (id == null || id == 0)
+            try
             {
-
-                // CREATE
-                _movieService.CreateMovie(movieDto, producerId);
-                TempData["success"] = "Movie created successfully!";
-            }
-            else
-            {
-                // UPDATE
-                var updateDto = new MovieUpdateDTO
+                if (id == null || id == 0)
                 {
-                    Title = movieDto.Title,
-                    Genre = movieDto.Genre,
-                    Language = movieDto.Language,
-                    Duration = movieDto.Duration,
-                    ReleaseDate = movieDto.ReleaseDate,
-                    PosterUrl = movieDto.PosterUrl
-                };
-
-                try
+                    await _movieService.CreateMovieAsync(movieDto, producerId);
+                    TempData["success"] = "Movie created successfully!";
+                }
+                else
                 {
-                     _movieService.UpdateProducerMovie(id.Value, updateDto, producerId);
+                    var updateDto = new MovieUpdateDTO
+                    {
+                        Title = movieDto.Title,
+                        Genre = movieDto.Genre,
+                        Language = movieDto.Language,
+                        Duration = movieDto.Duration,
+                        ReleaseDate = movieDto.ReleaseDate,
+                        PosterUrl = movieDto.PosterUrl
+                    };
+
+                    await _movieService.UpdateProducerMovieAsync(id.Value, updateDto, producerId);
                     TempData["success"] = "Movie updated successfully!";
                 }
-                catch (NotFoundException)
-                {
-                    return NotFound();
-                }
-            }
 
-            return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ValidationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(movieDto);
+            }
+            catch (ApplicationValidationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(movieDto);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "An unexpected error occurred: " + ex.Message);
+                return View(movieDto);
+            }
         }
     }
 }

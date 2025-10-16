@@ -13,6 +13,14 @@ namespace BookNow.Utility
         public const string Role_Producer = "Producer";
         public const string Role_Theatre_Owner = "TheatreOwner";
 
+        public const string Status_PendingApproval = "PendingApproval";
+        public const string Status_Active = "Active";
+        public const string Status_Maintenance = "Maintenance";
+
+        // ➡️ NEW: Seat State Constants ⬅️
+        public const string State_Available = "Available";
+        public const string State_Reserved = "Reserved"; // For pre-booking/cart holding
+        public const string State_Booked = "Booked";
     }
 
         public class EmailSettings

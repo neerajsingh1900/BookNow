@@ -2,6 +2,7 @@
 using BookNow.Models;
 using BookNow.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,14 +34,33 @@ namespace BookNow.DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public void UpdateTheatreStatus(int theatreId, string status)
+        public async Task<bool> IsNameConflictingAsync(string name, int? theatreIdToExclude = null)
         {
-            var theatreFromDb = _db.Theatres.FirstOrDefault(t => t.TheatreId == theatreId);
-            if (theatreFromDb != null)
+            IQueryable<Theatre> query = _db.Theatres.AsNoTracking()
+            .Where(t => t.TheatreName == name);
+
+            if (theatreIdToExclude.HasValue && theatreIdToExclude.Value > 0)
             {
-                theatreFromDb.Status = status;
-                base.Update(theatreFromDb);
+                query = query.Where(t => t.TheatreId != theatreIdToExclude.Value);
             }
+
+            return await query.AnyAsync();
+
+        }
+
+       
+        public async Task<bool> IsEmailConflictingAsync(string email, int? theatreIdToExclude)
+        {
+            IQueryable<Theatre> query = _db.Theatres.AsNoTracking()
+                .Where(t => t.Email == email);
+
+            if (theatreIdToExclude.HasValue && theatreIdToExclude.Value > 0)
+            {
+                query = query.Where(t => t.TheatreId != theatreIdToExclude.Value);
+            }
+
+            
+            return await query.AnyAsync();
         }
     }
 }

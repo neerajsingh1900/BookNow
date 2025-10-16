@@ -1,0 +1,223 @@
+﻿@* @model TheatreUpsertVM
+@{
+    ViewData["Title"] = Model.TheatreId.HasValue ? "Edit Theatre" : "Register New Theatre";
+    var actionType = Model.TheatreId.HasValue ? "Update" : "Register";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h2 class="fw-bold mb-4 text-center">@actionType Theatre</h2>
+
+                <form id="theatreUpsertForm" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" asp-for="TheatreId" />
+
+                    <div class="mb-3">
+                        <label asp-for="TheatreName" class="form-label">Theatre Name</label>
+                        <input asp-for="TheatreName" class="form-control" placeholder="E.g., Cineplex Redefined" />
+                        <span asp-validation-for="TheatreName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Contact Email (Unique)</label>
+                        <input asp-for="Email" class="form-control" placeholder="owner@theatre.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="+1 (555) 123-4567" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CityId" class="form-label">City</label>
+                        <!-- NOTE: This should be replaced with a real dropdown populated by a city service -->
+                        <select asp-for="CityId" class="form-control">
+                            <option value="">-- Select City --</option>
+                            <option value="1">New York</option>
+                            <option value="2">Los Angeles</option>
+                        </select>
+                        <span asp-validation-for="CityId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Address" class="form-label">Full Address</label>
+                        <textarea asp-for="Address" class="form-control" rows="3" placeholder="123 Main St, City, Zip"></textarea>
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+
+                    <div id="serverValidationSummary" class="alert alert-danger d-none" role="alert"></div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a asp-action="Index" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button id="submitButton" type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> @actionType Theatre
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Function to handle form submission
+            $('#theatreUpsertForm').on('submit', function (e) {
+                e.preventDefault();
+
+                // Ensure client-side validation passes
+                if (!$(this).valid()) {
+                    return;
+                }
+
+                $('#submitButton').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
+                $('#serverValidationSummary').addClass('d-none').text('');
+
+                const formData = {
+                    theatreId: $('#TheatreId').val() || null,
+                    theatreName: $('#TheatreName').val(),
+                    email: $('#Email').val(),
+                    phoneNumber: $('#PhoneNumber').val(),
+                    cityId: parseInt($('#CityId').val()),
+                    address: $('#Address').val()
+                };
+
+                const url = '/TheatreOwner/api/theatre';
+                const method = formData.theatreId ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() // Include CSRF token if necessary
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(async response => {
+                    $('#submitButton').prop('disabled', false).html('<i class="fas fa-save me-1"></i> @actionType Theatre');
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'An unknown error occurred.');
+                    }
+                })
+                .then(data => {
+                    // Success notification (alert replaced with console log, should be a toast in production)
+                    console.log('@actionType successful:', data);
+
+                    // Redirect to the dashboard list
+                    window.location.href = '/TheatreOwner/Theatre/Index';
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                    // Display server error
+                    $('#serverValidationSummary').text(error.message).removeClass('d-none');
+                });
+            });
+
+            // If editing, load data via AJAX here (implementation omitted for brevity)
+            // if ($('#TheatreId').val()) {
+            //    // fetch data
+            // }
+        });
+    </script>
+} *@
+
+@model BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre.TheatreUpsertVM
+@using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre
+@{
+    ViewData["Title"] = Model.TheatreId.HasValue ? "Edit Theatre" : "Register New Theatre";
+    var actionType = Model.TheatreId.HasValue ? "Update" : "Register";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h2 class="fw-bold mb-4 text-center" style="color:var(--brand-primary-dark)">@actionType Theatre Details</h2>
+
+                <!-- The form uses AJAX submission defined in theatreOwner.js -->
+                <form id="theatreUpsertForm" method="post" class="needs-validation" novalidate>
+                    <!-- Anti-forgery token is essential for security on POST/PUT requests -->
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="TheatreId" />
+
+                    <!-- Theatre Name -->
+                    <div class="mb-3">
+                        <label asp-for="TheatreName" class="form-label">Theatre Name</label>
+                        <input asp-for="TheatreName" class="form-control" placeholder="E.g., Cineplex Redefined" />
+                        <span asp-validation-for="TheatreName" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Contact Email (Unique) -->
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Contact Email (Unique)</label>
+                        <input asp-for="Email" class="form-control" placeholder="owner@theatre.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="+1 (555) 123-4567" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Location Fields (Dynamic Cascading Dropdowns) -->
+                    <h5 class="fw-bold mt-4 mb-3 text-secondary border-bottom pb-1">Physical Location</h5>
+
+                    <!-- Country Dropdown -->
+                    <div class="mb-3">
+                        <label for="CountryId" class="form-label">Country</label>
+                        <!-- NOTE: CountryId is a required temporary field for dynamic loading -->
+                        <select id="CountryId" name="CountryId" class="form-control">
+                            <option value="">-- Loading Countries --</option>
+                        </select>
+                        <!-- Country validation (optional on VM, but enforced by City selection) -->
+                    </div>
+
+                    <!-- City Dropdown -->
+                    <div class="mb-3">
+                        <label asp-for="CityId" class="form-label">City</label>
+                        <!-- City is disabled until Country is selected -->
+                        <select asp-for="CityId" class="form-control" disabled>
+                            <option value="">-- Select Country First --</option>
+                        </select>
+                        <!-- Validation for mandatory CityId is enforced by VM annotations -->
+                        <span asp-validation-for="CityId" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Full Address -->
+                    <div class="mb-4">
+                        <label asp-for="Address" class="form-label">Full Address</label>
+                        <textarea asp-for="Address" class="form-control" rows="3" placeholder="123 Main St, City, Zip"></textarea>
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Server Validation Summary (for API errors) -->
+                    <div id="serverValidationSummary" class="alert alert-danger d-none" role="alert"></div>
+
+                    <!-- Submit and Cancel Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a asp-action="Index" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button id="submitButton" type="submit" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-save me-1"></i> @actionType Theatre
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <!-- Load the dedicated modular JavaScript file -->
+    <script src="~/js/theatre/theatreOwner.js" asp-append-version="true"></script>
+}

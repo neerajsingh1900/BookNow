@@ -2,10 +2,8 @@
 using BookNow.Models;
 using BookNow.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BookNow.DataAccess.Repositories
@@ -14,9 +12,38 @@ namespace BookNow.DataAccess.Repositories
     {
         private readonly ApplicationDbContext _db;
 
+      
         public MovieRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
+        }
+   public async Task<IEnumerable<Movie>> GetAllMoviesByProducerAsync(string producerId)
+        {
+             return await _db.Movies
+                .Where(m => m.ProducerId == producerId)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+      
+        public async Task<IEnumerable<Movie>> GetCurrentlyShowingMoviesAsync(int cityId)
+        {
+             return await _db.Movies
+                .Include(m => m.Shows)
+                    .ThenInclude(s => s.Screen)
+                        .ThenInclude(sc => sc.Theatre)
+                .Where(m => m.Shows.Any(s =>
+                    s.Screen.Theatre.CityId == cityId &&
+                    s.StartTime > DateTime.Now))
+                .AsNoTracking() 
+                .Distinct()
+                .ToListAsync();
+        }
+   public async Task<Movie?> GetMovieByProducerAsync(int movieId, string producerId)
+        {
+           
+            return await _db.Movies
+                .FirstOrDefaultAsync(m => m.MovieId == movieId && m.ProducerId == producerId);
         }
 
         public IEnumerable<Movie> GetAllMoviesByProducer(string producerId)
@@ -37,11 +64,13 @@ namespace BookNow.DataAccess.Repositories
                 .ToList();
         }
 
-        public Movie GetMovieByProducer(int movieId, string producerId)
+        public async Task<bool> ExistsByTitleAndDateAsync(string title, DateOnly releaseDate)
         {
-            return _db.Movies.FirstOrDefault(m => m.MovieId == movieId && m.ProducerId == producerId);
+            return await _db.Movies
+                .AsNoTracking()
+                .AnyAsync(m => m.Title.ToLower() == title.ToLower() &&
+                               m.ReleaseDate == releaseDate);
         }
 
-      
     }
 }

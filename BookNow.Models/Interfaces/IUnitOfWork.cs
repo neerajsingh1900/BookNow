@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BookNow.Models; // Ensure this is present if your models are here
+using BookNow.Models; 
 
 namespace BookNow.Models.Interfaces
 {
@@ -17,17 +17,19 @@ namespace BookNow.Models.Interfaces
         IRepository<Country> Country { get; }
         IRepository<City> City { get; }
       
-        IRepository<Show> Show { get; }
-        IRepository<SeatInstance> SeatInstance { get; }
+        //IRepository<Show> Show { get; }
+        //IRepository<SeatInstance> SeatInstance { get; }
         IRepository<BookingSeat> BookingSeat { get; }
+        IScreenRepository Screen { get; } // New
+        ISeatRepository Seat { get; } // New
+        IShowRepository Show { get; } // New
+        ISeatInstanceRepository SeatInstance { get; } // New
 
-        // FIX: Change to the specific repository interface for custom payment methods
         IPaymentTransactionRepository PaymentTransaction { get; }
 
-        IScreenRepository Screen { get; } 
-        ISeatRepository Seat { get; }    
+         
 
-        void Save();
+     
         Task SaveAsync();
     }
 }

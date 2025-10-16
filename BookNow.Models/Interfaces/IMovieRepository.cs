@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BookNow.Models.Interfaces
 {
+    
     public interface IMovieRepository : IRepository<Movie>
     {
+        
+        Task<IEnumerable<Movie>> GetAllMoviesByProducerAsync(string producerId);
 
-        IEnumerable<Movie> GetAllMoviesByProducer(string producerId);
+        
+        Task<IEnumerable<Movie>> GetCurrentlyShowingMoviesAsync(int cityId);
 
-        Movie GetMovieByProducer(int movieId, string producerId);
-      
+        Task<bool> ExistsByTitleAndDateAsync(string title, DateOnly releaseDate);
+        Task<Movie?> GetMovieByProducerAsync(int movieId, string producerId);
     }
 }

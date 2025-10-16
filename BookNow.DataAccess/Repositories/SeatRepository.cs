@@ -3,24 +3,18 @@ using BookNow.Models;
 using BookNow.Models.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BookNow.DataAccess.Repositories
 {
     public class SeatRepository : Repository<Seat>, ISeatRepository
     {
-        private readonly ApplicationDbContext _db;
+        public SeatRepository(ApplicationDbContext db) : base(db) { }
 
-        public SeatRepository(ApplicationDbContext db) : base(db)
+        public async Task<IEnumerable<Seat>> GetSeatsByScreenAsync(int screenId, string? includeProperties = null)
         {
-            _db = db;
-        }
-
-        // AddRange is implemented in the base Repository<T> now.
-
-        public IEnumerable<Seat> GetSeatsByScreen(int screenId, string? includeProperties = null)
-        {
-            // Order by RowLabel and SeatIndex for consistent layout
-            return GetAll(
+            // Optimization: Order by row and index for predictable seating layout.
+            return await GetAllAsync(
                 filter: s => s.ScreenId == screenId,
                 orderBy: q => q.OrderBy(s => s.RowLabel).ThenBy(s => s.SeatIndex),
                 includeProperties: includeProperties
