@@ -1,4 +1,6 @@
-﻿using AutoMapper; 
+﻿using AutoMapper;
+using BookNow.Application.DTOs.ScreenDTOs;
+using BookNow.Application.DTOs.ShowDTOs;
 using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Exceptions; 
 using BookNow.Application.Interfaces;
@@ -167,7 +169,7 @@ namespace BookNow.Application.Services
         }
 
 
-        // --- 3. Add Show and Generate Seat Instances ---
+     //    --- 3. Add Show and Generate Seat Instances ---
         public async Task<Show> AddShowAsync(ShowCreationDTO dto)
         {
             // Calculate EndTime
@@ -248,6 +250,6 @@ namespace BookNow.Application.Services
 
             return theatre != null;
         }
-  
+
     }
 }

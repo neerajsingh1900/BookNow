@@ -20,7 +20,7 @@ namespace BookNow.Application.DTOs.TheatreDTOs
         public string OwnerId { get; set; } = null!;
         public int ScreenCount { get; set; }
 
-        public string PhoneNumber { get; set; } = null!; // if stored in DB
+        public string PhoneNumber { get; set; } = null!; 
         public string Email { get; set; } = null!;
     }
 }

@@ -1,4 +1,6 @@
-﻿using BookNow.Application.DTOs.TheatreDTOs;
+﻿using BookNow.Application.DTOs.ScreenDTOs;
+using BookNow.Application.DTOs.ShowDTOs;
+using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;

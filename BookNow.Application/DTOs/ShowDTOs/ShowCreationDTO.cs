@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace BookNow.Application.DTOs.TheatreDTOs
+namespace BookNow.Application.DTOs.ShowDTOs
 {
     // DTO for creating a Show
     public class ShowCreationDTO

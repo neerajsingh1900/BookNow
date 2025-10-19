@@ -20,8 +20,4 @@
     <ProjectReference Include="..\BookNow.Utility\BookNow.Utility.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Validation\TheatreDTOs\" />
-  </ItemGroup>
-
 </Project>

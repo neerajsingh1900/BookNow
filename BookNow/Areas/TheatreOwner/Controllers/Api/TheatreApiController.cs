@@ -62,15 +62,17 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
                 {
                    
                     theatreDto = await _theatreService.UpdateTheatreAsync(dto.TheatreId.Value, dto, ownerId);
+                
                 }
                 else
                 { 
                     theatreDto = await _theatreService.AddTheatreAsync(ownerId, dto);
+                    
                 }
                 var listItemVm = _mapper.Map<TheatreListItemVM>(theatreDto);
        
                 if (dto.TheatreId.HasValue)
-                    return Ok(listItemVm);      
+                    return Ok(listItemVm);     
                 else
                     return CreatedAtAction(nameof(GetOwnerTheatres), new { id = theatreDto.TheatreId }, listItemVm);
             }

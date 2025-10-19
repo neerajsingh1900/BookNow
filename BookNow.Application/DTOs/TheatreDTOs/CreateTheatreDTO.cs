@@ -8,7 +8,6 @@ namespace BookNow.Application.DTOs.TheatreDTOs
 {
     public class CreateTheatreDTO
     {
-        // This will be set by the Controller from the authenticated user context
         public string OwnerId { get; set; } = null!;
 
         public string TheatreName { get; set; } = null!;

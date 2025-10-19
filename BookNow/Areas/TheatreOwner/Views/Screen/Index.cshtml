@@ -1,107 +1,108 @@
-﻿@* @model List<ScreenDetailsDTO> - Assuming data is loaded client-side for performance *@
-@{
-    // We expect TheatreId to be passed via ViewData from the ScreenController
+﻿@{
     int theatreId = (int)ViewData["TheatreId"];
-    ViewData["Title"] = $"Screens for Theatre #{theatreId}";
+    ViewData["Title"] = $"Screens for Theatre";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold">Screens Management</h2>
+<style>
+    /* Main page container */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 2rem); /* compensate for layout p-4 padding */
+        background-color: #f8f9fa;
+        overflow: hidden;
+    }
 
-        <div class="d-flex">
-            <a asp-action="Upsert" asp-controller="Screen" asp-route-theatreId="@theatreId" class="btn btn-primary shadow-sm me-2">
-                <i class="fas fa-desktop me-1"></i> Add New Screen
-            </a>
-            <a asp-action="Index" asp-controller="Theatre" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Back to Theatres
-            </a>
+    /* Header + Buttons section */
+    .header-section {
+        background: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        padding-bottom: 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    /* Scrollable table section */
+    .scrollable-table-container {
+        flex-grow: 1;
+        min-height: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+        /* Table card fills available height */
+        .scrollable-table-container .card {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+            min-height: 0;
+        }
+
+        .scrollable-table-container .table-responsive {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+    /* Table alignment */
+    #tblScreens th, #tblScreens td {
+        vertical-align: middle;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header + Buttons -->
+    <div class="header-section">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+            <h2 class="text-dark fw-bold">Screens Management</h2>
+            <div class="d-flex">
+                <a asp-action="Upsert" asp-controller="Screen" asp-route-theatreId="@theatreId" class="btn btn-primary shadow-sm me-2">
+                    <i class="fas fa-desktop me-1"></i> Add New Screen
+                </a>
+                <a asp-action="Index" asp-controller="Theatre" class="btn btn-outline-secondary d-flex align-items-center">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Theatres
+                </a>
+ 
+            </div>
         </div>
     </div>
 
-    <!-- Screen List Table -->
-    <div class="card">
-        <div class="table-responsive">
-            <table id="tblScreens" class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="py-3">Screen Number</th>
-                        <th class="py-3">Total Seats</th>
-                        <th class="py-3">Default Price</th>
-                        <th class="py-3">Current Shows</th>
-                        <th class="py-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="screensTableBody">
-                    <!-- Data will be inserted here via AJAX -->
-                </tbody>
-            </table>
-        </div>
-        <div id="loadingIndicator" class="text-center p-5">
-            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Loading Screens...
-        </div>
-        <div id="noDataMessage" class="text-center p-5 d-none">
-            <p class="text-secondary">No screens found for this theatre. Click "Add New Screen" to configure seating.</p>
+    <!-- Scrollable Table Section -->
+    <div class="scrollable-table-container">
+        <div class="card">
+            <div class="table-responsive">
+                <table id="tblScreens" class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3">Screen Number</th>
+                            <th class="py-3">Total Seats</th>
+                            <th class="py-3">Default Price</th>
+                            <th class="py-3">Current Shows</th>
+                            <th class="py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="screensTableBody">
+                        <!-- Data will be inserted here via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loadingIndicator" class="text-center p-5">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Loading Screens...
+            </div>
+            <div id="noDataMessage" class="text-center p-5 d-none">
+                <p class="text-secondary">No screens found for this theatre. Click "Add New Screen" to configure seating.</p>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="~/js/screen/screen.js"></script>
     <script>
-        $(document).ready(function () {
-            const theatreId = @theatreId;
-            const tableBody = $('#screensTableBody');
-            const loadingIndicator = $('#loadingIndicator');
-            const noDataMessage = $('#noDataMessage');
-
-            // Function to fetch and render screens
-            const loadScreens = () => {
-                loadingIndicator.removeClass('d-none');
-                noDataMessage.addClass('d-none');
-                tableBody.empty();
-
-                fetch(`/TheatreOwner/api/screen/list/${theatreId}`) // Assuming API endpoint for listing
-                    .then(response => {
-                        loadingIndicator.addClass('d-none');
-                        if (!response.ok) {
-                            throw new Error('Failed to load screens.');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data && data.length > 0) {
-                            data.forEach(screen => {
-                                // Action links pointing to the MVC controllers
-                                const scheduleUrl = `/TheatreOwner/Screen/ScheduleShow?screenId=${screen.screenId}`;
-                                const editUrl = `/TheatreOwner/Screen/Upsert?theatreId=${theatreId}&id=${screen.screenId}`;
-
-                                const row = `
-                                    <tr>
-                                        <td><div class="fw-bold">${screen.screenNumber}</div></td>
-                                        <td>${screen.totalSeats}</td>
-                                        <td>$${screen.defaultSeatPrice.toFixed(2)}</td>
-                                        <td>
-                                            <a href="#" class="text-primary small">View Shows (0)</a>
-                                        </td>
-                                        <td>
-                                            <a href="${scheduleUrl}" class="btn btn-sm btn-primary me-2">Schedule Show</a>
-                                            <a href="${editUrl}" class="btn btn-sm btn-outline-secondary">Edit Screen</a>
-                                        </td>
-                                    </tr>
-                                `;
-                                tableBody.append(row);
-                            });
-                        } else {
-                            noDataMessage.removeClass('d-none');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('API Error:', error);
-                        noDataMessage.html('<p class="text-danger">Error loading screens. Please check network connection.</p>').removeClass('d-none');
-                    });
-            };
-
-            loadScreens(); // Initial load
-        });
+        const THEATRE_ID = @theatreId;
     </script>
 }

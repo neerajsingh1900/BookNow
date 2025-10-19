@@ -1,204 +1,119 @@
-﻿@* @model TheatreDashboardVM
-@{
+﻿@{
     ViewData["Title"] = "Theatre Dashboard";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold">My Theatres</h2>
-        <a asp-action="Upsert" asp-controller="Theatre" class="btn btn-primary shadow-sm">
-            <i class="fas fa-plus me-1"></i> Add New Theatre
-        </a>
+<style>
+
+    /* Make this page use full height but align with layout padding */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 2rem); /* compensate for layout's p-4 padding (≈2rem) */
+        background-color: #f8f9fa;
+        overflow: hidden;
+    }
+
+    /* Summary section — aligned flush with layout’s content padding */
+    .summary-section {
+        background: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        padding-bottom: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Scrollable area */
+    .scrollable-table-container {
+        flex-grow: 1;
+        min-height: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+        /* Card fills space properly */
+        .scrollable-table-container .card {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+        }
+
+        /* Table section grows correctly */
+        .scrollable-table-container .table-responsive {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+    /* Table visual consistency */
+    #tblTheatres th, #tblTheatres td {
+        vertical-align: middle;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header + Summary -->
+    <div class="summary-section">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+            <h2 class="text-dark fw-bold mb-2">My Theatres</h2>
+            <a asp-action="Upsert" asp-controller="Theatre" class="btn btn-primary shadow-sm">
+                <i class="fas fa-plus me-1"></i> Add New Theatre
+            </a>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 text-center">
+                    <p class="text-secondary mb-1">Total Theatres</p>
+                    <h3 class="fw-bold" id="totalTheatreCount">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 text-center">
+                    <p class="text-secondary mb-1">Pending Approval</p>
+                    <h3 class="fw-bold text-warning" id="pendingCount">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 text-center">
+                    <p class="text-secondary mb-1">Active Screens</p>
+                    <h3 class="fw-bold text-success" id="totalScreenCount">0</h3>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card p-3 text-center">
-                <p class="text-secondary mb-1">Total Theatres</p>
-                <h3 class="fw-bold" id="totalTheatreCount">0</h3>
+    <!-- Scrollable Table Section -->
+    <div class="scrollable-table-container">
+        <div class="card">
+            <div class="table-responsive">
+                <table id="tblTheatres" class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3">Name</th>
+                            <th class="py-3">Location</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3 text-center">Screens</th>
+                            <th class="py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card p-3 text-center">
-                <p class="text-secondary mb-1">Pending Approval</p>
-                <h3 class="fw-bold text-warning" id="pendingCount">0</h3>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card p-3 text-center">
-                <p class="text-secondary mb-1">Active Screens</p>
-                <h3 class="fw-bold text-success" id="totalScreenCount">0</h3>
-            </div>
-        </div>
-    </div>
 
-    <!-- Theatre List Table -->
-    <div class="card">
-        <div class="table-responsive">
-            <table id="tblTheatres" class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="py-3">Name</th>
-                        <th class="py-3">Location</th>
-                        <th class="py-3">Status</th>
-                        <th class="py-3">Screens</th>
-                        <th class="py-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will be inserted here via DataTables/JavaScript -->
-                </tbody>
-            </table>
-        </div>
-        <div id="loadingIndicator" class="text-center p-5 d-none">
-            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Loading Theatres...
-        </div>
-        <div id="noDataMessage" class="text-center p-5 d-none">
-            <p class="text-secondary">You currently have no theatres registered. Click "Add New Theatre" to start.</p>
+            <!-- Loading / No Data Messages -->
+            <div id="loadingIndicator" class="text-center p-5 d-none">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Loading Theatres...
+            </div>
+            <div id="noDataMessage" class="text-center p-5 d-none">
+                <p class="text-secondary">You currently have no theatres registered. Click "Add New Theatre" to start.</p>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Display loading indicator
-            $('#loadingIndicator').removeClass('d-none');
-
-            let totalScreens = 0;
-
-            // Function to fetch data from the API
-            fetch('/TheatreOwner/api/theatre')
-                .then(response => {
-                    $('#loadingIndicator').addClass('d-none');
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok.');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.length > 0) {
-                        let tableBody = $('#tblTheatres tbody');
-                        let pendingCount = 0;
-
-                        data.forEach(theatre => {
-                            if (theatre.status === 'PendingApproval') {
-                                pendingCount++;
-                            }
-                            totalScreens += theatre.screenCount || 0; // Assuming screenCount is available
-
-                            // Render Status Badge using View Component logic (simulated in JS for API data)
-                            let statusBadge = `<span class="badge rounded-pill px-3 py-2 ${
-                                theatre.status === 'PendingApproval' ? 'bg-warning text-dark' :
-                                theatre.status === 'Active' ? 'bg-success' :
-                                theatre.status === 'Maintenance' ? 'bg-danger' :
-                                'bg-secondary'
-                            }">
-                                ${theatre.status}
-                            </span>`;
-
-                            let row = `
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold">${theatre.theatreName}</div>
-                                        <div class="text-muted small">${theatre.phoneNumber}</div>
-                                    </td>
-                                    <td>${theatre.cityName}, ${theatre.countryName}</td>
-                                    <td>${statusBadge}</td>
-                                    <td>${theatre.screenCount || 0}</td>
-                                    <td>
-                                        <a href="/TheatreOwner/Screen/Index/${theatre.theatreId}" class="btn btn-sm btn-outline-primary me-2">Screens</a>
-                                        <a href="/TheatreOwner/Theatre/Upsert/${theatre.theatreId}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                    </td>
-                                </tr>
-                            `;
-                            tableBody.append(row);
-                        });
-
-                        // Update Summary Cards
-                        $('#totalTheatreCount').text(data.length);
-                        $('#pendingCount').text(pendingCount);
-                        $('#totalScreenCount').text(totalScreens);
-                    } else {
-                        $('#noDataMessage').removeClass('d-none');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching theatres:', error);
-                    // Display error message
-                    $('#noDataMessage').html('<p class="text-danger">Failed to load theatre data. Please try again.</p>').removeClass('d-none');
-                });
-        });
-    </script>
-} *@
-
-@* @model BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre.TheatreDashboardVM *@
-@{
-    ViewData["Title"] = "Theatre Dashboard";
-}
-
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold">My Theatres</h2>
-        <a asp-action="Upsert" asp-controller="Theatre" class="btn btn-primary shadow-sm">
-            <i class="fas fa-plus me-1"></i> Add New Theatre
-        </a>
-    </div>
-
-    <!-- Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card p-3 text-center">
-                <p class="text-secondary mb-1">Total Theatres</p>
-                <h3 class="fw-bold" id="totalTheatreCount">0</h3>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card p-3 text-center">
-                <p class="text-secondary mb-1">Pending Approval</p>
-                <h3 class="fw-bold text-warning" id="pendingCount">0</h3>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card p-3 text-center">
-                <p class="text-secondary mb-1">Active Screens</p>
-                <h3 class="fw-bold text-success" id="totalScreenCount">0</h3>
-            </div>
-        </div>
-    </div>
-
-    <!-- Theatre List Table -->
-    <div class="card">
-        <div class="table-responsive">
-            <table id="tblTheatres" class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="py-3">Name</th>
-                        <th class="py-3">Location</th>
-                        <th class="py-3">Status</th>
-                        <th class="py-3">Screens</th>
-                        <th class="py-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will be inserted here via JavaScript -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- UX Loading and Empty States -->
-        <div id="loadingIndicator" class="text-center p-5 d-none">
-            <i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Loading Theatres...
-        </div>
-        <div id="noDataMessage" class="text-center p-5 d-none">
-            <p class="text-secondary">You currently have no theatres registered. Click "Add New Theatre" to start.</p>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <!-- Load the dedicated modular JavaScript file -->
     <script src="~/js/theatre/theatreOwner.js" asp-append-version="true"></script>
- 
 }
+

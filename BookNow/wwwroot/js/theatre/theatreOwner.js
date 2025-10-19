@@ -1,16 +1,9 @@
-﻿/**
- * BookNow.Web/wwwroot/js/theatre/theatreOwner.js
- * Consolidated JavaScript logic for the Theatre Owner Area.
- * Handles dashboard loading, API calls, and cascading dropdowns.
- */
-
-const API_ROOT = '/TheatreOwner/api/theatre';
+﻿const API_ROOT = '/TheatreOwner/api/theatre';
 const LOCATION_API = '/api/location';
 
 /**
  * --- Dashboard Logic (Theatre/Index.cshtml) ---
- */
-
+ */ 
 function loadTheatreDashboard() {
     const $loadingIndicator = $('#loadingIndicator');
     const $noDataMessage = $('#noDataMessage');
@@ -74,7 +67,31 @@ function loadTheatreDashboard() {
                 $('#totalTheatreCount').text(data.length);
                 $('#pendingCount').text(pendingCount);
                 $('#totalScreenCount').text(totalScreens);
-            } else {
+
+                if (!$.fn.DataTable.isDataTable('#tblTheatres')) {
+                    $('#tblTheatres').DataTable({
+                        responsive: true,
+                        pageLength: 10,
+                        lengthMenu: [5, 10, 25, 50],
+                        columnDefs: [
+                            { orderable: false, targets: [4] } // Actions column not sortable
+                        ]
+                    });
+                }
+                else {
+                    $('#tblTheatres').DataTable().clear().destroy();
+                    $('#tblTheatres').DataTable({
+                        responsive: true,
+                        pageLength: 10,
+                        lengthMenu: [5, 10, 25, 50],
+                        columnDefs: [
+                            { orderable: false, targets: [4] }
+                        ]
+                    });
+                }
+
+            }
+            else {
                 $noDataMessage.removeClass('d-none');
             }
         })
@@ -224,6 +241,9 @@ function initializeTheatreUpsert() {
   
     loadCountries();
 }
+
+
+
 
 $(document).ready(function () {
     if (document.getElementById('tblTheatres')) {

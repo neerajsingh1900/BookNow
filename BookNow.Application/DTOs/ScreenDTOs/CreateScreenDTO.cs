@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace BookNow.Application.DTOs.TheatreDTOs
+namespace BookNow.Application.DTOs.ScreenDTOs
 {
     public class CreateScreenDTO
     {
@@ -14,7 +14,7 @@ namespace BookNow.Application.DTOs.TheatreDTOs
         public int SeatsPerRow { get; set; }
 
         public decimal DefaultSeatPrice { get; set; }
-        // For the service to know which theatre to attach the screen to
+        
         public int TheatreId { get; set; }
     }
 }

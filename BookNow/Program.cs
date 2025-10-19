@@ -3,6 +3,7 @@ using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Application.Mappings;
 using BookNow.Application.Services;
+using BookNow.Application.Validation.ScreenValidations;
 using BookNow.DataAccess.Data;
 using BookNow.DataAccess.Repositories;
 using BookNow.DataAccess.UnitOfWork;
@@ -16,7 +17,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
+        
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -25,7 +26,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<BookNow.Application.Mappings.TheatreProfile>();
-    cfg.AddProfile<BookNow.Web.Mappings.WebTheatreProfile>();
+   cfg.AddProfile<BookNow.Web.Mappings.WebTheatreProfile>();
+    cfg.AddProfile<BookNow.Application.Mappings.ScreenProfile>();
 
 });
 
@@ -40,7 +42,6 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
     options.Password.RequiredLength = 6;
     options.SignIn.RequireConfirmedAccount = true;
     
-
 }).AddDefaultTokenProviders()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -72,7 +73,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITheatreService, TheatreService>();
-
+builder.Services.AddScoped<IScreenService, ScreenService>();
 
 builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -80,6 +81,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<TheatreOwnershipFilter>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<TheatreUpsertDTOValidator>();
+builder.Services.AddScoped<ScreenUpsertValidator>();
 var app = builder.Build();
 
 
