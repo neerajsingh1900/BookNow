@@ -19,7 +19,7 @@ namespace BookNow.Application.Interfaces
 
         Task<ScreenDetailsDTO> CreateScreenAsync(ScreenUpsertDTO dto);
 
-        Task<ScreenDetailsDTO> UpdateScreenAsync(ScreenUpsertDTO dto);
+        Task UpdateScreenAsync(ScreenUpsertDTO dto);
 
     }
 }

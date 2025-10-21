@@ -33,14 +33,13 @@ namespace BookNow.Application.Services
         
         public async Task<ScreenDetailsDTO?> GetScreenDetailsByIdAsync(int screenId)
         {
-            var screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == screenId);
+          var screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == screenId, 
+           includeProperties: "Seats,Shows",
+                tracked: false
+            );
 
-            if (screen == null)
-            {
-                return null;
-            }
+            if (screen == null) return null;
 
-           
             return _mapper.Map<ScreenDetailsDTO>(screen);
         }
 
@@ -133,7 +132,7 @@ namespace BookNow.Application.Services
 
     // --- Service 2: UpdateScreenAsync ---
 
-    public async Task<ScreenDetailsDTO> UpdateScreenAsync(ScreenUpsertDTO dto)
+    public async Task UpdateScreenAsync(ScreenUpsertDTO dto)
     {
         
         if (!dto.ScreenId.HasValue || dto.ScreenId.Value <= 0)
@@ -163,21 +162,24 @@ namespace BookNow.Application.Services
         if (!isUnique)
         {
             throw new ApplicationValidationException($"Screen number '{dto.ScreenNumber}' already exists in this theatre.");
-        }
+            }
 
-        Screen screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == dto.ScreenId.Value);
+            Screen screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == dto.ScreenId.Value);
 
-        if (screen == null)
+
+            if (screen == null)
         {
             throw new NotFoundException($"Screen with ID {dto.ScreenId.Value} not found.");
         }
+            var existingSeats = await _unitOfWork.Seat.GetSeatsByScreenAsync(screen.ScreenId);
+            int existingRows = existingSeats.Select(s => s.RowLabel).Distinct().Count();
+            int existingSeatsPerRow = existingSeats.Any()
+                ? existingSeats.GroupBy(s => s.RowLabel).Select(g => g.Count()).Max()
+                : 0;
 
-        bool layoutChanged = false;
+            bool layoutChanged = existingRows != dto.NumberOfRows || existingSeatsPerRow != dto.SeatsPerRow;
 
-         if (screen.TotalSeats != (dto.NumberOfRows * dto.SeatsPerRow))
-        {
-            layoutChanged = true;
-        }
+          
 
        screen.ScreenNumber = dto.ScreenNumber;
         screen.DefaultSeatPrice = dto.DefaultSeatPrice;
@@ -185,22 +187,13 @@ namespace BookNow.Application.Services
 
         _unitOfWork.Screen.Update(screen);
 
-        
-        await _unitOfWork.SaveAsync();
 
         // --- 3. Seat Generation/Regeneration ---
         if (layoutChanged)
         {
-            // If the layout changed, delete all existing seats
-            var existingSeats = await _unitOfWork.Seat.GetSeatsByScreenAsync(screen.ScreenId);
-            if (existingSeats.Any())
-            {
-                // Assume a bulk delete method exists on the repository
-                // _unitOfWork.Seat.DeleteRange(existingSeats); // Original comment assumed this method
-                // We'll proceed with the assumed repository call or similar logic
-                // For now, the original logic had a commented-out call and a SaveAsync, which we keep.
-                await _unitOfWork.SaveAsync(); // Save delete operation (or assume DeleteRange is tracked by UnitOfWork)
-            }
+           if (existingSeats.Any())
+                _unitOfWork.Seat.RemoveRange(existingSeats); 
+               
 
             // Generate and Add New Seats
             var seatsToGenerate = new List<Seat>();
@@ -220,11 +213,9 @@ namespace BookNow.Application.Services
             }
 
             await _unitOfWork.Seat.AddRangeAsync(seatsToGenerate);
-            await _unitOfWork.SaveAsync();
         }
 
-        // Return the full details DTO
-        return _mapper.Map<ScreenDetailsDTO>(screen);
+            await _unitOfWork.SaveAsync();
     }
 
 

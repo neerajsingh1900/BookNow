@@ -43,12 +43,14 @@
             defaultSeatPrice: parseFloat($('#DefaultSeatPrice').val())
         };
 
-        const url = '/TheatreOwner/api/screen/add';
+        const url = formData.screenId
+            ? `/TheatreOwner/api/screen/update/${formData.screenId}`  // Update
+            : '/TheatreOwner/api/screen/add';       
         // NOTE: For simplicity, we use POST for both Add and Edit in this example
         // In a true PUT/Edit, you'd use a separate PUT endpoint.
 
         fetch(url, {
-            method: 'POST',
+            method: formData.screenId ? 'PUT' : 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 // Include CSRF token if enabled

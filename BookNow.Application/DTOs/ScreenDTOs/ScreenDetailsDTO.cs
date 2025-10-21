@@ -23,6 +23,9 @@ namespace BookNow.Application.DTOs.ScreenDTOs
             public decimal DefaultSeatPrice { get; set; }
 
             public int CurrentShowCount { get; set; }
+
+            public int NumberOfRows { get; set; }
+            public int SeatsPerRow { get; set; }
         }
     }
 

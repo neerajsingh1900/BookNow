@@ -7,6 +7,7 @@ using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Screen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
@@ -68,7 +69,39 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
             }
             catch (Exception ex)
             {
-                // Optional: log ex and return generic error for unexpected exceptions
+                
+                return StatusCode(500, new { Message = "An unexpected error occurred." });
+            }
+        }
+
+
+
+        [HttpPut("update/{id}")]
+        [ServiceFilter(typeof(TheatreOwnershipFilter))]
+        public async Task<IActionResult> UpdateScreen(int id, [FromBody] ScreenUpsertVM vm)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (id != vm.ScreenId)
+                return BadRequest(new { Message = "Screen ID mismatch." });
+
+            var dto = _mapper.Map<ScreenUpsertDTO>(vm);
+
+            try
+            {
+                await _screenService.UpdateScreenAsync(dto);
+                return Ok(new { Message = "Screen updated successfully." });
+            }
+            catch (ApplicationValidationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch
+            {
                 return StatusCode(500, new { Message = "An unexpected error occurred." });
             }
         }

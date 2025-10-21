@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookNow.Application.DTOs.ScreenDTOs;
+using BookNow.Application.DTOs.ScreenDTOs.BookNow.Application.DTOs.ScreenDTOs;
 using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Screen;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre;
@@ -17,7 +18,9 @@ namespace BookNow.Web.Mappings
             CreateMap<TheatreUpsertVM, TheatreUpsertDTO>();
 
             CreateMap<ScreenUpsertVM, ScreenUpsertDTO>();
-         
+
+            CreateMap<ScreenDetailsDTO, ScreenUpsertVM>();
+
         }
     }
 }
