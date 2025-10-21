@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookNow.Application.Interfaces;
+using BookNow.Application.Services;
 using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Screen;
 using Microsoft.AspNetCore.Authorization;
@@ -14,19 +15,27 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
     {
         private readonly IScreenService _screenService;
         private readonly IMapper _mapper;
+        private readonly ITheatreService _theatreService;
 
-        public ScreenController(IScreenService screenService, IMapper mapper)
+        public ScreenController(IScreenService screenService, IMapper mapper,ITheatreService theatreService)
         {
             _screenService = screenService;
             _mapper = mapper;
+            _theatreService = theatreService;
         }
 
     
         [ServiceFilter(typeof(TheatreOwnershipFilter))]
         [Route("TheatreOwner/Screen/Index/{theatreId}")]
-        public IActionResult Index(int theatreId)
+        public async Task<IActionResult> Index(int theatreId)
         {
+            var ownerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            var theatreDetail = await _theatreService.GetTheatreByIdAsync(theatreId, ownerId);
+
             ViewData["TheatreId"] = theatreId;
+            ViewData["TheatreName"] = theatreDetail.TheatreName;
+
             return View();
         }
 

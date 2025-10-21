@@ -57,7 +57,8 @@
     <!-- Header + Buttons -->
     <div class="header-section">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-            <h2 class="text-dark fw-bold">Screens Management</h2>
+            @* <h2 class="text-dark fw-bold">Screens Management</h2> *@
+            <h2 class="text-primary fw-bold">Screens for @ViewData["TheatreName"]</h2>
             <div class="d-flex">
                 <a asp-controller="Screen" asp-action="Upsert" asp-route-theatreId="@theatreId" class="btn btn-primary shadow-sm me-2">
                     <i class="fas fa-desktop me-1"></i> Add New Screen
@@ -101,8 +102,9 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/screen/screen.js"></script>
     <script>
         const THEATRE_ID = @theatreId;
     </script>
+
+    <script src="~/js/screen/screen.js"></script>
 }
