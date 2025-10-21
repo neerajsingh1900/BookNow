@@ -31,31 +31,31 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
         }
 
        
-    //    [ServiceFilter(typeof(TheatreOwnershipFilter))]
-    //    public async Task<IActionResult> Upsert(int theatreId, int? id)
-    //    {
-    //        ScreenUpsertVM viewModel;
+        [ServiceFilter(typeof(TheatreOwnershipFilter))]
+        public async Task<IActionResult> Upsert(int theatreId, int? id)
+        {
+            ScreenUpsertVM viewModel;
 
-    //        if (id.HasValue && id.Value > 0)
-    //        {
-                
-    //            var screenDetailDto = await _screenService.GetScreenDetailsByIdAsync(id.Value);
+            if (id.HasValue && id.Value > 0)
+            {
 
-    //            if (screenDetailDto == null || screenDetailDto.TheatreId != theatreId)
-    //            {
-    //                return NotFound();
-    //            }
+                var screenDetailDto = await _screenService.GetScreenDetailsByIdAsync(id.Value);
 
-    //            viewModel = _mapper.Map<ScreenUpsertVM>(screenDetailDto);
-    //        }
-    //        else
-    //        {
-    //            viewModel = new ScreenUpsertVM { TheatreId = theatreId };
-    //        }
+                if (screenDetailDto == null || screenDetailDto.TheatreId != theatreId)
+                {
+                    return NotFound();
+                }
 
-    //        return View(viewModel);
-    //    }
-  
-    
+                viewModel = _mapper.Map<ScreenUpsertVM>(screenDetailDto);
+            }
+            else
+            {
+                viewModel = new ScreenUpsertVM { TheatreId = theatreId };
+            }
+
+            return View(viewModel);
+        }
+
+
     }
 }

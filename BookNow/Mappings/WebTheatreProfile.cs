@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using BookNow.Application.DTOs.ScreenDTOs;
 using BookNow.Application.DTOs.TheatreDTOs;
+using BookNow.Web.Areas.TheatreOwner.ViewModels.Screen;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre;
 
 namespace BookNow.Web.Mappings
@@ -14,6 +16,7 @@ namespace BookNow.Web.Mappings
             // Upsert mapping: ViewModel -> DTO (for POST/PUT)
             CreateMap<TheatreUpsertVM, TheatreUpsertDTO>();
 
+            CreateMap<ScreenUpsertVM, ScreenUpsertDTO>();
          
         }
     }

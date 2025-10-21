@@ -109,58 +109,58 @@ namespace BookNow.Application.Services
         }
 
         // --- 2. Add Screen and Seats ---
-        public async Task<int> AddScreenAndSeatsAsync(int theatreId, ScreenUpsertDTO dto)
-        {
-            // Defensive Check 1: Theatre Existence
-            var theatre = await _unitOfWork.Theatre.GetAsync(t => t.TheatreId == theatreId);
-            if (theatre == null)
-            {
-                throw new ApplicationValidationException($"Theatre with ID {theatreId} not found.");
-            }
+        //public async Task<int> AddScreenAndSeatsAsync(int theatreId, ScreenUpsertDTO dto)
+        //{
+        //    // Defensive Check 1: Theatre Existence
+        //    var theatre = await _unitOfWork.Theatre.GetAsync(t => t.TheatreId == theatreId);
+        //    if (theatre == null)
+        //    {
+        //        throw new ApplicationValidationException($"Theatre with ID {theatreId} not found.");
+        //    }
 
-            // Defensive Check 2: Screen Number Uniqueness
-            // Note: The ownerId check for security must be done in the Controller layer!
-            if (!await _unitOfWork.Screen.IsScreenNumberUniqueAsync(theatreId, dto.ScreenNumber, dto.ScreenId))
-            {
-                throw new ValidationException($"Screen number '{dto.ScreenNumber}' already exists in this theatre.");
-            }
+        //    // Defensive Check 2: Screen Number Uniqueness
+        //    // Note: The ownerId check for security must be done in the Controller layer!
+        //    if (!await _unitOfWork.Screen.IsScreenNumberUniqueAsync(theatreId, dto.ScreenNumber, dto.ScreenId))
+        //    {
+        //        throw new ValidationException($"Screen number '{dto.ScreenNumber}' already exists in this theatre.");
+        //    }
 
-            // 1. Create Screen Entity
-            var screen = new Screen
-            {
-                TheatreId = theatreId,
-                ScreenNumber = dto.ScreenNumber,
-                TotalSeats = dto.NumberOfRows * dto.SeatsPerRow,
-                DefaultSeatPrice = dto.DefaultSeatPrice
-            };
-            await _unitOfWork.Screen.AddAsync(screen);
-            // Save now to get the ScreenId for seat generation
-            await _unitOfWork.SaveAsync();
+        //    // 1. Create Screen Entity
+        //    var screen = new Screen
+        //    {
+        //        TheatreId = theatreId,
+        //        ScreenNumber = dto.ScreenNumber,
+        //        TotalSeats = dto.NumberOfRows * dto.SeatsPerRow,
+        //        DefaultSeatPrice = dto.DefaultSeatPrice
+        //    };
+        //    await _unitOfWork.Screen.AddAsync(screen);
+        //    // Save now to get the ScreenId for seat generation
+        //    await _unitOfWork.SaveAsync();
 
-            // 2. Generate Seat Entities (Row by Row, Column by Column)
-            var seatsToGenerate = new List<Seat>();
-            for (int r = 1; r <= dto.NumberOfRows; r++)
-            {
-                // Generate Row Label (e.g., A, B, C...)
-                char rowLabel = (char)('A' + r - 1);
-                for (int c = 1; c <= dto.SeatsPerRow; c++)
-                {
-                    seatsToGenerate.Add(new Seat
-                    {
-                        ScreenId = screen.ScreenId,
-                        RowLabel = rowLabel.ToString(),
-                        SeatNumber = $"{rowLabel}{c}",
-                        SeatIndex = c
-                    });
-                }
-            }
+        //    // 2. Generate Seat Entities (Row by Row, Column by Column)
+        //    var seatsToGenerate = new List<Seat>();
+        //    for (int r = 1; r <= dto.NumberOfRows; r++)
+        //    {
+        //        // Generate Row Label (e.g., A, B, C...)
+        //        char rowLabel = (char)('A' + r - 1);
+        //        for (int c = 1; c <= dto.SeatsPerRow; c++)
+        //        {
+        //            seatsToGenerate.Add(new Seat
+        //            {
+        //                ScreenId = screen.ScreenId,
+        //                RowLabel = rowLabel.ToString(),
+        //                SeatNumber = $"{rowLabel}{c}",
+        //                SeatIndex = c
+        //            });
+        //        }
+        //    }
 
-            // 3. Add Seats
-            await _unitOfWork.Seat.AddRangeAsync(seatsToGenerate);
-            await _unitOfWork.SaveAsync();
+        //    // 3. Add Seats
+        //    await _unitOfWork.Seat.AddRangeAsync(seatsToGenerate);
+        //    await _unitOfWork.SaveAsync();
 
-            return screen.ScreenId;
-        }
+        //    return screen.ScreenId;
+        //}
 
         public async Task<IEnumerable<Screen>> GetTheatreScreensAsync(int theatreId)
         {

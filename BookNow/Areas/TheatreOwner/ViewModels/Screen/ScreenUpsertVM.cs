@@ -2,15 +2,12 @@
 
 namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Screen
 {
-    /// <summary>
-    /// ViewModel for the Screen Create/Edit form, including seat layout details.
-    /// </summary>
     public class ScreenUpsertVM
     {
         public int? ScreenId { get; set; }
 
         [Required]
-        public int TheatreId { get; set; } // Contextual ID for ownership checking
+        public int TheatreId { get; set; } 
 
         [Required(ErrorMessage = "Screen number/name is required.")]
         [StringLength(50)]

@@ -28,6 +28,8 @@ namespace BookNow.DataAccess.Repositories
 
             return !await query.AnyAsync();
         }
+      
+
 
         public async Task<IEnumerable<Screen>> GetScreensByTheatreAsync(int theatreId, string? includeProperties = null)
         {

@@ -9,14 +9,17 @@ namespace BookNow.Application.Interfaces
     public interface IScreenService
     {
      
-       // Task<ScreenDetailsDTO?> GetScreenDetailsByIdAsync(int screenId);
+        Task<ScreenDetailsDTO?> GetScreenDetailsByIdAsync(int screenId);
             
        
         Task<IEnumerable<ScreenDetailsDTO>> GetScreensByTheatreIdAsync(int theatreId);
 
-        
-     //   Task<ScreenDetailsDTO> UpsertScreenAsync(ScreenUpsertDTO dto);
 
-      
+        //  Task<ScreenDetailsDTO> UpsertScreenAsync(ScreenUpsertDTO dto);
+
+        Task<ScreenDetailsDTO> CreateScreenAsync(ScreenUpsertDTO dto);
+
+        Task<ScreenDetailsDTO> UpdateScreenAsync(ScreenUpsertDTO dto);
+
     }
 }

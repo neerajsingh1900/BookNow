@@ -36,34 +36,42 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
         }
 
 
-        // POST: TheatreOwner/api/screen/add
-        //[HttpPost("add")]
-        //// Filter ensures vm.TheatreId belongs to the user (Clean Architecture Security)
-        //[ServiceFilter(typeof(TheatreOwnershipFilter))]
-        //public async Task<IActionResult> AddScreen([FromBody] ScreenUpsertVM vm)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
+      //  POST: TheatreOwner/api/screen/add
+       [HttpPost("add")]
+       // Filter ensures vm.TheatreId belongs to the user (Clean Architecture Security)
+       [ServiceFilter(typeof(TheatreOwnershipFilter))]
+        public async Task<IActionResult> AddScreen([FromBody] ScreenUpsertVM vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
+            ScreenUpsertDTO dto = _mapper.Map<ScreenUpsertDTO>(vm);
 
-        //    var dto = _mapper.Map<ScreenUpsertDTO>(vm);
+            try
+            {
+               var screenDetailDto = await _screenService.CreateScreenAsync(dto);
+                return StatusCode(201, new
+                {
+                    ScreenId = screenDetailDto.ScreenId,
+                    Message = "Screen and seats created successfully."
+                });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (ApplicationValidationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Optional: log ex and return generic error for unexpected exceptions
+                return StatusCode(500, new { Message = "An unexpected error occurred." });
+            }
+        }
 
-        //    try
-        //    {
-        //        var screenId = await _screenService.AddScreenAndSeatsAsync(dto.TheatreId, dto);
-        //        return Ok(new { ScreenId = screenId, Message = "Screen and seats created successfully." });
-        //    }
-        //    catch (ValidationException ex)
-        //    {
-        //        return BadRequest(new { Message = ex.Message });
-        //    }
-        //    catch (ApplicationValidationException ex)
-        //    {
-        //        return NotFound(new { Message = ex.Message });
-        //    }
-        //}
-   
     }
 }
