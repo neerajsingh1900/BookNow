@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Show
 {
-    /// <summary>
-    /// ViewModel for the Show scheduling form.
-    /// </summary>
     public class ShowCreationVM
     {
         [Required]
@@ -19,6 +16,7 @@ namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Show
 
         [Required(ErrorMessage = "Start Time is required.")]
         [DataType(DataType.DateTime)]
+        [FutureTime(ErrorMessage = "Show must be scheduled for at least 5 minutes in the future.")]
         [Display(Name = "Start Date and Time")]
         public DateTime StartTime { get; set; }
 
@@ -27,7 +25,23 @@ namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Show
         [Display(Name = "Total Show Duration (Minutes)")]
         public int DurationMinutes { get; set; }
 
-        // UI helper property for Movie selection dropdown
         public IEnumerable<SelectListItem>? MovieList { get; set; }
+    }
+
+    public class FutureTimeAttribute : ValidationAttribute
+    {
+        private const int FutureBufferMinutes = 5; // Allow 5 minutes for processing/buffer
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value is DateTime time)
+            {
+                if (time < DateTime.Now.AddMinutes(FutureBufferMinutes))
+                {
+                    return new ValidationResult(ErrorMessage ?? $"The start time must be at least {FutureBufferMinutes} minutes in the future.");
+                }
+            }
+             return ValidationResult.Success;
+        }
     }
 }

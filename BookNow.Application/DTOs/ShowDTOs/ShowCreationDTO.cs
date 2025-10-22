@@ -18,4 +18,4 @@ namespace BookNow.Application.DTOs.ShowDTOs
         [Required]
         public int DurationMinutes { get; set; } // Movie duration + buffer time
     }
-}
+}   

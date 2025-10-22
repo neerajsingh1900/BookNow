@@ -28,7 +28,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<BookNow.Application.Mappings.TheatreProfile>();
    cfg.AddProfile<BookNow.Web.Mappings.WebTheatreProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.ScreenProfile>();
-
+    cfg.AddProfile<BookNow.Application.Mappings.ShowProfile>();
 });
 
 
@@ -74,6 +74,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITheatreService, TheatreService>();
 builder.Services.AddScoped<IScreenService, ScreenService>();
+builder.Services.AddScoped<IShowService, ShowService>();
+
 
 builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));

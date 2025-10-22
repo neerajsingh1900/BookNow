@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+﻿    $(document).ready(function () {
     const theatreId = THEATRE_ID;
     const table = $('#tblScreens');
     console.log('Theatre ID:', theatreId, typeof theatreId);
@@ -39,13 +39,14 @@
                         // Action links pointing to the MVC controllers
                         const scheduleUrl = `/TheatreOwner/Screen/ScheduleShow?screenId=${screen.screenId}`;
                         const editUrl = `/TheatreOwner/Screen/Upsert?theatreId=${theatreId}&id=${screen.screenId}`;
+                        const viewshowsUrl = `/TheatreOwner/Show/Shows?screenId=${screen.screenId}`;
                         const row = `
                                     <tr>
                                         <td><div class="fw-bold">${screen.screenNumber}</div></td>
                                            <td>${screen.totalSeats}</td>
                                         <td>${screen.defaultSeatPrice.toFixed(2)}</td>
                                         <td>
-                                            <a href="#" class="text-primary small">View Shows ${screen.currentShowCount}</a>
+                                            <a href="${viewshowsUrl}" class="text-primary small">View Shows ${screen.currentShowCount}</a>
                                         </td>
                                         <td>
                                           <div class="d-flex">

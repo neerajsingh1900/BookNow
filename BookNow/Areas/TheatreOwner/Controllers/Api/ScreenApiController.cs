@@ -30,6 +30,7 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
 
 
         [HttpGet("list/{theatreId}")]
+        [ServiceFilter(typeof(TheatreOwnershipFilter))]
         public async Task<IActionResult> GetScreens(int theatreId)
         {
             var screens = await _screenService.GetScreensByTheatreIdAsync(theatreId);
