@@ -15,12 +15,13 @@ namespace BookNow.Application.Interfaces
        // Task<int> AddScreenAndSeatsAsync(int theatreId, ScreenUpsertDTO dto);
         Task<IEnumerable<Screen>> GetTheatreScreensAsync(int theatreId);
 
-        Task<Show> AddShowAsync(ShowCreationDTO dto);
+       // Task<Show> AddShowAsync(ShowCreationDTO dto);
         Task<IEnumerable<Show>> GetScreenShowsAsync(int screenId);
         Task<bool> IsOwnerOfTheatreAsync(string userId, int theatreId);
 
         Task<TheatreDetailDTO> GetTheatreByIdAsync(int theatreId, string ownerId);
         Task<TheatreDetailDTO> UpdateTheatreAsync(int theatreId, TheatreUpsertDTO dto, string ownerId);
 
+        Task<int?> GetTheatreIdByScreenIdAsync(int screenId);
     }
 }

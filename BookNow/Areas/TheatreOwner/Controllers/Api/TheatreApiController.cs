@@ -40,54 +40,5 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
            
             return Ok(vm);
         }
-
-        // POST: TheatreOwner/api/theatre
-        [HttpPost]
-        [HttpPut]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpsertTheatre([FromBody] TheatreUpsertDTO dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-          
-            try
-            {
-                TheatreDetailDTO theatreDto;
-             
-                if (dto.TheatreId.HasValue)
-                {
-                   
-                    theatreDto = await _theatreService.UpdateTheatreAsync(dto.TheatreId.Value, dto, ownerId);
-                
-                }
-                else
-                { 
-                    theatreDto = await _theatreService.AddTheatreAsync(ownerId, dto);
-                    
-                }
-                var listItemVm = _mapper.Map<TheatreListItemVM>(theatreDto);
-       
-                if (dto.TheatreId.HasValue)
-                    return Ok(listItemVm);     
-                else
-                    return CreatedAtAction(nameof(GetOwnerTheatres), new { id = theatreDto.TheatreId }, listItemVm);
-            }
-            catch (ApplicationValidationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid(); 
-            }
-            catch (Exception) 
-            {
-                return StatusCode(500, new { Message = "An unexpected error occurred while processing the theatre request." });
-            }
-        }
     }
 }

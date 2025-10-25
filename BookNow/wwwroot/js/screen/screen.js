@@ -7,14 +7,14 @@
     const noDataMessage = $('#noDataMessage');
     let dataTable = null;
 
-    // Function to fetch and render screens
+   
     const loadScreens = () => {
         loadingIndicator.removeClass('d-none');
         noDataMessage.addClass('d-none');
         tableBody.empty();
        
 
-        fetch(`/TheatreOwner/api/screen/list/${theatreId}`) // Assuming API endpoint for listing
+        fetch(`/TheatreOwner/api/screen/list/${theatreId}`) 
             .then(response => {
                 loadingIndicator.addClass('d-none');
                 if (!response.ok) {
@@ -36,10 +36,10 @@
               
 
                     data.forEach(screen => {
-                        // Action links pointing to the MVC controllers
-                        const scheduleUrl = `/TheatreOwner/Screen/ScheduleShow?screenId=${screen.screenId}`;
+                       
+                        const scheduleUrl = `/TheatreOwner/Show/Upsert?screenId=${screen.screenId}`;
                         const editUrl = `/TheatreOwner/Screen/Upsert?theatreId=${theatreId}&id=${screen.screenId}`;
-                        const viewshowsUrl = `/TheatreOwner/Show/Shows?screenId=${screen.screenId}`;
+                        const viewshowsUrl = `/TheatreOwner/Show/Index?screenId=${screen.screenId}`;
                         const row = `
                                     <tr>
                                         <td><div class="fw-bold">${screen.screenNumber}</div></td>
@@ -69,7 +69,7 @@
                         ordering: true,
                         info: true,
                         lengthChange: true,
-                        pageLength: 5, // optional: default 10
+                        pageLength: 10, 
                         language: {
                             search: "Search screens:",
                             lengthMenu: "Show _MENU_ entries per page",
@@ -90,5 +90,5 @@
     };
 
 
-    loadScreens(); // Initial load
+    loadScreens(); 
 });

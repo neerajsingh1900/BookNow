@@ -25,12 +25,11 @@ namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Show
         [Display(Name = "Total Show Duration (Minutes)")]
         public int DurationMinutes { get; set; }
 
-        public IEnumerable<SelectListItem>? MovieList { get; set; }
     }
 
     public class FutureTimeAttribute : ValidationAttribute
     {
-        private const int FutureBufferMinutes = 5; // Allow 5 minutes for processing/buffer
+        private const int FutureBufferMinutes = 30;  
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {

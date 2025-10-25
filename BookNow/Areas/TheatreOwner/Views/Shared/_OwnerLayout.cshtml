@@ -15,6 +15,7 @@
     <!-- NOTE: Custom CSS classes for the theme should be loaded here -->
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    
     <style>
         /* Base Theme Definition */
         :root { --brand-primary: #E53935; --brand-primary-dark: #B71C1C; --text-color: #212121; --bg-light: #f9f9f9; }
@@ -50,6 +51,28 @@
             </style>
 </head>
 <body class="light-theme">
+
+    <!-- Toast container for TempData messages -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:1055">
+        @if (TempData["success"] != null)
+        {
+            <div class="toast bg-success text-white border-0 shadow mb-2 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">@TempData["success"]</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["error"] != null)
+        {
+            <div class="toast bg-danger text-white border-0 shadow mb-2 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">@TempData["error"]</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+    </div>
 
     <button class="btn btn-light d-lg-none position-fixed top-0 start-0 m-2" type="button"
             data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
@@ -126,6 +149,7 @@
         </main>
     </div>
 
+
     <!-- Core JS -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -135,7 +159,25 @@
 
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    
+    <script>
+        // Toast initialization
+        $(function(){
+            $('.toast').each(function(){
+                var toast = new bootstrap.Toast(this, { delay: 3000 });
+                toast.show();
+            });
 
+            // Auto-hide mobile offcanvas on link click
+            $('.offcanvas .sidebar a').on('click', function() {
+                var offcanvasElement = document.getElementById('sidebarOffcanvas');
+                var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
+                if (offcanvas) {
+                    offcanvas.hide();
+                }
+            });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

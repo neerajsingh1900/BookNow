@@ -167,69 +167,76 @@ namespace BookNow.Application.Services
             // Note: The ownerId check for security must be done in the Controller layer!
             return await _unitOfWork.Screen.GetScreensByTheatreAsync(theatreId);
         }
-
-
-     //    --- 3. Add Show and Generate Seat Instances ---
-        public async Task<Show> AddShowAsync(ShowCreationDTO dto)
+        public async Task<int?> GetTheatreIdByScreenIdAsync(int screenId)
         {
-            // Calculate EndTime
-            var endTime = dto.StartTime.AddMinutes(dto.DurationMinutes);
-
-            // Defensive Check 1: Screen Existence
-            var screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == dto.ScreenId);
-            if (screen == null)
-            {
-                throw new ApplicationValidationException($"Screen with ID {dto.ScreenId} not found.");
-            }
-
-            // Defensive Check 2: Movie Existence
-            var movie = await _unitOfWork.Movie.GetAsync(m => m.MovieId == dto.MovieId);
-            if (movie == null)
-            {
-                throw new ApplicationValidationException($"Movie with ID {dto.MovieId} not found.");
-            }
-
-            // Defensive Check 3: Time Conflict
-            if (await _unitOfWork.Show.IsShowTimeConflictingAsync(dto.ScreenId, dto.StartTime, endTime))
-            {
-                throw new ValidationException("A show is already scheduled on this screen during the specified time.");
-            }
-
-            // 1. Create Show Entity
-            var show = new Show
-            {
-                ScreenId = dto.ScreenId,
-                MovieId = dto.MovieId,
-                StartTime = dto.StartTime,
-                EndTime = endTime
-            };
-            await _unitOfWork.Show.AddAsync(show);
-            // Save now to get the ShowId
-            await _unitOfWork.SaveAsync();
-
-            // 2. Get Seats for the Screen
-            var seats = await _unitOfWork.Seat.GetSeatsByScreenAsync(dto.ScreenId);
-
-            // 3. Generate Seat Instances
-            var seatInstances = new List<SeatInstance>();
-            foreach (var seat in seats)
-            {
-                seatInstances.Add(new SeatInstance
-                {
-                    ShowId = show.ShowId,
-                    SeatId = seat.SeatId,
-                    State = SD.State_Available,
-                    LastUpdated = DateTime.UtcNow
-                    // RowVersion will be handled by the database
-                });
-            }
-
-            // 4. Add Seat Instances
-            await _unitOfWork.SeatInstance.AddRangeAsync(seatInstances);
-            await _unitOfWork.SaveAsync();
-
-            return show;
+            
+            var screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == screenId);
+            return screen?.TheatreId;
         }
+
+        //    --- 3. Add Show and Generate Seat Instances ---
+
+
+        //public async Task<Show> AddShowAsync(ShowCreationDTO dto)
+        //{
+        //    // Calculate EndTime
+        //    var endTime = dto.StartTime.AddMinutes(dto.DurationMinutes);
+
+        //    // Defensive Check 1: Screen Existence
+        //    var screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == dto.ScreenId);
+        //    if (screen == null)
+        //    {
+        //        throw new ApplicationValidationException($"Screen with ID {dto.ScreenId} not found.");
+        //    }
+
+        //    // Defensive Check 2: Movie Existence
+        //    var movie = await _unitOfWork.Movie.GetAsync(m => m.MovieId == dto.MovieId);
+        //    if (movie == null)
+        //    {
+        //        throw new ApplicationValidationException($"Movie with ID {dto.MovieId} not found.");
+        //    }
+
+        //    // Defensive Check 3: Time Conflict
+        //    if (await _unitOfWork.Show.IsShowTimeConflictingAsync(dto.ScreenId, dto.StartTime, endTime))
+        //    {
+        //        throw new ValidationException("A show is already scheduled on this screen during the specified time.");
+        //    }
+
+        //    // 1. Create Show Entity
+        //    var show = new Show
+        //    {
+        //        ScreenId = dto.ScreenId,
+        //        MovieId = dto.MovieId,
+        //        StartTime = dto.StartTime,
+        //        EndTime = endTime
+        //    };
+        //    await _unitOfWork.Show.AddAsync(show);
+        //    // Save now to get the ShowId
+        //    await _unitOfWork.SaveAsync();
+
+        //    // 2. Get Seats for the Screen
+        //    var seats = await _unitOfWork.Seat.GetSeatsByScreenAsync(dto.ScreenId);
+
+        //    // 3. Generate Seat Instances
+        //    var seatInstances = new List<SeatInstance>();
+        //    foreach (var seat in seats)
+        //    {
+        //        seatInstances.Add(new SeatInstance
+        //        {
+        //            ShowId = show.ShowId,
+        //            SeatId = seat.SeatId,
+        //            State = SD.State_Available,
+        //            LastUpdated = DateTime.UtcNow
+        //            // RowVersion will be handled by the database
+        //        });
+        //    }
+
+        //    // 4. Add Seat Instances
+        //    await _unitOfWork.SeatInstance.AddRangeAsync(seatInstances);
+        //    await _unitOfWork.SaveAsync();
+
+        //    return show;
+        //}
 
         public async Task<IEnumerable<Show>> GetScreenShowsAsync(int screenId)
         {

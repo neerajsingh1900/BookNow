@@ -21,11 +21,17 @@ namespace BookNow.Application.Mappings
             .ForMember(dest => dest.MoviePosterUrl, opt => opt.MapFrom(src => src.Movie.PosterUrl));
 
 
-        CreateMap<Screen, ScreenShowListDTO>()
-            .ForMember(dest => dest.TheatreName, opt => opt.MapFrom(src => src.Theatre.TheatreName))
-           .ForMember(dest => dest.Shows, opt => opt.MapFrom(src =>
-                src.Shows.OrderBy(s => s.StartTime)));
+
+            CreateMap<Movie, ShowMovieDTO>();
+
+            CreateMap<Screen, ScreenMetadataDTO>()
+            .ForMember(dest => dest.TheatreName, opt => opt.MapFrom(src => src.Theatre.TheatreName));
+
+            CreateMap<ShowCreationDTO, Show>()
+          .ForMember(dest => dest.EndTime,
+                     opt => opt.MapFrom(src => src.StartTime.AddMinutes(src.DurationMinutes)));
+
+        }
+
     }
-      
-}
 }

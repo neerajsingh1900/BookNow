@@ -179,64 +179,81 @@ function initializeTheatreUpsert() {
         }
     });
 
-    
-    $form.on('submit', function (e) {
-        e.preventDefault();
+    $('#theatreUpsertForm').on('submit', function () {
+        const $submitButton = $('#submitButton');
 
-        console.log("hitting");
-        // Custom validation for mandatory CityId
-        if (!$citySelect.val()) {
-            $validationSummary.text('Please select both a Country and a City.').removeClass('d-none');
-            return;
-        }
+       
+        let valid = true;
+        if (!$('#CountryId').val()) { $('#CountryId').addClass('is-invalid'); valid = false; }
+        if (!$('#CityId').val()) { $('#CityId').addClass('is-invalid'); valid = false; }
+        if (!valid) return false;
 
-        if (!$form.valid()) {
-            return;
-        }
+       
+        $submitButton.prop('disabled', true)
+            .html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
 
-        $submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
-        $validationSummary.addClass('d-none').text('');
-
-        const isUpdate = $('#TheatreId').val();
-        console.log("update", isUpdate);
-        const formData = {
-            theatreId: isUpdate ? parseInt(isUpdate) : null,
-            theatreName: $('#TheatreName').val(),
-            email: $('#Email').val(),
-            phoneNumber: $('#PhoneNumber').val(),
-            cityId: parseInt($citySelect.val()),
-            address: $('#Address').val()
-        };
-        console.log("formdata:",formData);
-        const url = API_ROOT;
-        const method = isUpdate ? 'PUT' : 'POST';
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                // Always include anti-forgery token for POST/PUT requests
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-            },
-            body: JSON.stringify(formData)
-        })
-            .then(async response => {
-                $submitButton.prop('disabled', false).html('<i class="fas fa-save me-1"></i> ' + (isUpdate ? 'Update' : 'Register') + ' Theatre');
-                if (response.ok) {
-                    // Success: Redirect to dashboard
-                    console.log('Operation successful.');
-                    window.location.href = '/TheatreOwner/Theatre/Index';
-                } else {
-                    // Error handling
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'An unexpected error occurred. Check server logs.');
-                }
-            })
-            .catch(error => {
-                console.error('API Error:', error);
-                $validationSummary.text(error.message).removeClass('d-none');
-            });
+        
     });
+
+
+    
+    //$form.on('submit', function (e) {
+    //    e.preventDefault();
+
+    //    console.log("hitting");
+    //    // Custom validation for mandatory CityId
+    //    if (!$citySelect.val()) {
+    //        $validationSummary.text('Please select both a Country and a City.').removeClass('d-none');
+    //        return;
+    //    }
+
+    //    if (!$form.valid()) {
+    //        return;
+    //    }
+
+    //    $submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
+    //    $validationSummary.addClass('d-none').text('');
+
+    //    const isUpdate = $('#TheatreId').val();
+    //    console.log("update", isUpdate);
+    //    const formData = {
+    //        theatreId: isUpdate ? parseInt(isUpdate) : null,
+    //        theatreName: $('#TheatreName').val(),
+    //        email: $('#Email').val(),
+    //        phoneNumber: $('#PhoneNumber').val(),
+    //        cityId: parseInt($citySelect.val()),
+    //        address: $('#Address').val()
+    //    };
+    //    console.log("formdata:",formData);
+    //    const url = API_ROOT;
+    //    const method = isUpdate ? 'PUT' : 'POST';
+
+    //    fetch(url, {
+    //        method: method,
+    //        headers: {
+    //            'Content-Type': 'application/json',
+    //            // Always include anti-forgery token for POST/PUT requests
+    //            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+    //        },
+    //        body: JSON.stringify(formData)
+    //    })
+    //        .then(async response => {
+    //            $submitButton.prop('disabled', false).html('<i class="fas fa-save me-1"></i> ' + (isUpdate ? 'Update' : 'Register') + ' Theatre');
+    //            if (response.ok) {
+    //                // Success: Redirect to dashboard
+    //                console.log('Operation successful.');
+    //                window.location.href = '/TheatreOwner/Theatre/Index';
+    //            } else {
+    //                // Error handling
+    //                const errorData = await response.json();
+    //                throw new Error(errorData.message || 'An unexpected error occurred. Check server logs.');
+    //            }
+    //        })
+    //        .catch(error => {
+    //            console.error('API Error:', error);
+    //            $validationSummary.text(error.message).removeClass('d-none');
+    //        });
+    //});
 
   
     loadCountries();

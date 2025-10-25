@@ -1,0 +1,47 @@
+﻿@model BookNow.Application.DTOs.ShowDTOs.ScreenMetadataDTO
+@{
+    ViewData["Title"] = $"Schedule for Screen #{Model.ScreenNumber}";
+}
+
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="TheatreOwner" asp-controller="Theatre" asp-action="Index">@Model.TheatreName</a></li>
+            <li class="breadcrumb-item"><a asp-area="TheatreOwner" asp-controller="Screen" asp-action="Index" asp-route-theatreId="@Model.TheatreId">Screens</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Shows</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            Shows for
+            <span class="text-primary">Screen @Model.ScreenNumber</span>
+        </h2>
+
+        <a asp-area="TheatreOwner" asp-controller="Show" asp-action="Upsert" asp-route-screenId="@Model.ScreenId" class="btn btn-success">
+            <i class="fas fa-calendar-plus me-1"></i> Schedule New Show
+        </a>
+    </div>
+
+    <div id="showsContainer">
+        <div class="text-center py-4" id="loadingIndicator">
+            <span class="spinner-border text-primary" role="status"></span>
+            <span class="ms-2">Loading shows...</span>
+        </div>
+        <div class="alert alert-info text-center d-none" role="alert" id="noDataMessage">
+            No shows are currently scheduled for this screen.
+        </div>
+        <div class="row row-cols-1 g-4 d-none" id="showsRow"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+        const screenId = @Model.ScreenId; 
+    </script>
+    <script src="~/js/show/show.js" asp-append-version="true"> </script>
+
+}
+    

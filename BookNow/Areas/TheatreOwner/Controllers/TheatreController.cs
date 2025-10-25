@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookNow.Application.DTOs.TheatreDTOs;
+using BookNow.Application.Exceptions;
 using BookNow.Application.Interfaces;
 using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre;
@@ -22,6 +23,8 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
 
             _mapper = mapper;
         }
+     
+        
         public IActionResult Index()
         {
             return View();
@@ -48,6 +51,57 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
 
             return View(dto);
         }
-    
+
+
+
+      
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ServiceFilter(typeof(TheatreOwnershipFilter))]
+        public async Task<IActionResult> Upsert(TheatreUpsertDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+               
+                return View(dto);
+            }
+
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            try
+            {
+                TheatreDetailDTO theatreDetail;
+
+                if (dto.TheatreId.HasValue)
+                {
+                    theatreDetail = await _theatreService.UpdateTheatreAsync(dto.TheatreId.Value, dto, ownerId);
+                }
+                else
+                {
+                    theatreDetail = await _theatreService.AddTheatreAsync(ownerId, dto);
+                }
+
+                
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ApplicationValidationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "An unexpected error occurred while processing the theatre request.");
+                return View(dto);
+            }
+        }
+
+
+
     }
 }

@@ -11,14 +11,17 @@
                 <h2 class="fw-bold mb-4 text-center">@actionType Screen (Theatre ID: @Model.TheatreId)</h2>
                 <p class="text-muted text-center mb-4">Define the screen identity and seating configuration.</p>
 
-                <form id="screenUpsertForm" method="post" class="needs-validation" novalidate>
+                <form id="screenUpsertForm" method="post" class="needs-validation" novalidate
+                      asp-action="@(Model.ScreenId.HasValue ? "Update" : "Add")"
+                      asp-route-id="@(Model.ScreenId ?? 0)"
+                      asp-route-theatreId="@Model.TheatreId">
                     <input type="hidden" asp-for="ScreenId" />
                     <input type="hidden" asp-for="TheatreId" />
 
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label asp-for="ScreenNumber" class="form-label">Screen Identifier</label>
-                            <input asp-for="ScreenNumber" class="form-control" placeholder="E.g., Screen 1, Dolby Cinema" />
+                            <input asp-for="ScreenNumber" class="form-control" placeholder="E.g., Dolby Cinema" />
                             <span asp-validation-for="ScreenNumber" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
