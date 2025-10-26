@@ -1,4 +1,4 @@
-﻿@{
+﻿@* @{
     ViewData["Title"] = "Home Page";
 }
 @model IEnumerable<BookNow.Web.ViewModels.CustomerMovieViewModel>
@@ -132,9 +132,53 @@
 @* <a asp-area="Customer" asp-controller="Booking" asp-action="BookNow" asp-route-id="@movie.MovieId" class="btn btn-primary w-100">
     Book Now
 </a> *@
-</div>
+
+@* </div>
                 </div>
             </div>
         }
     </div>
+</div>  *@
+
+@model IEnumerable<BookNow.Application.DTOs.CommonDTOs.CountryDTO>
+
+@{
+    ViewData["Title"] = "BookNow - Movies";
+    
+}
+
+<div class="container py-5">
+    <h1 class="mb-4 fw-bold text-center">Find Movies & Shows in Your City</h1>
+
+    <!-- Country & City Selection -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-5 mb-3">
+            <label for="CountryId" class="form-label fw-semibold">Country</label>
+            <select id="CountryId" class="form-select shadow-sm">
+                <option value="">-- Select Country --</option>
+                @foreach (var c in Model)
+                {
+                    <option value="@c.CountryId">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-5 mb-3">
+            <label for="CityId" class="form-label fw-semibold">City</label>
+            <select id="CityId" class="form-select shadow-sm" disabled>
+                <option value="">-- Select City --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row" id="movieError" style="display:none;"></div>
+
+    <!-- Movies Grid -->
+    <div class="row" id="movieList">
+        <p class="text-center text-muted">Select a city to see available movies.</p>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/customer/home.js"></script>
+}
+

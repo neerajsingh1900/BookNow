@@ -1,4 +1,5 @@
-﻿using BookNow.DataAccess.Data;
+﻿using BookNow.Application.DTOs.CustomerDTOs.SearchDTOs;
+using BookNow.DataAccess.Data;
 using BookNow.Models;
 using BookNow.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -52,5 +53,30 @@ namespace BookNow.DataAccess.Repositories
 
             return await shows.OrderBy(s => s.StartTime).ToListAsync();
         }
+
+
+        public async Task<IEnumerable<Movie>> GetMoviesByCityAsync(int? cityId)
+        {
+            var now = DateTime.UtcNow;
+
+            var query = dbSet
+                .AsNoTracking()
+                .Include(s => s.Movie)
+                .Include(s => s.Screen)
+                    .ThenInclude(sc => sc.Theatre)
+                .Where(s => s.StartTime > now);
+
+            if (cityId.HasValue)
+                query = query.Where(s => s.Screen.Theatre.CityId == cityId.Value);
+
+            var movies = await query
+                .Select(s => s.Movie)
+                .Distinct()     
+                .OrderByDescending(m => m.ReleaseDate)
+                .ToListAsync();
+
+            return movies;
+        }
+
     }
 }

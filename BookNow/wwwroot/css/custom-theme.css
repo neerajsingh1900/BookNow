@@ -87,3 +87,53 @@ a {
     a:focus {
         outline: none !important;
     }
+
+
+/* Movie Cards */
+.movie-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .movie-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .movie-card img {
+        object-fit: cover;
+        height: 350px;
+    }
+
+.movie-card-body {
+    padding: 15px;
+    background-color: #fff;
+}
+
+.movie-card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.movie-card-subtext {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.movie-card-button {
+    background-color: #28a745;
+    border: none;
+    color: #fff;
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+    .movie-card-button:hover {
+        background-color: #218838;
+    }

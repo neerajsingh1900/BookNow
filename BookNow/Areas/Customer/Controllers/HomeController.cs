@@ -1,7 +1,9 @@
-﻿using BookNow.Application.Interfaces;
+﻿using BookNow.Application.DTOs.CommonDTOs;
+using BookNow.Application.Interfaces;
+using BookNow.Areas.Customer.ViewModels;
+using BookNow.Web.ViewModels; 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using BookNow.Web.ViewModels; 
 using System.Linq;
 using System.Threading.Tasks; 
 
@@ -12,37 +14,33 @@ namespace BookNow.Web.Areas.Customer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IMovieService _movieService;
+       
+        private readonly ILocationService _locationService;
 
         // [C# Showcase: Dependency Injection] Correctly receives all dependencies
-        public HomeController(ILogger<HomeController> logger, IMovieService movieService)
+        public HomeController(ILogger<HomeController> logger
+            , ILocationService locationService)
         {
             _logger = logger;
-            _movieService = movieService;
+          
+            _locationService = locationService;
         }
 
-       
+
         public async Task<IActionResult> Index()
         {
-          
-            var movieReadDTOs = await _movieService.GetAllMoviesAsync();
+            var countries = await _locationService.GetAllCountriesAsync();
+
+            // Map to DTO (clean separation)
+            var countryDtos = countries.Select(c => new CountryDTO
+            {
+                CountryId = c.CountryId,
+                Name = c.Name,
+                Code = c.Code
+            }).ToList();
 
             
-            var movies = movieReadDTOs
-                .Select(m => new CustomerMovieViewModel
-                {
-                    MovieId = m.MovieId,
-                    Title = m.Title,
-                    Genre = m.Genre,
-                    Language = m.Language,
-                    Duration = m.Duration,
-                    PosterUrl = m.PosterUrl,
-                    ReleaseDate = m.ReleaseDate
-                }).ToList();
-
-            _logger.LogInformation("Successfully retrieved and mapped {MovieCount} movies for the public index.", movies.Count);
-
-            return View(movies);
+            return View(countryDtos);
         }
 
         public IActionResult Privacy()

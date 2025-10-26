@@ -9,5 +9,7 @@ namespace BookNow.Models.Interfaces
     {
         Task<bool> IsShowTimeConflictingAsync(int screenId, DateTime startTime, DateTime endTime, int? excludeShowId = null);
         Task<IEnumerable<Show>> GetShowsByTheatreAsync(int theatreId, string? includeProperties = null);
+
+        Task<IEnumerable<Movie>> GetMoviesByCityAsync(int? cityId);
     }
 }
