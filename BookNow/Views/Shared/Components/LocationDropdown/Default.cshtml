@@ -1,0 +1,38 @@
+﻿@model IEnumerable<BookNow.Application.DTOs.CommonDTOs.CountryDTO>
+
+@{
+    var selectedCityId = ViewData["SelectedCityId"]?.ToString();
+    var selectedCityName = ViewData["SelectedCityName"]?.ToString();
+}
+
+<button class="btn dropdown-toggle location-dropdown-toggle" type="button" id="locationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-geo-alt-fill me-1" style="color:var(--brand-primary) !important;"></i>
+    <span id="selectedCityText">@(!string.IsNullOrEmpty(selectedCityName) ? selectedCityName : "Select City")</span>
+</button>
+
+<div class="dropdown-menu dropdown-menu-start location-dropdown-menu" aria-labelledby="locationDropdown">
+    <h6 class="dropdown-header fw-bold text-dark">Change Location</h6>
+
+    <div class="mb-3 px-2">
+        <label for="CountryIdHeader" class="form-label fw-semibold small mb-1">Country</label>
+        <select id="CountryIdHeader" class="form-select form-select-sm">
+            <option value="">-- Select Country --</option>
+            @foreach (var c in Model)
+            {
+                <option value="@c.CountryId">@c.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="px-2">
+        <label for="CityIdHeader" class="form-label fw-semibold small mb-1">City</label>
+        <select id="CityIdHeader" class="form-select form-select-sm" disabled>
+            <option value="">-- Select City --</option>
+        </select>
+    </div>
+
+    <div class="d-grid mt-3 px-2">
+        <button type="button" class="btn btn-primary" id="applyLocationBtn" disabled>Set Location</button>
+    </div>
+</div>
+

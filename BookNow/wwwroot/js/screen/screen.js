@@ -20,7 +20,6 @@
                 if (!response.ok) {
                     throw new Error('Failed to load screens.');
                 }
-              //  console.log("response",response.json());
                 return response.json();
             })
             .then(data => {

@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Customer\Controllers\Api\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

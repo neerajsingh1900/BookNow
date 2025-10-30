@@ -10,47 +10,203 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BookNow.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/custom-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <style>
+
+        body {
+            /* Default padding for larger screens */
+            padding-top: 104px;
+        }
+
+        /* Adjusted padding for small screens (less than 992px - lg breakpoint) */
+        @@media (max-width: 991.98px) {
+            /* On mobile, the header is now much cleaner and should maintain 104px */
+            /* If you find the header is shorter, you can reduce this padding-top */
+            body
+
+        {
+            padding-top: 104px;
+        }
+
+        }
+
+        .navbar-toggler-offcanvas {
+            color: white !important;
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .navbar-primary-fixed {
+            z-index: 1030;
+        }
+
+        .navbar-secondary-fixed {
+            z-index: 1020;
+            top: 56px;
+        }
+
+
+        .navbar-primary {
+            background-color: #212121;
+        }
+
+        .navbar-secondary {
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .booknow-logo {
+            color: var(--brand-primary);
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .location-dropdown-toggle {
+            background: none;
+            border: none;
+            color: white !important;
+            font-weight: 600;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+
+            .location-dropdown-toggle:hover {
+                background-color: #404040;
+                color: white !important;
+            }
+
+        .location-dropdown-menu {
+            min-width: 320px;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .search-input-group {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+            .search-input-group .form-control, .search-input-group .input-group-text {
+                border: 1px solid #e0e0e0 !important;
+                box-shadow: none;
+                background-color: #f5f5f5;
+            }
+
+        .navbar-primary .btn,
+        .navbar-primary .nav-link,
+        .navbar-primary .dropdown-toggle {
+            color: white !important;
+        }
+
+            .navbar-primary .btn:hover,
+            .navbar-primary .nav-link:hover {
+                color: #f8f9fa !important;
+            }
+
+        /* CSS for horizontal scroll on secondary nav (optional but helpful) */
+        .navbar-secondary .navbar-nav {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+
+            .navbar-secondary .navbar-nav::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
+            }
+    </style>
 </head>
-<body >
+<body class="light-theme">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-dark navbar-toggleable-sm  border-bottom box-shadow mb-3">
-            <div class="container-fluid"> 
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BookNow</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="Customer" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                       
-                            <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="Customer" asp-controller="Home" asp-action="Privacy">Bookings</a>
-                            </li>
-                        
-                    </ul>
+        <nav class="navbar navbar-expand-sm navbar-dark navbar-primary navbar-toggleable-sm shadow-sm py-2 fixed-top navbar-primary-fixed">
+            <div class="container-fluid container-lg">
+                <a class="navbar-brand booknow-logo" asp-area="" asp-controller="Home" asp-action="Index">BOOKNOW</a>
+
+                <div class="dropdown me-auto me-lg-3">
+                    @await Component.InvokeAsync("LocationDropdown")
+                </div>
+
+                <div class="flex-grow-1 me-4 d-none d-lg-flex">
+                    <form class="d-flex w-100">
+                        <div class="input-group search-input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input class="form-control border-start-0" type="search" placeholder="Search for movies, events, sports..." aria-label="Search">
+                        </div>
+                    </form>
+                </div>
+                <a class="nav-link d-lg-none me-3" href="#" style="color: white !important;">
+                    <i class="bi bi-search fs-5"></i>
+                </a>
+
+                <div class="d-none d-lg-block">
                     <partial name="_LoginPartial" />
                 </div>
+
+                <button class="navbar-toggler navbar-toggler-offcanvas d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="bi bi-list fs-4"></span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold fs-5 py-2" asp-area="" asp-controller="Show" asp-action="List">List Your Show</a>
+                    </li>
+                    <li class="nav-item border-top pt-2 mt-2">
+                        <partial name="_LoginPartial" />
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+        <nav class="navbar navbar-light navbar-secondary navbar-expand-lg border-bottom shadow-sm-sm fixed-top navbar-secondary-fixed">
+            <div class="container-fluid container-lg">
+                <ul class="navbar-nav mx-auto flex-row flex-nowrap overflow-auto w-100 justify-content-lg-center">
+                    <li class="nav-item me-4 flex-shrink-0">
+                        <a class="nav-link fw-bold text-dark" href="#">MOVIES</a>
+                    </li>
+                    <li class="nav-item me-4 flex-shrink-0">
+                        <a class="nav-link text-muted" href="#">EVENTS</a>
+                    </li>
+                    <li class="nav-item me-4 flex-shrink-0">
+                        <a class="nav-link text-muted" href="#">PLAYS</a>
+                    </li>
+                    <li class="nav-item me-4 flex-shrink-0">
+                        <a class="nav-link text-muted" href="#">SPORTS</a>
+                    </li>
+                </ul>
+
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="container-fluid p-0">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
-    
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - BookNow - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+    <footer class="border-top footer text-white bg-dark mt-4 py-1">
+        <div class="container text-center">
+            &copy; 2025 - BOOKNOW - <a class="text-white-50" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/location/location-dropdown.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -76,7 +76,6 @@
     }
 
 
-    // Future time validation
     const MIN_FUTURE_MINUTES = 30;
     const $clientFutureTimeError = $('#clientFutureTimeError');
 

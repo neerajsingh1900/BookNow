@@ -30,6 +30,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<BookNow.Application.Mappings.ScreenProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.ShowProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.ShowSearchProfile>();
+    cfg.AddProfile<BookNow.Application.Mappings.LocationProfile>();
 });
 
 
@@ -101,7 +102,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseMiddleware<LocationContextMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

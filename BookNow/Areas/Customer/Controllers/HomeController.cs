@@ -1,9 +1,9 @@
 ﻿using BookNow.Application.DTOs.CommonDTOs;
+using BookNow.Application.DTOs.CustomerDTOs.SearchDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Areas.Customer.ViewModels;
 using BookNow.Web.ViewModels; 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks; 
 
@@ -14,35 +14,28 @@ namespace BookNow.Web.Areas.Customer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-       
-        private readonly ILocationService _locationService;
 
-        // [C# Showcase: Dependency Injection] Correctly receives all dependencies
-        public HomeController(ILogger<HomeController> logger
-            , ILocationService locationService)
+        private readonly IShowSearchService _showSearchService;
+
+        public HomeController(IShowSearchService showSearchService)
         {
-            _logger = logger;
-          
-            _locationService = locationService;
+            _showSearchService = showSearchService;
         }
 
 
         public async Task<IActionResult> Index()
         {
-            var countries = await _locationService.GetAllCountriesAsync();
+            var cityId = HttpContext.Items["CityId"] as int?;
+            IEnumerable<MovieListingDTO> movieModel = new List<MovieListingDTO>();
 
-            // Map to DTO (clean separation)
-            var countryDtos = countries.Select(c => new CountryDTO
+            if (cityId.HasValue)
             {
-                CountryId = c.CountryId,
-                Name = c.Name,
-                Code = c.Code
-            }).ToList();
+                movieModel = await _showSearchService.GetMoviesByCityAsync(cityId);
 
-            
-            return View(countryDtos);
+            }
+
+            return View(movieModel); 
         }
-
         public IActionResult Privacy()
         {
             return View();
