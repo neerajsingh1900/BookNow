@@ -1,6 +1,6 @@
 ﻿using BookNow.Models;
 
-namespace BookNow.Models.Interfaces
+namespace BookNow.Application.RepoInterfaces
 {
 
     public interface ISeatInstanceRepository : IRepository<SeatInstance>

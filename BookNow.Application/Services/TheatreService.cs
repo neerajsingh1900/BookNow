@@ -5,7 +5,7 @@ using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Exceptions; 
 using BookNow.Application.Interfaces;
 using BookNow.Models;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using BookNow.Utility;
 using Microsoft.AspNetCore.Identity;
 using SendGrid.Helpers.Errors.Model;

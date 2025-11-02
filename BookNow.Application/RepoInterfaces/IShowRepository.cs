@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace BookNow.Models.Interfaces
+namespace BookNow.Application.RepoInterfaces
 {
     public interface IShowRepository : IRepository<Show>
     {

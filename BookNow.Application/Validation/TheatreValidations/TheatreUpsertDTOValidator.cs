@@ -1,6 +1,6 @@
 ﻿using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Interfaces;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using FluentValidation;
 
 public class TheatreUpsertDTOValidator : AbstractValidator<TheatreUpsertDTO>

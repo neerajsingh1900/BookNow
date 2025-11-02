@@ -5,7 +5,7 @@ using BookNow.Application.Exceptions;
 using BookNow.Application.Interfaces;
 using BookNow.Application.Validation.ScreenValidations;
 using BookNow.Models;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity; // Not strictly needed here, but kept for context consistency
 using SendGrid.Helpers.Errors.Model;

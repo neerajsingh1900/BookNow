@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookNow.Models.Interfaces
+namespace BookNow.Application.RepoInterfaces
 {
    public interface IRepository<T> where T : class
     {

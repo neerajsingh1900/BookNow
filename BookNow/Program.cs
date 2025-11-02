@@ -10,7 +10,7 @@ using BookNow.Application.Validation.ScreenValidations;
 using BookNow.DataAccess.Data;
 using BookNow.DataAccess.Repositories;
 using BookNow.DataAccess.UnitOfWork;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using BookNow.Utility;
 using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
 using BookNow.Web.Middleware;

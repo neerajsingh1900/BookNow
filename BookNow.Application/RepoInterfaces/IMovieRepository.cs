@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using BookNow.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace BookNow.Models.Interfaces
+namespace BookNow.Application.RepoInterfaces
+
 {
-    
+
     public interface IMovieRepository : IRepository<Movie>
     {
         

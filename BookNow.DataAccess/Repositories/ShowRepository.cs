@@ -1,7 +1,7 @@
 ﻿using BookNow.Application.DTOs.CustomerDTOs.SearchDTOs;
 using BookNow.DataAccess.Data;
 using BookNow.Models;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Mail;

@@ -1,7 +1,7 @@
 ﻿using BookNow.DataAccess.Data;
 using BookNow.DataAccess.Repositories;
 using BookNow.Models;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Threading.Tasks;
 

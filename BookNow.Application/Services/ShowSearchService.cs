@@ -2,7 +2,7 @@
 using BookNow.Application.DTOs.CustomerDTOs.SearchDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Models;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

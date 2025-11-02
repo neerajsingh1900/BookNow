@@ -3,7 +3,7 @@ using BookNow.Application.DTOs.CustomerDTOs.BookingDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Application.Validation.BookingValidations;
 using BookNow.Models;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using BookNow.Utility;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

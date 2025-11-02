@@ -4,7 +4,7 @@ using BookNow.Application.Exceptions;
 using BookNow.Application.Interfaces;
 using BookNow.Application.Validation.ScreenValidations;
 using BookNow.Models;
-using BookNow.Models.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using BookNow.Utility;
 using SendGrid.Helpers.Errors.Model;
 using System;
