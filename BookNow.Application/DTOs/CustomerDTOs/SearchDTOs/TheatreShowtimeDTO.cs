@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace BookNow.Application.DTOs.CustomerDTOs.SearchDTOs
 {
-    internal class TheatreShowtimeDTO
+    public class TheatreShowtimeDTO
     {
+        public int TheatreId { get; set; }  
+        public string TheatreName { get; set; } = null!;
+        public string Address { get; set; } = null!;
+        public List<ShowtimeDTO> Showtimes { get; set; } = new List<ShowtimeDTO>();
     }
 }

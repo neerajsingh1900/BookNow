@@ -2,6 +2,7 @@
 using BookNow.DataAccess.Repositories;
 using BookNow.Models;
 using BookNow.Models.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Threading.Tasks;
 
 namespace BookNow.DataAccess.UnitOfWork
@@ -19,15 +20,15 @@ namespace BookNow.DataAccess.UnitOfWork
         private ISeatRepository? _seatRepository;
         private IShowRepository? _showRepository;
         private ISeatInstanceRepository? _seatInstanceRepository;
+       
 
 
         private IRepository<Country>? _countryRepository;
+        private IRepository<BookingSeat>? _bookingSeatRepository;
         private IRepository<City>? _cityRepository;
         //private IRepository<Show>? _showRepository;
         //private IRepository<SeatInstance>? _seatInstanceRepository;
-        private IRepository<BookingSeat>? _bookingSeatRepository;
-
-      
+       
         public IApplicationUserRepository ApplicationUser => _applicationUserRepository ??= new ApplicationUserRepository(_db);
         public IMovieRepository Movie => _movieRepository ??= new MovieRepository(_db);
         public IBookingRepository Booking => _bookingRepository ??= new BookingRepository(_db);
@@ -40,16 +41,18 @@ namespace BookNow.DataAccess.UnitOfWork
 
         public IRepository<Country> Country => _countryRepository ??= new Repository<Country>(_db);
         public IRepository<City> City => _cityRepository ??= new Repository<City>(_db);
-        //public IRepository<Show> Show => _showRepository ??= new Repository<Show>(_db);
-        //public IRepository<SeatInstance> SeatInstance => _seatInstanceRepository ??= new Repository<SeatInstance>(_db);
-        public IRepository<BookingSeat> BookingSeat => _bookingSeatRepository ??= new Repository<BookingSeat>(_db);
+       public IRepository<BookingSeat> BookingSeat => _bookingSeatRepository ??= new Repository<BookingSeat>(_db);
 
+        
 
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
         }
-
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _db.Database.BeginTransactionAsync();
+        }
         public async Task SaveAsync()
         {
             await _db.SaveChangesAsync();

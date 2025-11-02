@@ -26,6 +26,7 @@ namespace BookNow.DataAccess.Data
         public DbSet<BookingSeat> BookingSeats { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
+     
 
 
 
@@ -85,13 +86,16 @@ namespace BookNow.DataAccess.Data
                 .Property(pt => pt.RowVersion)
                 .IsRowVersion();
 
-            foreach (var property in modelBuilder.Model.GetEntityTypes()
+           
+
+            foreach (var property in modelBuilder.Model.GetEntityTypes()    
                 .SelectMany(t => t.GetProperties()) 
                 .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
             {
                 property.SetPrecision(10);
                 property.SetScale(2);
             }
+
         }
     }
 }

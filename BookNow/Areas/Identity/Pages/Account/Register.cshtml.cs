@@ -122,7 +122,8 @@ namespace BookNow.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if (!_roleManager.RoleExistsAsync(SD.Role_Customer).GetAwaiter().GetResult())
+            
+                if (!_roleManager.RoleExistsAsync(SD.Role_Customer).GetAwaiter().GetResult())
             {
                 _roleManager.CreateAsync(new IdentityRole(SD.Role_Customer)).GetAwaiter().GetResult();
                 _roleManager.CreateAsync(new IdentityRole(SD.Role_Producer)).GetAwaiter().GetResult();
@@ -161,9 +162,6 @@ namespace BookNow.Areas.Identity.Pages.Account
                 user.Name = Input.Name;
                 user.CityId = Input.CityId;
              
-                
-               
-                
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)

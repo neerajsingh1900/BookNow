@@ -1,0 +1,67 @@
+﻿@model List<BookNow.Application.DTOs.CustomerDTOs.SearchDTOs.TheatreShowtimeDTO>
+
+    
+        <style>
+    /* Base (normal) state */
+    .showtime-btn.btn-outline-success {
+        border: 3px solid #28a745 !important; /* thick green border */
+        background-color: #fff !important; /* white background */
+        color: #000 !important; /* black text */
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 6px 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.25s ease-in-out;
+    }
+
+        /* Hover state */
+        .showtime-btn.btn-outline-success:hover,
+        .showtime-btn.btn-outline-success:focus,
+        .showtime-btn.btn-outline-success:active {
+            background-color: #28a745 !important; /* solid green fill */
+            color: #fff !important; /* white text */
+            border-color: #28a745 !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+
+        </style>
+
+@if (!Model.Any())
+{
+    <p class="text-center text-muted mt-3">No showtimes are scheduled for the selected date.</p>
+}
+else
+{
+    @foreach (var theatre in Model)
+    {
+        <div class="card mb-3 border-0 shadow-sm theatre-block">
+            <div class="card-body py-3 px-3 d-flex align-items-center justify-content-between">
+
+                <div class="d-flex flex-column flex-grow-1 me-3">
+                    <h5 class="card-title fw-bold mb-0">@theatre.TheatreName</h5>
+                    <p class="card-text text-muted small mb-0">@theatre.Address</p>
+                    <div class="d-flex mt-2 small text-muted">
+                      
+                        <span>Cancellation available</span>
+                    </div>
+                </div>
+
+                <div class="showtime-list d-flex flex-wrap align-items-center ms-auto">
+                    @foreach (var showtime in theatre.Showtimes.OrderBy(s => s.StartTime))
+                    {
+                        <a href="/Customer/Booking/SeatLayout/@showtime.ShowId"
+                           class="btn btn-outline-success btn-sm me-2 mb-1 showtime-btn">
+
+                         
+                            <div class="fw-semibold">@showtime.StartTime.ToString("hh:mm tt")</div>
+
+                            
+                            <div class="small text-muted" style="line-height: 1;">@showtime.ScreenName</div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -50,7 +50,7 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
             }
 
             return View(dto);
-        }
+        }   
 
 
 

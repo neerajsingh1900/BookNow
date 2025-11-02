@@ -11,5 +11,7 @@ namespace BookNow.Models.Interfaces
         Task<IEnumerable<Show>> GetShowsByTheatreAsync(int theatreId, string? includeProperties = null);
 
         Task<IEnumerable<Movie>> GetMoviesByCityAsync(int? cityId);
+
+        Task<IEnumerable<Show>> GetShowsForMovieAndCityAsync(int movieId, int cityId, DateOnly start, DateOnly end);
     }
 }

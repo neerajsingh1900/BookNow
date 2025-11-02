@@ -18,6 +18,13 @@ namespace BookNow.Application.Mappings
      .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language ?? ""))
      .ForMember(dest => dest.PosterUrl, opt => opt.MapFrom(src => src.PosterUrl ?? "/images/default-poster.png"))
      .ForMember(dest => dest.ReleaseDate, opt => opt.MapFrom(src => src.ReleaseDate));
+
+            CreateMap<Show, ShowtimeDTO>()
+             .ForMember(dest => dest.ScreenName,
+                           opt => opt.MapFrom(src => src.Screen != null ? src.Screen.ScreenNumber : "N/A"))
+             .ForMember(dest => dest.IsCancellable,
+                           opt => opt.MapFrom(src => src.StartTime > DateTime.Now.AddHours(4)));
+
         }
     }
 }

@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 
 namespace BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters
 {
-    
     public class TheatreOwnershipFilter : IAsyncActionFilter
     {
         private readonly ITheatreService _theatreService;
@@ -31,14 +30,12 @@ namespace BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters
 
             int theatreId = 0;
 
-            
              if (context.ActionArguments.TryGetValue("theatreId", out var routeIdObj) && routeIdObj is int routeId && routeId > 0)
             {
                 theatreId = routeId;
             }
             else if (context.ActionArguments.TryGetValue("screenId", out var screenIdObj) && screenIdObj is int routeScreenId && routeScreenId > 0)
             {
-
                 int? owningTheatreId = await _theatreService.GetTheatreIdByScreenIdAsync(routeScreenId);
                 if (owningTheatreId.HasValue)
                 {
@@ -81,7 +78,6 @@ namespace BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters
                 return;
             }
 
-           
             await next();
         }
     }

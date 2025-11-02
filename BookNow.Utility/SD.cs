@@ -17,10 +17,15 @@ namespace BookNow.Utility
         public const string Status_Active = "Active";
         public const string Status_Maintenance = "Maintenance";
 
-        // ➡️ NEW: Seat State Constants ⬅️
+       
         public const string State_Available = "Available";
-        public const string State_Reserved = "Reserved"; // For pre-booking/cart holding
+        public const string State_Held = "Held"; 
         public const string State_Booked = "Booked";
+
+        public const string BookingStatus_Pending = "Pending";
+        public const string BookingStatus_Confirmed = "Confirmed";
+        public const string BookingStatus_Cancelled = "Cancelled";
+        public const string BookingStatus_Expired = "Expired";
     }
 
         public class EmailSettings

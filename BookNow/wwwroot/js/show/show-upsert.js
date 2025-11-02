@@ -1,6 +1,17 @@
 ﻿$(document).ready(function () {
     const CLEANUP_BUFFER = 15;
+    const MAX_DAYS_AHEAD = 7;
+    const now = new Date();
+    const minDateTime = new Date(now.getTime());
+    const maxDateTime = new Date(now.getTime() + MAX_DAYS_AHEAD * 24 * 60 * 60 * 1000);
 
+    const formatDateTimeLocal = (date) => {
+        const pad = (n) => (n < 10 ? '0' + n : n);
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    };
+
+    $('#StartTimeInput').attr('min', formatDateTimeLocal(minDateTime));
+    $('#StartTimeInput').attr('max', formatDateTimeLocal(maxDateTime));
 
     let allMovies = [];
     $.getJSON('/TheatreOwner/api/show/GetAllMovies', function (data) {

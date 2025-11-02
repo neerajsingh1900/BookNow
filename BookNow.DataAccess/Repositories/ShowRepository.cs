@@ -2,7 +2,9 @@
 using BookNow.DataAccess.Data;
 using BookNow.Models;
 using BookNow.Models.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +18,7 @@ namespace BookNow.DataAccess.Repositories
 
         public async Task<bool> IsShowTimeConflictingAsync(int screenId, DateTime startTime, DateTime endTime, int? excludeShowId = null)
         {
-            // ROBUSTNESS: This is the critical scheduling check.
+           
             var query = dbSet.AsNoTracking()
                 .Where(s => s.ScreenId == screenId)
                 .Where(s =>
@@ -57,7 +59,7 @@ namespace BookNow.DataAccess.Repositories
 
         public async Task<IEnumerable<Movie>> GetMoviesByCityAsync(int? cityId)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             var query = dbSet
                 .AsNoTracking()
@@ -77,6 +79,22 @@ namespace BookNow.DataAccess.Repositories
 
             return movies;
         }
+        public async Task<IEnumerable<Show>> GetShowsForMovieAndCityAsync(int movieId, int cityId, DateOnly start, DateOnly end)
+        {
+            var startDate = start.ToDateTime(TimeOnly.MinValue);
+            var endDate = end.ToDateTime(TimeOnly.MaxValue);
 
+
+            return await
+                dbSet.Include(s => s.Screen)
+                .ThenInclude(scr => scr.Theatre)
+                .Where(s => s.MovieId == movieId &&
+                            s.Screen.Theatre.CityId == cityId &&
+                            s.StartTime >= startDate &&
+                            s.StartTime <= endDate)
+                .OrderBy(s => s.StartTime)
+                .ToListAsync();
+        }
+      
     }
 }

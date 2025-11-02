@@ -10,5 +10,9 @@ namespace BookNow.Application.Interfaces
     public interface IShowSearchService
     {
         Task<IEnumerable<MovieListingDTO>> GetMoviesByCityAsync(int? cityId);
+        Task<SelectTheatrePageDTO> GetShowtimesForWindowAsync(int movieId, int cityId);
+
+        Task<List<TheatreShowtimeDTO>> GetFilteredShowtimesForDateAsync(int movieId, int cityId, DateOnly targetDate);
+
     }
 }

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using BookNow.Models;
+using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BookNow.Models; 
 
 namespace BookNow.Models.Interfaces
 {
@@ -15,10 +16,10 @@ namespace BookNow.Models.Interfaces
         IBookingRepository Booking { get; }
 
         IRepository<Country> Country { get; }
+        
+
+       
         IRepository<City> City { get; }
-      
-        //IRepository<Show> Show { get; }
-        //IRepository<SeatInstance> SeatInstance { get; }
         IRepository<BookingSeat> BookingSeat { get; }
         IScreenRepository Screen { get; } // New
         ISeatRepository Seat { get; } // New
@@ -27,9 +28,9 @@ namespace BookNow.Models.Interfaces
 
         IPaymentTransactionRepository PaymentTransaction { get; }
 
-         
 
-     
+        Task<IDbContextTransaction> BeginTransactionAsync();
+
         Task SaveAsync();
     }
 }

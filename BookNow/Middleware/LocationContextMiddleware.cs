@@ -26,9 +26,10 @@ namespace BookNow.Web.Middleware
                
                 context.Items["CityId"] = cityId;
                 context.Items["CityName"] = cityNameCookie;
+
             }
 
-            
+
             await _next(context);
         }
     }

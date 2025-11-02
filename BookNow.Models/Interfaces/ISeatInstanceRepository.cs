@@ -2,9 +2,9 @@
 
 namespace BookNow.Models.Interfaces
 {
-    // Currently extends IRepository<SeatInstance>, but ready for future methods 
-    // like GetBookedSeatsForShowAsync or UpdateSeatStateBatchAsync.
+
     public interface ISeatInstanceRepository : IRepository<SeatInstance>
     {
+        Task<IEnumerable<SeatInstance>> GetSeatsWithStatusForShowAsync(int showId);
     }
 }

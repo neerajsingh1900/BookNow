@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@* @using Microsoft.AspNetCore.Identity
 
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
@@ -22,6 +22,72 @@
         </li>
         <li class="nav-item">
             <a class="nav-link text-light" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+    }
+</ul> *@
+@using Microsoft.AspNetCore.Identity
+@using BookNow.Utility
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        var roles = await UserManager.GetRolesAsync(user);
+
+        if (roles.Contains(SD.Role_Customer))
+        {
+           
+            <li class="nav-item">
+                <a id="manage" class="nav-link text-light"
+                   asp-area="Identity"
+                   asp-page="/Account/Manage/Index"
+                   title="Manage">
+                    Hello @UserManager.GetUserName(User)!
+                </a>
+            </li>
+            <li class="nav-item">
+                <form id="logoutForm" class="form-inline"
+                      asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button id="logout" type="submit"
+                            class="nav-link btn btn-link text-light border-0">
+                        Logout
+                    </button>
+                </form>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item">
+                <a class="nav-link text-light" id="register"
+                   asp-area="Identity" asp-page="/Account/Register">
+                    List Your Show
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" id="login"
+                   asp-area="Identity" asp-page="/Account/Login">
+                    Login
+                </a>
+            </li>
+        }
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-light" id="register"
+               asp-area="Identity" asp-page="/Account/Register">
+                List Your Show
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-light" id="login"
+               asp-area="Identity" asp-page="/Account/Login">
+                Login
+            </a>
         </li>
     }
 </ul>

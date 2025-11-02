@@ -13,7 +13,7 @@ namespace BookNow.Application.Mappings
         {
             CreateMap<Screen, ScreenDetailsDTO>()
        .ForMember(dest => dest.CurrentShowCount, opt => opt.MapFrom(src =>
-           src.Shows != null ? src.Shows.Count(s => s.EndTime > DateTime.UtcNow) : 0))
+           src.Shows != null ? src.Shows.Count(s => s.EndTime > DateTime.Now) : 0))
        .ForMember(dest => dest.NumberOfRows, opt => opt.MapFrom(src =>
            src.Seats != null ? src.Seats.Select(seat => seat.RowLabel).Distinct().Count() : 0))
        .ForMember(dest => dest.SeatsPerRow, opt => opt.MapFrom(src =>

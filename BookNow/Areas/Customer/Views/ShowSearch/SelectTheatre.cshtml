@@ -1,0 +1,139 @@
+﻿@model BookNow.Application.DTOs.CustomerDTOs.SearchDTOs.SelectTheatrePageDTO
+@using BookNow.Application.DTOs.CustomerDTOs.SearchDTOs
+@using System;
+
+@{
+    ViewData["Title"] = $"{Model.Movie.Title} Showtimes";
+    var activeDateString = Model.ActiveDate.ToString("yyyy-MM-dd");
+}
+
+<style>
+  
+    .movie-header-poster {
+        width: 100px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+   
+    .date-selector.clickable {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .date-selector.clickable:hover {
+            background-color: #f0f0f0;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+</style>
+
+<div class="container container-lg py-4">
+
+  
+    <div class="d-flex align-items-start mb-4 p-3 border rounded-3 bg-light">
+
+        <img src="@Model.Movie.PosterUrl" class="movie-header-poster me-4" alt="@Model.Movie.Title Poster" />
+
+        <div>
+            <h1 class="h4 fw-bold mb-1">@Model.Movie.Title - (@Model.Movie.Language)</h1>
+
+            <div class="mb-3">
+                <span class="badge bg-secondary me-2">@Model.Movie.Genre</span>
+                <span class="badge bg-secondary me-2">@Model.Movie.ReleaseDate.ToString("yyyy")</span>
+            </div>
+
+            <div class="small text-muted">
+                Runtime: @Model.Movie.Duration min
+            </div>
+        </div>
+    </div>
+  
+    @if (!Model.IsShowtimeAvailableInWindow)
+    {
+        <div class="alert alert-info text-center mt-4">
+            <i class="bi bi-calendar-x me-2"></i>
+            No showtimes are currently available for this movie in your selected city for the next 7 days.
+        </div>
+    }
+    else
+    {
+        <div class="d-flex overflow-auto mb-4 border-bottom pb-2 filter-strip" id="date-filter-strip">
+            @foreach (var date in Model.FixedDateWindow)
+            {
+                var dateStr = date.ToString("yyyy-MM-dd");
+                var isAvailable = Model.AvailableDates.Contains(date);
+                var isActive = date.Equals(Model.ActiveDate);
+
+                var blockClass = isAvailable ? "date-block-available" : "date-block-disabled";
+                var activeClass = isActive ? "bg-danger text-white shadow-sm" : "bg-light text-dark";
+
+                <div data-date="@dateStr"
+                     data-movie-id="@Model.Movie.MovieId"
+                     class="p-2 border rounded me-2 flex-shrink-0 text-center date-selector @blockClass @(isAvailable ? "clickable date-available" : "text-muted date-disabled") @(isActive? activeClass : "")">
+                    <div class="fw-bold small">@date.ToString("ddd").ToUpper()</div>
+                    <div class="fs-5 fw-bold">@date.Day</div>
+                    <div class="small">@date.ToString("MMM").ToUpper()</div>
+                </div>
+            }
+        </div>
+
+        <h4 class="fw-bold mt-4 mb-3" id="showtime-header">Showtimes for @Model.ActiveDate.ToString("dddd, MMM dd")</h4>
+
+        <div id="theatre-showtime-list">
+          
+            @await Html.PartialAsync("_TheatreShowtimesPartial", Model.Theatres.Where(t => t.Showtimes.Any(s => DateOnly.FromDateTime(s.StartTime.Date).Equals(Model.ActiveDate))).ToList())
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const API_BASE_URL = "/api/Customer/ShowSearchApi/showtimes";
+            const $listContainer = $('#theatre-showtime-list');
+            const $header = $('#showtime-header');
+            const movieId = @Model.Movie.MovieId;
+            let activeDate = '@activeDateString';
+
+            function updateShowtimes(targetDateStr, targetDayName) {
+               
+                $listContainer.html('<div class="text-center py-5"><div class="spinner-border text-danger" role="status"></div><p class="mt-2 text-muted">Loading showtimes for ' + targetDayName + '...</p></div>');
+
+            
+                fetch(`${API_BASE_URL}/${movieId}?date=${targetDateStr}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Failed to fetch showtimes.');
+                        return res.text();
+                    })
+                    .then(htmlFragment => {
+                     
+                        $listContainer.html(htmlFragment);
+                        $header.text(`Showtimes for ${targetDayName}`);
+
+                       
+                        $('.date-selector').removeClass('bg-danger text-white shadow-sm');
+                        $(`.date-selector[data-date="${targetDateStr}"]`).addClass('bg-danger text-white shadow-sm');
+                        activeDate = targetDateStr;
+                    })
+                    .catch(error => {
+                        console.error("Error loading dynamic showtimes:", error);
+                        $listContainer.html('<div class="alert alert-danger">Error loading data. Please try refreshing the page.</div>');
+                    });
+            }
+
+          
+            $('#date-filter-strip').on('click', '.date-selector.clickable', function () {
+                const $clickedDiv = $(this);
+                const targetDateStr = $clickedDiv.data('date');
+                const targetDayName = $clickedDiv.find('.fw-bold.small').text().trim() + ' ' + $clickedDiv.find('.small').text().trim();
+
+               
+                if (targetDateStr !== activeDate) {
+                    updateShowtimes(targetDateStr, targetDayName);
+                }
+            });
+        });
+    </script>
+}

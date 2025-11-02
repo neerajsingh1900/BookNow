@@ -92,8 +92,60 @@ namespace BookNow.Areas.Identity.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        //public async Task OnGetAsync(string returnUrl = null)
+        //{
+
+
+        //    if (!string.IsNullOrEmpty(ErrorMessage))
+        //    {
+        //        ModelState.AddModelError(string.Empty, ErrorMessage);
+        //    }
+
+        //    returnUrl ??= Url.Content("~/");
+
+        //    // Clear the existing external cookie to ensure a clean login process
+        //    await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+        //    ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+        //    ReturnUrl = returnUrl;
+        //}
+        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
+            // If already authenticated, redirect based on role (same mapping as OnPostAsync)
+            if (User?.Identity != null && User.Identity.IsAuthenticated)
+            {
+                Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                Response.Headers["Pragma"] = "no-cache";
+                Response.Headers["Expires"] = "0";
+
+
+                var user = await _userManager.GetUserAsync(User);
+                if (user != null)
+                {
+                    if (await _userManager.IsInRoleAsync(user, "Producer"))
+                    {
+                        return RedirectToAction("Index", "Movie", new { area = "Producer" });
+                    }
+                    else if (await _userManager.IsInRoleAsync(user, "TheatreOwner"))
+                    {
+                        return RedirectToAction("Index", "Theatre", new { area = "TheatreOwner" });
+                    }
+                    else if (await _userManager.IsInRoleAsync(user, "Customer"))
+                    {
+                        return RedirectToAction("Index", "Home", new { area = "" });
+                    }
+                  
+                    // Authenticated but no known role — use fallback returnUrl or home
+                    return LocalRedirect(returnUrl ?? Url.Content("~/"));
+                }
+
+                // Edge case: authenticated but user object couldn't be loaded — sign out and show login
+                await _signInManager.SignOutAsync();
+                // fall through to render login page
+            }
+
+            // Not authenticated — original behavior
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
@@ -101,12 +153,19 @@ namespace BookNow.Areas.Identity.Pages.Account
 
             returnUrl ??= Url.Content("~/");
 
-            // Clear the existing external cookie to ensure a clean login process
+            // Prevent browser caching the login page
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
+
+            // Clear external cookie to ensure clean external login
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             ReturnUrl = returnUrl;
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)

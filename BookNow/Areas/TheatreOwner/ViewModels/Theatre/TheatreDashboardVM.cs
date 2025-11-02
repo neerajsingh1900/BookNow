@@ -3,9 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre
 {
-    /// <summary>
-    /// ViewModel for a single theatre entry in the dashboard list (Read Model).
-    /// </summary>
     public class TheatreListItemVM
     {
         public int TheatreId { get; set; }
@@ -18,9 +15,6 @@ namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre
         public int ScreenCount { get; set; }
     }
 
-    /// <summary>
-    /// Aggregation ViewModel for the main Theatre Index/Dashboard View.
-    /// </summary>
     public class TheatreDashboardVM
     {
         public List<TheatreListItemVM> OwnerTheatres { get; set; } = new List<TheatreListItemVM>();

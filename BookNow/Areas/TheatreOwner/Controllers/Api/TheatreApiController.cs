@@ -2,6 +2,7 @@
 using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Exceptions;
 using BookNow.Application.Interfaces;
+using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,7 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
 
         // GET: TheatreOwner/api/theatre
         [HttpGet]
+        [ServiceFilter(typeof(TheatreOwnershipFilter))]
         public async Task<ActionResult<IEnumerable<TheatreListItemVM>>> GetOwnerTheatres()
         {
             var ownerId = User?.FindFirstValue(ClaimTypes.NameIdentifier);

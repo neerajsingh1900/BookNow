@@ -1,8 +1,11 @@
 using AutoMapper;
+using BookNow.Application.DTOs.CustomerDTOs.BookingDTOs;
 using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Application.Mappings;
 using BookNow.Application.Services;
+using BookNow.Application.Services.Booking;
+using BookNow.Application.Validation.BookingValidations;
 using BookNow.Application.Validation.ScreenValidations;
 using BookNow.DataAccess.Data;
 using BookNow.DataAccess.Repositories;
@@ -17,7 +20,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-        
+
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -31,6 +34,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<BookNow.Application.Mappings.ShowProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.ShowSearchProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.LocationProfile>();
+    cfg.AddProfile<BookNow.Application.Mappings.BookingProfile>();
 });
 
 
@@ -78,7 +82,7 @@ builder.Services.AddScoped<ITheatreService, TheatreService>();
 builder.Services.AddScoped<IScreenService, ScreenService>();
 builder.Services.AddScoped<IShowService, ShowService>();
 builder.Services.AddScoped<IShowSearchService, ShowSearchService>();
-
+builder.Services.AddScoped<ISeatBookingService, SeatBookingService>();
 
 builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -87,6 +91,8 @@ builder.Services.AddScoped<TheatreOwnershipFilter>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<TheatreUpsertDTOValidator>();
 builder.Services.AddScoped<ScreenUpsertValidator>();
+builder.Services.AddScoped<CreateHoldCommandValidator>();
+builder.Services.AddScoped<GetSeatLayoutQueryValidator>();
 var app = builder.Build();
 
 
