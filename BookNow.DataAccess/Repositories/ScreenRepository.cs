@@ -10,7 +10,7 @@ namespace BookNow.DataAccess.Repositories
 {
     public class ScreenRepository : Repository<Screen>, IScreenRepository
     {
-        // The base class constructor handles the _db context.
+        
 
         public ScreenRepository(ApplicationDbContext db) : base(db) { }
 
@@ -33,7 +33,7 @@ namespace BookNow.DataAccess.Repositories
 
         public async Task<IEnumerable<Screen>> GetScreensByTheatreAsync(int theatreId, string? includeProperties = null)
         {
-            // Uses the base Repository's GetAllAsync method
+            
             return await GetAllAsync(
                filter: s => s.TheatreId == theatreId,
                includeProperties: includeProperties);

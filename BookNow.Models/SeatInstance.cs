@@ -11,31 +11,31 @@ namespace BookNow.Models
     public class SeatInstance
     {
         [Key]
-        public int SeatInstanceId { get; set; } // pk, increment
+        public int SeatInstanceId { get; set; } 
 
-        // Foreign Key to Shows (ref: > Shows.ShowId)
+        
         public int ShowId { get; set; }
 
-        // Navigation property for Show (Many-to-One)
+       
         [ForeignKey("ShowId")]
         public virtual Show Show { get; set; } = null!;
 
-        // Foreign Key to Seats (ref: > Seats.SeatId)
+       
         public int SeatId { get; set; }
 
-        // Navigation property for Seat (Many-to-One)
+       
         [ForeignKey("SeatId")]
         public virtual Seat Seat { get; set; } = null!;
 
-        public string State { get; set; } = "Available"; // varchar (e.g., Available, OnHold, Booked)
+        public string State { get; set; } = "Available"; 
 
-        public DateTime LastUpdated { get; set; } // datetime
+        public DateTime LastUpdated { get; set; } 
 
-        // rowversion in SQL Server maps to byte[] in C#
+       
         [Timestamp]
         public byte[] RowVersion { get; set; } = null!;
 
-        // Navigation collections
+       
         public virtual ICollection<BookingSeat> BookingSeats { get; set; } = new List<BookingSeat>();
     }
 }

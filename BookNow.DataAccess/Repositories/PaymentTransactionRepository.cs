@@ -34,7 +34,7 @@ namespace BookNow.DataAccess.Repositories
             if (transactionFromDb != null)
             {
                 transactionFromDb.Status = status;
-                transactionFromDb.GatewayPaymentId = gatewayPaymentId; // Update this upon success
+                transactionFromDb.GatewayPaymentId = gatewayPaymentId; 
                 transactionFromDb.UpdatedAt = DateTime.Now;
                 base.Update(transactionFromDb);
             }

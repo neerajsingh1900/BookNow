@@ -13,7 +13,6 @@ namespace BookNow.DataAccess.Repositories
 
         public async Task<IEnumerable<Seat>> GetSeatsByScreenAsync(int screenId, string? includeProperties = null)
         {
-            // Optimization: Order by row and index for predictable seating layout.
             return await GetAllAsync(
                 filter: s => s.ScreenId == screenId,
                 orderBy: q => q.OrderBy(s => s.RowLabel).ThenBy(s => s.SeatIndex),

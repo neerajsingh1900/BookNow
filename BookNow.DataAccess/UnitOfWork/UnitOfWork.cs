@@ -26,8 +26,6 @@ namespace BookNow.DataAccess.UnitOfWork
         private IRepository<Country>? _countryRepository;
         private IRepository<BookingSeat>? _bookingSeatRepository;
         private IRepository<City>? _cityRepository;
-        //private IRepository<Show>? _showRepository;
-        //private IRepository<SeatInstance>? _seatInstanceRepository;
        
         public IApplicationUserRepository ApplicationUser => _applicationUserRepository ??= new ApplicationUserRepository(_db);
         public IMovieRepository Movie => _movieRepository ??= new MovieRepository(_db);

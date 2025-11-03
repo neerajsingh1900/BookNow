@@ -11,21 +11,17 @@ namespace BookNow.Models
     public class Seat
     {
         [Key]
-        public int SeatId { get; set; } // pk, increment
-
-        // Foreign Key to Screens (ref: > Screens.ScreenId)
+        public int SeatId { get; set; } 
         public int ScreenId { get; set; }
 
-        // Navigation property for Screen (Many-to-One)
         [ForeignKey("ScreenId")]
         public virtual Screen Screen { get; set; } = null!;
 
-      public string SeatNumber { get; set; } = null!; // varchar
+      public string SeatNumber { get; set; } = null!;
 
-        public string? RowLabel { get; set; } // varchar
-        public int SeatIndex { get; set; } // int (physical index for sorting)
+        public string? RowLabel { get; set; } 
+        public int SeatIndex { get; set; } 
 
-        // Navigation collections
         public virtual ICollection<SeatInstance> SeatInstances { get; set; } = new List<SeatInstance>();
     }
 }

@@ -2,10 +2,11 @@
 using BookNow.Application.DTOs.ShowDTOs;
 using BookNow.Application.Exceptions;
 using BookNow.Application.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using BookNow.Application.Validation.ScreenValidations;
 using BookNow.Models;
-using BookNow.Application.RepoInterfaces;
 using BookNow.Utility;
+using Microsoft.Extensions.Logging;
 using SendGrid.Helpers.Errors.Model;
 using System;
 using System.Collections.Generic;
@@ -20,15 +21,18 @@ namespace BookNow.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public ShowService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ILogger<ShowService> _logger;
+        public ShowService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ShowService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<ScreenMetadataDTO> GetScreenMetadataAsync(int screenId)
         {
+            _logger.LogInformation("Fetching metadata for ScreenId: {ScreenId}", screenId);
+
             var screen = await _unitOfWork.Screen.GetAsync(
                 s => s.ScreenId == screenId,
                 includeProperties: "Theatre"
@@ -42,6 +46,8 @@ namespace BookNow.Application.Services
 
         public async Task<IEnumerable<ShowDetailsDTO>> GetShowsForScreenAsync(int screenId)
         {
+            _logger.LogInformation("Fetching shows for ScreenId: {ScreenId}", screenId);
+
             var screenWithShows = await _unitOfWork.Screen.GetAsync(
                 s => s.ScreenId == screenId,
                 includeProperties: "Shows.Movie"
@@ -56,6 +62,8 @@ namespace BookNow.Application.Services
 
         public async Task<Show> AddShowAsync(ShowCreationDTO dto)
         {
+            _logger.LogInformation("Attempting to add new show for ScreenId: {ScreenId}, MovieId: {MovieId}", dto.ScreenId, dto.MovieId);
+
             var endTime = dto.StartTime.AddMinutes(dto.DurationMinutes);
 
             var seats = await _unitOfWork.Seat.GetSeatsByScreenAsync(dto.ScreenId);
@@ -78,6 +86,8 @@ namespace BookNow.Application.Services
          
             await _unitOfWork.Show.AddAsync(show);
             await _unitOfWork.SaveAsync();
+           
+            _logger.LogInformation("Successfully added new show (ShowId: {ShowId}) for ScreenId: {ScreenId}", show.ShowId, dto.ScreenId);
 
             return show;
         }
@@ -87,18 +97,24 @@ namespace BookNow.Application.Services
 
         public async Task<ShowMovieListDTO> GetShowCreationDataAsync(int screenId)
         {
-           
+            _logger.LogInformation("Fetching movie list for show creation (ScreenId: {ScreenId})", screenId);
+
             var movies = await _unitOfWork.Movie.GetAllAsync();
 
           
             if (movies == null || !movies.Any())
             {
+                _logger.LogWarning("No movies available for scheduling at ScreenId: {ScreenId}", screenId);
+
                 throw new ValidationException("No movies are currently available to schedule.");
             }
 
 
             var availableMovies = _mapper.Map<IEnumerable<ShowMovieDTO>>(movies.OrderBy(m => m.Title));
-
+         
+            _logger.LogInformation("Found {MovieCount} available movies for show creation (ScreenId: {ScreenId})",
+               availableMovies.Count(), screenId);
+          
             return new ShowMovieListDTO
             {
                 ScreenId = screenId,

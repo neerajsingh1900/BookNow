@@ -11,7 +11,7 @@ namespace BookNow.Models
     public class Show
     {
         [Key]
-        public int ShowId { get; set; } // pk, increment
+        public int ShowId { get; set; } 
 
         
         public int ScreenId { get; set; }
@@ -27,10 +27,9 @@ namespace BookNow.Models
         [ForeignKey("MovieId")]
         public virtual Movie Movie { get; set; } = null!;
 
-        public DateTime StartTime { get; set; } // datetime (part of unique composite index)
-        public DateTime EndTime { get; set; } // datetime
+        public DateTime StartTime { get; set; } 
+        public DateTime EndTime { get; set; }
 
-        // Navigation collections
         public virtual ICollection<SeatInstance> SeatInstances { get; set; } = new List<SeatInstance>();
         public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }

@@ -11,22 +11,17 @@ namespace BookNow.Models
     public class Screen
     {
         [Key]
-        public int ScreenId { get; set; } // pk, increment
-
-        // Foreign Key to Theatres (ref: > Theatres.TheatreId)
+        public int ScreenId { get; set; } 
         public int TheatreId { get; set; }
 
-        // Navigation property for Theatre (Many-to-One)
         [ForeignKey("TheatreId")]
         public virtual Theatre Theatre { get; set; } = null!;
 
-        public string ScreenNumber { get; set; } = null!; // varchar
-        public int TotalSeats { get; set; } // int
+        public string ScreenNumber { get; set; } = null!;
+        public int TotalSeats { get; set; } 
 
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal DefaultSeatPrice { get; set; } // decimal(10, 2)
-
-        // Navigation collections
+        public decimal DefaultSeatPrice { get; set; } 
         public virtual ICollection<Seat> Seats { get; set; } = new List<Seat>();
         public virtual ICollection<Show> Shows { get; set; } = new List<Show>();
     }

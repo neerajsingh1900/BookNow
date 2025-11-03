@@ -29,11 +29,7 @@ namespace BookNow.DataAccess.Repositories
                 .ToList();
         }
 
-        public IEnumerable<Theatre> GetTheatresByOwner(string ownerId, string? includeProperties = null)
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public async Task<bool> IsNameConflictingAsync(string name, int? theatreIdToExclude = null)
         {
             IQueryable<Theatre> query = _db.Theatres.AsNoTracking()

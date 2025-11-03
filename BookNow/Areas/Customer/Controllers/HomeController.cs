@@ -13,8 +13,6 @@ namespace BookNow.Web.Areas.Customer.Controllers
     [Area("Customer")]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
         private readonly IShowSearchService _showSearchService;
 
         public HomeController(IShowSearchService showSearchService)

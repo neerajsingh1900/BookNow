@@ -50,7 +50,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateHoldCommandValidator>
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<BookNow.Application.Mappings.TheatreProfile>();
-   cfg.AddProfile<BookNow.Web.Mappings.WebTheatreProfile>();
+    cfg.AddProfile<BookNow.Web.Mappings.WebTheatreProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.ScreenProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.ShowProfile>();
     cfg.AddProfile<BookNow.Application.Mappings.ShowSearchProfile>();
@@ -76,10 +76,10 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>(options =>
 builder.Services.AddAuthentication()
     .AddGoogle(googleOptions =>
     {
-        googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]!; // Resolves CS8601 (Line 36)
+        googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
 
        
-        googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!; // Resolves CS8601 (Line 37)
+        googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!; 
     });
 
 

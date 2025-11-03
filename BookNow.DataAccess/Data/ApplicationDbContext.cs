@@ -78,6 +78,10 @@ namespace BookNow.DataAccess.Data
                 .Property(si => si.RowVersion)
                 .IsRowVersion();
 
+            modelBuilder.Entity<SeatInstance>()
+                  .HasIndex(si => new { si.ShowId, si.SeatId })
+                  .IsUnique();
+
             modelBuilder.Entity<Booking>()
                 .Property(b => b.RowVersion)
                 .IsRowVersion();

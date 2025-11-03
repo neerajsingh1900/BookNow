@@ -23,9 +23,7 @@ namespace BookNow.DataAccess.Repositories
         }
 
        
-        public async Task<T?> GetAsync(
-          Expression<Func<T, bool>> filter,
-          string? includeProperties = null,
+        public async Task<T?> GetAsync(  Expression<Func<T, bool>> filter, string? includeProperties = null,
           bool tracked = false)
         {
             IQueryable<T> query = tracked ? dbSet : dbSet.AsNoTracking();

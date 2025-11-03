@@ -1,5 +1,4 @@
-﻿
-using BookNow.Application.DTOs.CustomerDTOs.BookingDTOs;
+﻿using BookNow.Application.DTOs.CustomerDTOs.BookingDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Application.Services.Booking;
 using BookNow.Utility;
