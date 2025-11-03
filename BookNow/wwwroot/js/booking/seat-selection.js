@@ -92,7 +92,7 @@ $(document).ready(function () {
 
         // POST to the CreateHoldAndRedirect action
         $.ajax({
-            url: '/Customer/Booking/CreateHold',
+            url: '/api/Customer/BookingApi/CreateHold',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(command),

@@ -6,6 +6,7 @@ using BookNow.Application.Services;
 using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Screen;
 using BookNow.Web.Areas.TheatreOwner.ViewModels.Show;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -23,14 +24,16 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
         private readonly IShowService _showService;
         private readonly IMapper _mapper;
         private readonly ITheatreService _theatreService;
-
+        private readonly IValidator<ScreenUpsertDTO> _validator;
         public ScreenController(IScreenService screenService, IMapper mapper, ITheatreService theatreService
-            , IShowService showService)
+            , IShowService showService,
+            IValidator<ScreenUpsertDTO> validator)
         {
             _screenService = screenService;
             _mapper = mapper;
             _theatreService = theatreService;
             _showService = showService;
+            _validator = validator;
         }
 
 
@@ -52,94 +55,59 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
 
         public async Task<IActionResult> Upsert(int theatreId, int? id)
         {
-            ScreenUpsertVM viewModel;
+            if (id is null or <= 0)
+                return View(new ScreenUpsertVM { TheatreId = theatreId });
 
-            if (id.HasValue && id.Value > 0)
-            {
+            var screen = await _screenService.GetScreenDetailsByIdAsync(id.Value);
+            if (screen == null || screen.TheatreId != theatreId)
+                return NotFound();
 
-                var screenDetailDto = await _screenService.GetScreenDetailsByIdAsync(id.Value);
-
-                if (screenDetailDto == null || screenDetailDto.TheatreId != theatreId)
-                {
-                    return NotFound();
-                }
-
-                viewModel = _mapper.Map<ScreenUpsertVM>(screenDetailDto);
-            }
-            else
-            {
-                viewModel = new ScreenUpsertVM { TheatreId = theatreId };
-            }
-
-            return View(viewModel);
+            return View(_mapper.Map<ScreenUpsertVM>(screen));
         }
 
 
-      
-        
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        
+
         public async Task<IActionResult> Add(ScreenUpsertVM vm)
         {
+            var dto = _mapper.Map<ScreenUpsertDTO>(vm);
+            var result = await _validator.ValidateAsync(dto);
+
+            if (!result.IsValid)
+                result.Errors.ForEach(e => ModelState.AddModelError(e.PropertyName, e.ErrorMessage));
+
             if (!ModelState.IsValid) return View("Upsert", vm);
 
-            try
-            {
-                var dto = _mapper.Map<ScreenUpsertDTO>(vm);
-                await _screenService.CreateScreenAsync(dto); 
-                TempData["SuccessMessage"] = "Screen created successfully.";
-                return RedirectToAction(nameof(Index), new { theatreId = vm.TheatreId });
-            }
-            catch (ApplicationValidationException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
-            catch
-            {
-                ModelState.AddModelError(string.Empty, "An unexpected error occurred.");
-            }
+            await _screenService.CreateScreenAsync(dto);
 
-            return View("Upsert", vm);
+            TempData["SuccessMessage"] = "Screen created successfully.";
+            return RedirectToAction(nameof(Index), new { theatreId = vm.TheatreId });
         }
 
-       
-     
         
+        
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
        
-        public async Task<IActionResult> Update(int id, ScreenUpsertVM vm)
-        {
-            if (!ModelState.IsValid) return View("Upsert", vm);
-            if (id != vm.ScreenId)
+       public async Task<IActionResult> Update(int id, ScreenUpsertVM vm)
+         {
+            var dto = _mapper.Map<ScreenUpsertDTO>(vm);
+            var validationResult = await _validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
             {
-                ModelState.AddModelError(string.Empty, "Screen ID mismatch.");
+                foreach (var error in validationResult.Errors)
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+
                 return View("Upsert", vm);
             }
-
-            try
-            {
-                var dto = _mapper.Map<ScreenUpsertDTO>(vm);
-                await _screenService.UpdateScreenAsync(dto); 
-                TempData["SuccessMessage"] = "Screen updated successfully.";
-                return RedirectToAction(nameof(Index), new { theatreId = vm.TheatreId });
-            }
-            catch (ApplicationValidationException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
-            catch (NotFoundException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
-            catch
-            {
-                ModelState.AddModelError(string.Empty, "An unexpected error occurred.");
-            }
-
-            return View("Upsert", vm);
-        }
+            await _screenService.UpdateScreenAsync(dto);
+            return RedirectToAction(nameof(Index), new { theatreId = vm.TheatreId });
+}
     }
 }
 

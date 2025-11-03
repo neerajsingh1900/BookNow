@@ -29,7 +29,7 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
             _mapper = mapper;
         }
 
-        // GET: TheatreOwner/api/theatre
+       
         [HttpGet]
         [ServiceFilter(typeof(TheatreOwnershipFilter))]
         public async Task<ActionResult<IEnumerable<TheatreListItemVM>>> GetOwnerTheatres()

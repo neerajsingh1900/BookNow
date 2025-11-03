@@ -58,31 +58,6 @@ namespace BookNow.Application.Services
         {
             var endTime = dto.StartTime.AddMinutes(dto.DurationMinutes);
 
-            
-            var screen = await _unitOfWork.Screen.GetAsync(s => s.ScreenId == dto.ScreenId);
-            
-            if (screen == null)
-                throw new ApplicationValidationException($"Screen with ID {dto.ScreenId} not found.");
-            
-           
-            var movie = await _unitOfWork.Movie.GetAsync(m => m.MovieId == dto.MovieId);
-            if (movie == null)
-                throw new ApplicationValidationException($"Movie with ID {dto.MovieId} not found.");
-
-           
-            if (dto.StartTime < DateTime.Now.AddMinutes(30))
-                throw new ValidationException("Show start time cannot be in the past and must be at least 30 minutes in the future.");
-
-           
-            const int CLEANUP_BUFFER_MINUTES = 15;
-            if (dto.DurationMinutes < (movie.Duration + CLEANUP_BUFFER_MINUTES))
-                throw new ValidationException($"Total show duration ({dto.DurationMinutes} mins) cannot be less than the movie's run-time ({movie.Duration} mins) plus a {CLEANUP_BUFFER_MINUTES}-minute cleanup interval.");
-
-         
-            if (await _unitOfWork.Show.IsShowTimeConflictingAsync(dto.ScreenId, dto.StartTime, endTime))
-                throw new ValidationException("A show is already scheduled on this screen during the specified time.");
-
-         
             var seats = await _unitOfWork.Seat.GetSeatsByScreenAsync(dto.ScreenId);
 
            

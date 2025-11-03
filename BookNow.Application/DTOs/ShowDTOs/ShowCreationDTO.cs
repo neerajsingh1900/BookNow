@@ -6,16 +6,17 @@ namespace BookNow.Application.DTOs.ShowDTOs
    
     public class ShowCreationDTO
     {
-        [Required]
+        [Required(ErrorMessage = "Screen ID is required.")]
         public int ScreenId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Movie ID is required.")]
         public int MovieId { get; set; }
 
-        [Required]
+
+        [Required(ErrorMessage = "Start time is required.")]
         public DateTime StartTime { get; set; }
 
-        [Required]
+        [Range(60, 600, ErrorMessage = "Duration must be between 60 and 600 minutes.")]
         public int DurationMinutes { get; set; } // Movie duration + buffer time
     }
 }   

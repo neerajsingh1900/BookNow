@@ -1,107 +1,62 @@
-﻿using AutoMapper;
-using BookNow.Application.DTOs.TheatreDTOs;
-using BookNow.Application.Exceptions;
-using BookNow.Application.Interfaces;
-using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
-using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿    using AutoMapper;
+    using BookNow.Application.DTOs.TheatreDTOs;
+    using BookNow.Application.Exceptions;
+    using BookNow.Application.Interfaces;
+    using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
+    using BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre;
+    using FluentValidation;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using System.Security.Claims;
+    using System.Threading.Tasks;
+    using FluentValidation.Results;
 
-namespace BookNow.Web.Areas.TheatreOwner.Controllers
-{
-    [Area("TheatreOwner")]
-    [Authorize(Roles = "TheatreOwner")]
-    public class TheatreController : Controller
-    {
-        private readonly ITheatreService _theatreService;
-        private readonly IMapper _mapper;
-        public TheatreController(ITheatreService theatreService, IMapper mapper)
+   namespace BookNow.Web.Areas.TheatreOwner.Controllers
+   
+     {
+        [Area("TheatreOwner")]
+        [Authorize(Roles = "TheatreOwner")]
+        public class TheatreController : Controller
         {
-            _theatreService = theatreService;
-
+            private readonly ITheatreService _theatreService;
+            private readonly IMapper _mapper;
+        public TheatreController(ITheatreService theatreService, IMapper mapper)
+            {
+                _theatreService = theatreService;
             _mapper = mapper;
-        }
+            }
      
         
-        public IActionResult Index()
-        {
-            return View();
-        }
+            public IActionResult Index()=> View();
 
-      
+
+
         [ServiceFilter(typeof(TheatreOwnershipFilter))]
-        public async Task<IActionResult> Upsert(int? id)
-        {
-            TheatreUpsertDTO dto;
-           
-            if (id.HasValue)
+            public async Task<IActionResult> Upsert(int? id)
             {
-                var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var theatreDetail = await _theatreService.GetTheatreByIdAsync(id.Value, ownerId);
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                
-                dto = _mapper.Map<TheatreUpsertDTO>(theatreDetail);
-            }
-            else
-            {
-                dto = new TheatreUpsertDTO();
-            }
+            var dto = id.HasValue
+                ? _mapper.Map<TheatreUpsertDTO>(await _theatreService.GetTheatreByIdAsync(id.Value, ownerId))
+                : new TheatreUpsertDTO();
 
             return View(dto);
-        }   
-
+        }
 
 
       
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ServiceFilter(typeof(TheatreOwnershipFilter))]
         public async Task<IActionResult> Upsert(TheatreUpsertDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-               
-                return View(dto);
-            }
-
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            try
-            {
-                TheatreDetailDTO theatreDetail;
+            await (dto.TheatreId.HasValue
+                ? _theatreService.UpdateTheatreAsync(dto.TheatreId.Value, dto, ownerId)
+                : _theatreService.AddTheatreAsync(ownerId, dto));
 
-                if (dto.TheatreId.HasValue)
-                {
-                    theatreDetail = await _theatreService.UpdateTheatreAsync(dto.TheatreId.Value, dto, ownerId);
-                }
-                else
-                {
-                    theatreDetail = await _theatreService.AddTheatreAsync(ownerId, dto);
-                }
-
-                
-                return RedirectToAction(nameof(Index));
-            }
-            catch (ApplicationValidationException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(dto);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch
-            {
-                ModelState.AddModelError(string.Empty, "An unexpected error occurred while processing the theatre request.");
-                return View(dto);
-            }
+            return RedirectToAction(nameof(Index));
         }
-
-
-
     }
 }

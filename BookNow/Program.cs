@@ -1,8 +1,10 @@
 using AutoMapper;
 using BookNow.Application.DTOs.CustomerDTOs.BookingDTOs;
+using BookNow.Application.DTOs.ScreenDTOs;
 using BookNow.Application.DTOs.TheatreDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Application.Mappings;
+using BookNow.Application.RepoInterfaces;
 using BookNow.Application.Services;
 using BookNow.Application.Services.Booking;
 using BookNow.Application.Validation.BookingValidations;
@@ -10,22 +12,41 @@ using BookNow.Application.Validation.ScreenValidations;
 using BookNow.DataAccess.Data;
 using BookNow.DataAccess.Repositories;
 using BookNow.DataAccess.UnitOfWork;
-using BookNow.Application.RepoInterfaces;
 using BookNow.Utility;
 using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
+using BookNow.Web.Infrastructure.Filters;
 using BookNow.Web.Middleware;
 using BookNow.Web.Services;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug() 
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day) 
+    .CreateLogger();
 
-builder.Services.AddControllersWithViews();
+builder.Host.UseSerilog();
 
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
+
+builder.Services.AddValidatorsFromAssemblyContaining<TheatreUpsertDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ShowCreationDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateHoldCommandValidator>();
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<BookNow.Application.Mappings.TheatreProfile>();
@@ -89,21 +110,12 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<TheatreOwnershipFilter>();
 builder.Services.AddScoped<ILocationService, LocationService>();
-builder.Services.AddScoped<TheatreUpsertDTOValidator>();
-builder.Services.AddScoped<ScreenUpsertValidator>();
-builder.Services.AddScoped<CreateHoldCommandValidator>();
 builder.Services.AddScoped<GetSeatLayoutQueryValidator>();
+builder.Services.AddScoped<IValidator<ScreenUpsertDTO>, ScreenUpsertValidator>();
+
 var app = builder.Build();
 
-
-//app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-//if (!app.Environment.IsDevelopment())
-//{
-
-//    app.UseHsts();
-//}
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

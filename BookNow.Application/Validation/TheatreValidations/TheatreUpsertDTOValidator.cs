@@ -11,7 +11,6 @@ public class TheatreUpsertDTOValidator : AbstractValidator<TheatreUpsertDTO>
     {
         _uow = uow;
 
-        // 1. Required fields + length checks
         RuleFor(x => x.TheatreName)
             .NotEmpty().WithMessage("Theatre name is required.")
             .MaximumLength(100);
@@ -41,6 +40,12 @@ public class TheatreUpsertDTOValidator : AbstractValidator<TheatreUpsertDTO>
         RuleFor(x => x.Email)
             .MustAsync(EmailMustBeUnique)
             .WithMessage("Email already registered.");
+
+        RuleFor(x => x.TheatreId)
+    .MustAsync(NoRunningShows)
+    .When(x => x.TheatreId.HasValue) 
+    .WithMessage("Cannot update theatre while shows are scheduled.");
+
     }
 
     private async Task<bool> CityMustExist(int cityId, CancellationToken token)
@@ -58,4 +63,16 @@ public class TheatreUpsertDTOValidator : AbstractValidator<TheatreUpsertDTO>
         var existing = await _uow.Theatre.GetAsync(t => t.Email == email && t.TheatreId != dto.TheatreId);
         return existing == null;
     }
+
+    private async Task<bool> NoRunningShows(int? theatreId, CancellationToken token)
+    {
+        if (!theatreId.HasValue)
+            return true;
+      
+        return !await _uow.Show.AnyAsync(s =>
+            s.Screen.TheatreId == theatreId.Value &&
+            s.StartTime > DateTime.Now);
+    }
+
+
 }

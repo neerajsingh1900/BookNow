@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+    
 namespace BookNow.Application.Services.Booking
 {
     public class SeatBookingService : ISeatBookingService
@@ -19,15 +19,13 @@ namespace BookNow.Application.Services.Booking
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly  GetSeatLayoutQueryValidator _layoutValidator;
-        private readonly CreateHoldCommandValidator _holdValidator;
 
-        public SeatBookingService( IUnitOfWork unitOfWork,IMapper mapper,GetSeatLayoutQueryValidator layoutValidator,CreateHoldCommandValidator holdValidator)
+        public SeatBookingService( IUnitOfWork unitOfWork,IMapper mapper,GetSeatLayoutQueryValidator layoutValidator)
 
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _layoutValidator = layoutValidator;
-            _holdValidator = holdValidator;
         }
 
         public async Task<SeatLayoutPageDTO> GetSeatLayoutAsync(int showId, int cityId)
@@ -49,7 +47,7 @@ namespace BookNow.Application.Services.Booking
 
             var currencySymbol = CurrencyMapper.GetSymbolByCountryCode(countryCode);
 
-            // 3. DATA FETCH: Get seats and all related details
+            
             var seatInstances = await _unitOfWork.SeatInstance.GetSeatsWithStatusForShowAsync(showId);
 
             if (seatInstances == null || !seatInstances.Any())
@@ -57,7 +55,7 @@ namespace BookNow.Application.Services.Booking
                 throw new KeyNotFoundException($"Show with ID {showId} not found or has no seat data.");
             }
 
-            // 4. MAPPING AND GROUPING
+          
             var allSeatsDto = _mapper.Map<IEnumerable<SeatStatusDTO>>(seatInstances).ToList();
             var firstSeat = seatInstances.First();
 
@@ -84,18 +82,7 @@ namespace BookNow.Application.Services.Booking
 
         public async Task<BookingRedirectDTO> CreateTransactionalHoldAsync(CreateHoldCommandDTO command,string userId,string userEmail)
         {
-            // 1️⃣ Validate input using FluentValidation
-            var validationResult = _holdValidator.Validate(command);
-            if (!validationResult.IsValid)
-            {
-                return new BookingRedirectDTO
-                {
-                    Success = false,
-                    ErrorMessage = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))
-                };
-            }
-
-            // 2️⃣ Start DB transaction
+            //1 Start DB transaction
             using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {

@@ -107,6 +107,7 @@ namespace BookNow.Areas.Identity.Pages.Account
 
             public string Role { get; set; } = null!;
             [Required]
+            [RegularExpression(@"^[A-Za-z0-9\s&\-'.]+$", ErrorMessage = "Name can only contain letters, numbers, spaces, apostrophes, hyphens, and ampersands.")]
             public string Name { get; set; }
 
             [ValidateNever]

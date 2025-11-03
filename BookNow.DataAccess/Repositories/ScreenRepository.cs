@@ -16,13 +16,13 @@ namespace BookNow.DataAccess.Repositories
 
         public async Task<bool> IsScreenNumberUniqueAsync(int theatreId, string screenNumber, int? excludeScreenId = null)
         {
-            // Optimization: Use AsNoTracking for a simple existence check.
+            
             var query = dbSet.AsNoTracking()
                 .Where(s => s.TheatreId == theatreId && s.ScreenNumber == screenNumber);
 
             if (excludeScreenId.HasValue)
             {
-                // Exclude the current screen when checking for updates
+                
                 query = query.Where(s => s.ScreenId != excludeScreenId.Value);
             }
 

@@ -12,6 +12,7 @@ namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Screen
         [Required(ErrorMessage = "Screen number/name is required.")]
         [StringLength(50)]
         [Display(Name = "Screen Number/Name")]
+        [RegularExpression(@"^[A-Za-z0-9\s&\-'.]+$", ErrorMessage = "Screen name can only contain letters, numbers, spaces, apostrophes, hyphens, and ampersands.")]
         public string ScreenNumber { get; set; } = null!;
 
         [Required(ErrorMessage = "Number of rows is required.")]

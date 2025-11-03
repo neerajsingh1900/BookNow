@@ -1,13 +1,17 @@
 ﻿using BookNow.Application.DTOs.ScreenDTOs;
+using BookNow.Application.RepoInterfaces;
 using FluentValidation;
 
 namespace BookNow.Application.Validation.ScreenValidations
 {
-    // Validator for the ScreenUpsertDTO, used by the application service layer
+   
     public class ScreenUpsertValidator : AbstractValidator<ScreenUpsertDTO>
     {
-        public ScreenUpsertValidator()
+        private readonly IUnitOfWork _uow;
+        public ScreenUpsertValidator(IUnitOfWork uow)
         {
+            _uow = uow;
+
             RuleFor(x => x.TheatreId)
                 .NotEmpty().WithMessage("Theatre ID is required.");
 
@@ -23,19 +27,38 @@ namespace BookNow.Application.Validation.ScreenValidations
         
             
          RuleFor(x => x)
-        .Must(dto => dto.NumberOfRows * dto.SeatsPerRow <= 5000) // Example MAX_CAPACITY of 5000 seats
+        .Must(dto => dto.NumberOfRows * dto.SeatsPerRow <= 5000) 
         .WithMessage("Total seats cannot exceed 5000 for a single screen.");
 
             RuleFor(x => x.ScreenNumber)
             .NotEmpty().WithMessage("Screen identifier is required.")
             .MaximumLength(50).WithMessage("Screen identifier cannot exceed 50 characters.")
-            // NEW: Ensure the name is not just punctuation/special characters.
             .Matches("^[a-zA-Z0-9].*[a-zA-Z0-9]$")
             .When(x => !string.IsNullOrWhiteSpace(x.ScreenNumber))
-            .WithMessage("Screen identifier must start and end with an alphanumeric character and cannot be just punctuation.");
+            .WithMessage("Screen identifier must start and end with an alphanumeric character and cannot be just punctuation.")
+            .MustAsync(BeUniqueScreenNumber)
+                .WithMessage(x => $"Screen number '{x.ScreenNumber}' already exists in this theatre.");
 
             RuleFor(x => x.DefaultSeatPrice)
-                .ExclusiveBetween(0.00m, 100000.00m).WithMessage("Default seat price must be greater than zero and less than 100,000.");
+                .ExclusiveBetween(0.01m, 99999.99m).WithMessage("Default seat price must be greater than zero and less than 100,000.");
+     
+          RuleFor(x => x.ScreenId)
+      .MustAsync(NoRunningShows)
+      .When(x => x.ScreenId.HasValue)
+      .WithMessage("Cannot update screen while shows are scheduled.");
+        }
+        private async Task<bool> BeUniqueScreenNumber(ScreenUpsertDTO dto, string screenNumber, CancellationToken token)
+        {
+            return await _uow.Screen.IsScreenNumberUniqueAsync(dto.TheatreId, screenNumber, dto.ScreenId);
+        }
+        private async Task<bool> NoRunningShows(int? screenId,CancellationToken token)
+        {
+            if (!screenId.HasValue)
+                return true;
+
+            return !await _uow.Show.AnyAsync(s =>
+                s.ScreenId == screenId.Value &&
+                s.StartTime > DateTime.Now);
         }
     }
 }

@@ -10,49 +10,47 @@
         <div class="col-md-8">
             <div class="card p-4">
                 <h2 class="fw-bold mb-4 text-center" style="color:var(--brand-primary-dark)">@actionType Theatre Details</h2>
-
-                <!-- The form uses AJAX submission defined in theatreOwner.js -->
+              
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+              
                 <form id="theatreUpsertForm" asp-action="Upsert" method="post" class="needs-validation" novalidate>
-                    <!-- Anti-forgery token is essential for security on POST/PUT requests -->
+                   
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="TheatreId" />
 
-                    <!-- Theatre Name -->
+                  
                     <div class="mb-3">
                         <label asp-for="TheatreName" class="form-label">Theatre Name</label>
                         <input asp-for="TheatreName" class="form-control" placeholder="E.g., Cineplex Redefined" />
                         <span asp-validation-for="TheatreName" class="text-danger small"></span>
                     </div>
 
-                    <!-- Contact Email (Unique) -->
+                    
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label">Contact Email (Unique)</label>
                         <input asp-for="Email" class="form-control" placeholder="owner@theatre.com" />
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
-                    <!-- Phone Number -->
+                   
                     <div class="mb-3">
                         <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
                         <input asp-for="PhoneNumber" class="form-control" placeholder="+1 (555) 123-4567" />
                         <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
 
-                    <!-- Location Fields (Dynamic Cascading Dropdowns) -->
+                
                     <h5 class="fw-bold mt-4 mb-3 text-secondary border-bottom pb-1">Physical Location</h5>
 
-                    <!-- Country Dropdown -->
+                
                     <div class="mb-3">
                         <label for="CountryId" class="form-label">Country</label>
-                        <!-- NOTE: CountryId is a required temporary field for dynamic loading -->
                         <select id="CountryId" name="CountryId" class="form-control">
                             <option value="">-- Loading Countries --</option>
                         </select>
-                        <!-- Country validation (optional on VM, but enforced by City selection) -->
                     </div>
 
-                    <!-- City Dropdown -->
-                    <div class="mb-3">
+                     <div class="mb-3">
                         <label asp-for="CityId" class="form-label">City</label>
                         <!-- City is disabled until Country is selected -->
                         <select asp-for="CityId" class="form-control" disabled>

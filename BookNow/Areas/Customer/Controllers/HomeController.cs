@@ -22,18 +22,14 @@ namespace BookNow.Web.Areas.Customer.Controllers
             _showSearchService = showSearchService;
         }
 
-
         public async Task<IActionResult> Index()
         {
             var cityId = HttpContext.Items["CityId"] as int?;
             IEnumerable<MovieListingDTO> movieModel = new List<MovieListingDTO>();
-
             if (cityId.HasValue)
             {
                 movieModel = await _showSearchService.GetMoviesByCityAsync(cityId);
-
             }
-
             return View(movieModel); 
         }
         public IActionResult Privacy()

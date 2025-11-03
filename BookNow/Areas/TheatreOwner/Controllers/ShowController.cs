@@ -31,7 +31,6 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
         }
 
       
-
         public async Task<IActionResult> Index([FromQuery] int screenId)
         {
             var screenMetadata = await _showService.GetScreenMetadataAsync(screenId);
@@ -41,10 +40,7 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
       
         public IActionResult Upsert(int screenId)
         {
-            var dto = new ShowCreationDTO
-            {
-                ScreenId = screenId
-            };
+            var dto = new ShowCreationDTO{ ScreenId = screenId};
             return View(dto);
         }
 
@@ -55,32 +51,9 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(ShowCreationDTO dto)
         {
-            if (!ModelState.IsValid)
-                return View(dto);
-
-            try
-            {
-                await _showService.AddShowAsync(dto);
-              
-               TempData["SuccessMessage"] = "Show scheduled successfully! Seat inventory created.";
-               
-                return RedirectToAction("Index", new { screenId = dto.ScreenId });
-            }
-            catch (ValidationException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(dto);
-            }
-            catch (ApplicationValidationException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(dto);
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, "Unexpected error: " + ex.Message);
-                return View(dto);
-            }
+            await _showService.AddShowAsync(dto);
+            TempData["SuccessMessage"] = "Show scheduled successfully!";
+            return RedirectToAction("Index", new { screenId = dto.ScreenId });
         }
 
 
