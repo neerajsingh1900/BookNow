@@ -26,9 +26,6 @@ namespace BookNow.DataAccess.Data
         public DbSet<BookingSeat> BookingSeats { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
-     
-
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

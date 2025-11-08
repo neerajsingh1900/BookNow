@@ -78,7 +78,6 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers
 
             if (!result.IsValid)
                 result.Errors.ForEach(e => ModelState.AddModelError(e.PropertyName, e.ErrorMessage));
-
             if (!ModelState.IsValid) return View("Upsert", vm);
 
             await _screenService.CreateScreenAsync(dto);

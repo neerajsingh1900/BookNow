@@ -143,7 +143,10 @@
                     <i class="bi bi-search fs-5"></i>
                 </a>
 
-                <div class="d-none d-lg-block">
+                <div class="d-none d-lg-flex align-items-center">
+                   
+                    @await Component.InvokeAsync("BookingCount")
+                   
                     <partial name="_LoginPartial" />
                 </div>
 
@@ -163,6 +166,9 @@
                     <li class="nav-item">
                         <a class="nav-link text-white fw-bold fs-5 py-2" asp-area="" asp-controller="Show" asp-action="List">List Your Show</a>
                     </li>
+                    <li class="nav-item">
+                        @await Component.InvokeAsync("BookingCount")
+                    </li>
                     <li class="nav-item border-top pt-2 mt-2">
                         <partial name="_LoginPartial" />
                     </li>
@@ -175,7 +181,7 @@
             <div class="container-fluid container-lg">
                 <ul class="navbar-nav mx-auto flex-row flex-nowrap overflow-auto w-100 justify-content-lg-center">
                     <li class="nav-item me-4 flex-shrink-0">
-                        <a class="nav-link fw-bold text-dark" href="#">MOVIES</a>
+                        <a class="nav-link text-muted" href="#">MOVIES</a>
                     </li>
                     <li class="nav-item me-4 flex-shrink-0">
                         <a class="nav-link text-muted" href="#">EVENTS</a>

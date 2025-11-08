@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
-
 [Route("api/[controller]")]
 [ApiController]
 public class LocationDataController : ControllerBase
@@ -22,10 +21,8 @@ public class LocationDataController : ControllerBase
     public async Task<IActionResult> SetLocation([FromForm] int cityId, [FromForm] string cityName)
     {
         if (cityId <= 0 || string.IsNullOrEmpty(cityName))
-        {
             return BadRequest("Invalid location data provided.");
-        }
-     
+        
         var city = await _locationService.GetCityByIdAsync(cityId);
         if (city == null)
             return NotFound("City not found.");
@@ -39,7 +36,6 @@ public class LocationDataController : ControllerBase
             SameSite = SameSiteMode.Lax
         };
 
-        
         Response.Cookies.Append(CityIdCookieKey, cityId.ToString(), cookieOptions);
         Response.Cookies.Append(CityNameCookieKey, cityName, cookieOptions);
 

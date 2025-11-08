@@ -1,0 +1,21 @@
+﻿@model BookNow.Application.DTOs.PaymentDTOs.PaymentSummaryDTO
+@{
+    ViewData["Title"] = "Booking Confirmed!";
+    Layout = "_PaymentLayout";
+}
+
+<div class="container text-center py-5">
+    <h1 class="text-success display-2 mb-4"><i class="fas fa-check-circle"></i> Success!</h1>
+    <h2 class="mb-4">Your Booking is Confirmed!</h2>
+    <p class="lead">Your E-ticket has been generated.</p>
+
+    @if (Model != null && !string.IsNullOrEmpty(Model.TicketNumber))
+    {
+        <p class="h5 mb-3">Ticket Number: <strong>@Model.TicketNumber</strong></p>
+    }
+
+    <div class="my-4">
+        <a href="/" class="btn btn-primary btn-lg mt-3 me-2">Back to Main Site</a>
+        <a href="/Customer/BookingHistory/Index" class="btn btn-secondary btn-lg mt-3">View My Bookings</a>
+    </div>
+</div>

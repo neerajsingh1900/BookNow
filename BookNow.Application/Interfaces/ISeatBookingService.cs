@@ -1,4 +1,5 @@
 ﻿using BookNow.Application.DTOs.CustomerDTOs.BookingDTOs;
+using BookNow.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,7 @@ namespace BookNow.Application.Interfaces
             string userId,
             string userEmail
         );
-    }
+
+        
+     }
 }

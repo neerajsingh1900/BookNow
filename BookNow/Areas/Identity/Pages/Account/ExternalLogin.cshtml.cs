@@ -1,5 +1,6 @@
 ﻿#nullable disable
 
+using BookNow.Application.Interfaces;
 using BookNow.Models;
 using BookNow.Utility;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +28,7 @@ namespace BookNow.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
@@ -35,7 +36,7 @@ namespace BookNow.Areas.Identity.Pages.Account
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender)
+            IEmailService emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;

@@ -1,0 +1,59 @@
+﻿@model BookNow.Application.DTOs.PaymentDTOs.PaymentSummaryDTO
+@{
+    ViewData["Title"] = "Confirm & Pay";
+    Layout = "_PaymentLayout"; // <--- APPLY THE MINIMAL LAYOUT
+}
+
+<div class="row justify-content-center w-100">
+    <div class="col-md-9 col-lg-8 col-xl-7">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-warning text-dark text-center py-3">
+                <h4 class="mb-0 fw-bold"><i class="fas fa-exclamation-triangle"></i> Hold Time Limit</h4>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h1 class="display-3 font-weight-bold text-danger" id="payment-timer">05:00</h1>
+                    <p class="text-muted">You have 5 minutes to finalize the payment for your held seats.</p>
+                </div>
+
+                <h5 class="card-title border-bottom pb-2">Order Details</h5>
+                <dl class="row mb-4 small">
+                    <dt class="col-sm-4">Movie</dt>
+                    <dd class="col-sm-8">@Model.MovieTitle (@Model.ShowDateTime.ToString("hh:mm tt"))</dd>
+
+                    <dt class="col-sm-4">Location</dt>
+                    <dd class="col-sm-8">@Model.TheatreName</dd>
+
+                    <dt class="col-sm-4">Seats</dt>
+                    <dd class="col-sm-8">@string.Join(", ", Model.SeatLabels)</dd>
+                </dl>
+
+                <h3 class="text-center mb-4 p-3 border rounded bg-light">
+                    Pay Now:
+                    <span class="text-success font-weight-bolder display-6">
+                        @Model.CurrencySymbol @Model.TotalAmount.ToString("N2")
+                    </span>
+                </h3>
+            </div>
+
+            <div class="card-footer bg-light d-flex justify-content-between p-3">
+                <button id="btn-simulate-failure"
+                        class="btn btn-outline-danger btn-lg flex-fill me-2"
+                        data-booking-id="@Model.BookingId">
+                    Simulate Payment Failure
+                </button>
+
+                <button id="btn-simulate-success"
+                        class="btn btn-success btn-lg flex-fill"
+                        data-booking-id="@Model.BookingId">
+                    Simulate Payment Success
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/payment/gateway-simulation.js" asp-append-version="true"></script>
+}

@@ -26,10 +26,10 @@ namespace BookNow.Application.Services
         public async Task<IEnumerable<MovieListingDTO>> GetMoviesByCityAsync(int? cityId)
         {
             _logger.LogInformation("Fetching movies for CityId: {CityId}", cityId);
-
+            
             var movies = await _unitOfWork.Show.GetMoviesByCityAsync(cityId);
-          
-            _logger.LogInformation("Fetched {Count} movies for CityId: {CityId}", movies.Count(), cityId);
+
+            _logger.LogInformation("Fetched {Count} movies for CityId: {CityId}", movies?.Count(), cityId);
 
             return _mapper.Map<IEnumerable<MovieListingDTO>>(movies);
            

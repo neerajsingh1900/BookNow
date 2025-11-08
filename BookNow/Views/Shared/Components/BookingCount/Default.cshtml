@@ -1,0 +1,29 @@
+﻿@model int
+@using Microsoft.AspNetCore.Identity
+
+@* Logic: 
+    1. If NOT authenticated (handled in VC), render nothing.
+    2. If Authenticated, always show link.
+    3. If Count > 0, make the link prominent with a badge.
+*@
+
+@{
+    var isProminent = Model > 0;
+    // Use button styling if count > 0, otherwise use simple link styling
+    var buttonClass = isProminent ? "btn btn-sm btn-secondary fw-semibold text-white border-0" : "nav-link text-white";
+    var buttonText = isProminent ? "My Tickets" : "Bookings";
+}
+
+@if (User.Identity.IsAuthenticated)
+{
+    <a asp-area="Customer" asp-controller="BookingHistory" asp-action="Index"
+       class="@buttonClass me-2">
+        @buttonText
+        @if (isProminent)
+        {
+            // Prominent badge for outstanding tickets
+            <span class="badge bg-danger rounded-pill ms-1">@Model</span>
+        }
+    </a>
+}
+@* If not authenticated or count is zero, a subtle link or nothing is displayed, adhering to the UX rules. *@

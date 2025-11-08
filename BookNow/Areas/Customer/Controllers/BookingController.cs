@@ -1,5 +1,6 @@
 ﻿using BookNow.Application.DTOs.CustomerDTOs.BookingDTOs;
 using BookNow.Application.Interfaces;
+using BookNow.Application.RepoInterfaces;
 using BookNow.Application.Services.Booking;
 using BookNow.Utility;
 using FluentValidation;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 public class BookingController : Controller
 {
     private readonly ISeatBookingService _bookingService;
+   
 
     public BookingController(ISeatBookingService bookingService)
     {

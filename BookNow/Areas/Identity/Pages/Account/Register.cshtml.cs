@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using BookNow.Application.Interfaces;
 using BookNow.Models;
 using BookNow.Utility;
 using Microsoft.AspNetCore.Authentication;
@@ -33,7 +34,7 @@ namespace BookNow.Areas.Identity.Pages.Account
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailSender;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -41,7 +42,7 @@ namespace BookNow.Areas.Identity.Pages.Account
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailService emailSender)
         {
             _roleManager = roleManager;
             _userManager = userManager;
@@ -189,7 +190,7 @@ namespace BookNow.Areas.Identity.Pages.Account
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
+                        
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using BookNow.Application.Interfaces;
 using BookNow.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -26,9 +27,9 @@ namespace BookNow.Areas.Identity.Pages.Account
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailSender;
         public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger
-            , UserManager<IdentityUser> userManager, IEmailSender emailSender)
+            , UserManager<IdentityUser> userManager, IEmailService emailSender)
         {
             _signInManager = signInManager;
             _logger = logger;
@@ -92,33 +93,13 @@ namespace BookNow.Areas.Identity.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        //public async Task OnGetAsync(string returnUrl = null)
-        //{
-
-
-        //    if (!string.IsNullOrEmpty(ErrorMessage))
-        //    {
-        //        ModelState.AddModelError(string.Empty, ErrorMessage);
-        //    }
-
-        //    returnUrl ??= Url.Content("~/");
-
-        //    // Clear the existing external cookie to ensure a clean login process
-        //    await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
-        //    ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
-        //    ReturnUrl = returnUrl;
-        //}
+      
         public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
-            // If already authenticated, redirect based on role (same mapping as OnPostAsync)
+          
             if (User?.Identity != null && User.Identity.IsAuthenticated)
             {
-                Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
-                Response.Headers["Pragma"] = "no-cache";
-                Response.Headers["Expires"] = "0";
-
+               
 
                 var user = await _userManager.GetUserAsync(User);
                 if (user != null)
@@ -136,29 +117,21 @@ namespace BookNow.Areas.Identity.Pages.Account
                         return RedirectToAction("Index", "Home", new { area = "" });
                     }
                   
-                    // Authenticated but no known role — use fallback returnUrl or home
                     return LocalRedirect(returnUrl ?? Url.Content("~/"));
                 }
 
-                // Edge case: authenticated but user object couldn't be loaded — sign out and show login
                 await _signInManager.SignOutAsync();
-                // fall through to render login page
             }
 
-            // Not authenticated — original behavior
-            if (!string.IsNullOrEmpty(ErrorMessage))
+             if (!string.IsNullOrEmpty(ErrorMessage))
             {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
             }
 
             returnUrl ??= Url.Content("~/");
 
-            // Prevent browser caching the login page
-            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
-            Response.Headers["Pragma"] = "no-cache";
-            Response.Headers["Expires"] = "0";
+            
 
-            // Clear external cookie to ensure clean external login
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -179,10 +152,12 @@ namespace BookNow.Areas.Identity.Pages.Account
                  var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
                     
                     var user = await _userManager.FindByEmailAsync(Input.Email);
-                   
+                    string userId = await _userManager.GetUserIdAsync(user);
+               
+                    _logger.LogInformation("User{UserId} logged in.", userId);
+
                     if (user != null)
                     {
                         if (await _userManager.IsInRoleAsync(user, "Producer"))

@@ -26,6 +26,12 @@ namespace BookNow.Utility
         public const string BookingStatus_Confirmed = "Confirmed";
         public const string BookingStatus_Cancelled = "Cancelled";
         public const string BookingStatus_Expired = "Expired";
+        public const string BookingStatus_Prefix = "BookingStatus_";
+
+        public const string PaymentStatus_Success = "Success";
+        public const string PaymentStatus_Failed = "Failed";
+        public const string PaymentStatus_Pending = "Pending";
+
     }
 
         public class EmailSettings

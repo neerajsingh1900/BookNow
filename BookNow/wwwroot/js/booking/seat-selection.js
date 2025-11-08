@@ -1,16 +1,76 @@
-﻿
-$(document).ready(function () {
-    const selectedSeats = new Map(); 
+﻿$(document).ready(function () {
+    // --- 1. DOM Elements and Constants ---
+    const selectedSeats = new Map();
     const currencySymbol = $('#currency-symbol').text();
     const payButton = $('#btn-pay');
     const seatsCountSpan = $('#num-seats');
     const totalPriceSpan = $('#total-price');
     const btnPriceDisplaySpan = $('#btn-price-display');
     const ticketsCountBadge = $('#tickets-count');
-    const showId = payButton.data('show-id');
+    // Ensure showId is parsed as an integer for SignalR grouping
+    const showId = parseInt(payButton.data('show-id'));
     const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
 
+    // --- 2. SignalR Setup ---
+    // Ensure the SignalR client script is included in your _Layout_SeatMap.cshtml
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/seatMapHub") // Connects to the endpoint mapped in Program.cs
+        .withAutomaticReconnect()
+        .build();
 
+    // Start the connection and join the show's group
+    connection.start().then(() => {
+        console.log("SignalR Connected. Joining group:", showId);
+        // Invoke the server method to join the show's group
+        connection.invoke("JoinShowGroup", showId).catch(err => {
+            console.error("Failed to join show group:", err);
+        });
+    }).catch(err => console.error("SignalR Connection Error:", err));
+
+
+    // --- 3. SignalR Receive Handler ---
+    connection.on("ReceiveSeatUpdate", function (jsonUpdate) {
+        // jsonUpdate is a JSON string: [{"seatInstanceId": 123, "state": "Held"}, ...]
+        try {
+            const updates = JSON.parse(jsonUpdate);
+
+            updates.forEach(update => {
+                const seatInstanceId = update.seatInstanceId;
+                const newState = update.state;
+
+                const seatElement = $(`[data-seat-instance-id="${seatInstanceId}"]`);
+
+                if (seatElement.length === 0) return; // Ignore if element doesn't exist
+
+                // Remove existing state classes
+                seatElement.removeClass('seat-available seat-held seat-sold seat-selected clickable-seat');
+
+                // Apply new state class
+                if (newState === "Held") {
+                    // Seat is now held by a competitor or the current user's hold succeeded
+                    seatElement.addClass('seat-held');
+                    selectedSeats.delete(seatInstanceId); // Remove from client's selection map
+                    seatElement.removeClass('clickable-seat');
+                } else if (newState === "Booked") {
+                    // Payment confirmed (Post-Payment success)
+                    seatElement.addClass('seat-sold');
+                    selectedSeats.delete(seatInstanceId);
+                    seatElement.removeClass('clickable-seat');
+                } else if (newState === "Available") {
+                    // Hold expired via TTL or DB transaction failed/rolled back
+                    seatElement.addClass('seat-available clickable-seat');
+                }
+            });
+
+            // Refresh summary if any seat was removed from selection due to real-time update
+            updateSummary();
+        } catch (e) {
+            console.error("Error processing real-time seat update:", e);
+        }
+    });
+
+
+    // --- 4. Utility Functions ---
     function formatPrice(price) {
         return price.toFixed(2);
     }
@@ -20,7 +80,7 @@ $(document).ready(function () {
         selectedSeats.forEach(seat => {
             total += Number(seat.price);
         });
-       
+
         const count = selectedSeats.size;
 
         totalPriceSpan.text(formatPrice(total));
@@ -33,22 +93,17 @@ $(document).ready(function () {
     function showModal(title, message, footerContent) {
         $('#statusModalLabel').text(title);
         $('#modal-message').html(message);
-       
         $('#modal-footer-content').empty().html(footerContent);
         statusModal.show();
     }
 
-    // --- SEAT CLICK HANDLER ---
-
+    // --- 5. SEAT CLICK HANDLER (Original Logic) ---
     $('#seat-map').on('click', '.clickable-seat', function () {
         const seatElement = $(this);
-        // Use data-seat-instance-id which is the unique identifier for locking
         const seatInstanceId = parseInt(seatElement.data('seat-instance-id'));
         const price = parseFloat(seatElement.data('price'));
         const rowVersion = seatElement.data('row-version');
-        console.log("seatinstanceid", seatInstanceId);
-        console.log("price", price);
-        console.log("rowver", rowVersion);
+
         if (seatElement.hasClass('seat-selected')) {
             // Deselect seat
             seatElement.removeClass('seat-selected');
@@ -67,8 +122,7 @@ $(document).ready(function () {
         updateSummary();
     });
 
-    // --- PAYMENT / HOLD TRIGGER ---
-
+    // --- 6. PAYMENT / HOLD TRIGGER (Using Confirmed API Path) ---
     payButton.on('click', function () {
         if (selectedSeats.size === 0) return;
 
@@ -80,7 +134,6 @@ $(document).ready(function () {
         const seatInstanceIds = Array.from(selectedSeats.keys());
         const seatVersions = {};
         selectedSeats.forEach((value, key) => {
-            // Key is SeatInstanceId, Value is Base64 RowVersion string
             seatVersions[key] = value.rowVersion;
         });
 
@@ -90,7 +143,7 @@ $(document).ready(function () {
             SeatVersions: seatVersions
         };
 
-        // POST to the CreateHoldAndRedirect action
+        // CRITICAL: Use the confirmed API route
         $.ajax({
             url: '/api/Customer/BookingApi/CreateHold',
             type: 'POST',
@@ -119,8 +172,8 @@ $(document).ready(function () {
                 if (jqXHR.status === 401) {
                     // 401: Unauthorized -> Login Required
                     showLoginPrompt();
-                } else if (jqXHR.status === 409 || (errorData && errorData.error && errorData.error.includes("race condition"))) {
-                    // 409: Concurrency Conflict or known service conflict error
+                } else if (jqXHR.status === 409 || (errorData && errorData.error && (errorData.error.includes("race condition") || errorData.error.includes("taken") || errorData.error.includes("concurrency")))) {
+                    // 409: Concurrency Conflict (From Redis or DB)
                     handleError(errorData.error || "The selected seats are no longer available.", true);
                 } else {
                     // Other errors (500, validation, etc.)
@@ -130,15 +183,12 @@ $(document).ready(function () {
         });
     });
 
-    // --- ERROR & LOGIN HANDLERS ---
+    // --- 7. ERROR & LOGIN HANDLERS (Original Logic) ---
 
     function showLoginPrompt() {
-        // Construct return URL to send user back here after successful login
-        const cityChanged = sessionStorage.getItem("cityChanged"); 
+        const cityChanged = sessionStorage.getItem("cityChanged");
         const returnUrl = cityChanged ? '/' : window.location.pathname + window.location.search;
-
         const loginUrl = `/Identity/Account/Login?ReturnUrl=${encodeURIComponent(returnUrl)}`;
-
         const footer = `
             <a href="${loginUrl}" class="btn btn-primary">Login / Sign Up</a>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -167,4 +217,11 @@ $(document).ready(function () {
 
         showModal(title, message, footer);
     }
+
+    // --- 8. Clean Up (SignalR) ---
+    $(window).on('beforeunload', function () {
+        if (connection.state === signalR.HubConnectionState.Connected && showId) {
+            connection.invoke("LeaveShowGroup", showId).catch(() => { });
+        }
+    });
 });

@@ -1,0 +1,91 @@
+﻿@model BookNow.Application.DTOs.CustomerDTOs.BookingDTOs.BookingHistoryDTO
+
+@{
+    
+    var cardBorderClass = Model.IsUpcoming ? "border-primary" : "border-secondary";
+    var headerTextColor = Model.IsUpcoming ? "text-primary" : "text-dark";
+    var statusBadgeClass = Model.IsUpcoming ? "bg-primary" : "bg-secondary";
+
+  
+    var showDate = Model.ShowDateTime.ToString("ddd, MMM dd");
+    var showTime = Model.ShowDateTime.ToString("hh:mm tt");
+}
+
+@* Card is now white/light-mode oriented with dark text for high visibility. *@
+<div class="card shadow-sm border-0 mb-4 rounded-3 overflow-hidden @cardBorderClass" style="border-left: 5px solid;">
+    <div class="row g-0">
+
+        @* === LEFT COLUMN: MOVIE POSTER (Visual Anchor) === *@
+        <div class="col-4 col-md-3 col-lg-2">
+            <img src="@Model.MovieImageUrl" class="img-fluid w-100 h-100 object-fit-cover" alt="@Model.MovieTitle Poster"
+                 style="min-height: 200px;"
+                 onerror="this.onerror=null; this.src='https://placehold.co/300x450/e9ecef/495057?text=No+Image';">
+        </div>
+
+        @* === RIGHT COLUMN: DETAILS AND FINANCIALS === *@
+        <div class="col-8 col-md-9 col-lg-10 p-3 p-md-4">
+
+            @* --- 1. HEADER: Title and Status --- *@
+            <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
+                <div>
+                    <h5 class="card-title fw-bold @headerTextColor mb-1">
+                        @Model.MovieTitle
+                    </h5>
+                    <p class="card-text text-muted small">
+                        TicketNumber: <span class="fw-bold text-dark">@Model.TicketNumber</span>
+                    </p>
+                </div>
+                <span class="badge @statusBadgeClass fw-bold p-2 ms-2">
+                    <i class="bi @(Model.IsUpcoming ? "bi-check-circle" : "bi-archive") me-1"></i>
+                    @(Model.IsUpcoming ? "CONFIRMED" : "COMPLETED")
+                </span>
+            </div>
+
+            @* --- 2. MAIN DETAILS (Responsive Grid) --- *@
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 text-dark">
+
+                @* DATE & TIME *@
+                <div class="col">
+                    <i class="bi bi-calendar-check-fill text-info me-2"></i>
+                    <span class="d-block small text-muted">Date & Time</span>
+                    <span class="fw-bold">@showDate</span>
+                    <span class="fw-bold text-info">@showTime</span>
+                </div>
+
+                @* SEATS & SCREEN *@
+                <div class="col">
+                    <i class="bi bi-ticket-detailed-fill text-warning me-2"></i>
+                    <span class="d-block small text-muted">Seats & Screen</span>
+                    <span class="fw-bold text-warning">@Model.SeatLabels</span>
+                    <span class="text-muted ms-2">(@Model.ScreenName)</span>
+                </div>
+
+                @* THEATRE & ADDRESS *@
+                <div class="col-12 col-lg-4">
+                    <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                    <span class="d-block small text-muted">Location</span>
+                    <span class="fw-bold">@Model.TheatreName</span>
+                    <span class="d-block small fw-bold text-dark">
+                        @Model.City, @Model.Country
+                    </span>
+                    <span class="d-block small text-muted">@Model.TheatreAddress</span>
+                </div>
+            </div>
+
+            <hr class="my-3 my-md-4">
+
+            @* --- 3. FINANCIAL DETAILS --- *@
+            <div class="row row-cols-2 g-2 align-items-center">
+                <div class="col-8">
+                    <i class="bi bi-wallet-fill text-success me-2"></i>
+                    <span class="d-block small text-muted">Total Paid</span>
+                    <span class="fs-5 fw-bold text-success">@Model.CurrencySymbol@Model.TotalAmount.ToString("N2")</span>
+                </div>
+                <div class="col-4 text-end">
+                    <span class="d-block small text-muted">Transaction No.</span>
+                    <span class="fw-bold text-dark">@Model.TxnNo</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
