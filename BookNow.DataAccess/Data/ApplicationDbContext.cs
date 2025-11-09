@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using BookNow.Application.DTOs.Analytics;
+using BookNow.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using BookNow.Models;
 
 namespace BookNow.DataAccess.Data
 {
@@ -25,7 +26,7 @@ namespace BookNow.DataAccess.Data
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingSeat> BookingSeats { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
-
+        public DbSet<RawRevenueDto> SpRawRevenue { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -87,7 +88,7 @@ namespace BookNow.DataAccess.Data
                 .Property(pt => pt.RowVersion)
                 .IsRowVersion();
 
-           
+            modelBuilder.Entity<RawRevenueDto>().HasNoKey();
 
             foreach (var property in modelBuilder.Model.GetEntityTypes()    
                 .SelectMany(t => t.GetProperties()) 

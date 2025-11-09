@@ -97,6 +97,7 @@ namespace BookNow.Application.Services
         tracked: false);
 
             string countryCode = city?.Country?.Code ?? "IND";
+            string currencyCode = CurrencyMapper.GetCurrencyCode(countryCode);
 
             if (booking.BookingStatus != SD.BookingStatus_Pending)
             {
@@ -153,7 +154,7 @@ namespace BookNow.Application.Services
                         GatewayOrderId = booking.TicketNumber,
                         GatewayPaymentId = Guid.NewGuid().ToString(),
                         Amount = booking.TotalAmount,
-                        Currency = countryCode, 
+                        Currency = currencyCode, 
                         Status = SD.PaymentStatus_Success, 
                         AttemptNumber = lastAttempt + 1,
                         CreatedAt = DateTime.UtcNow,

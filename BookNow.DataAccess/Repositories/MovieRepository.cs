@@ -1,6 +1,9 @@
-﻿using BookNow.DataAccess.Data;
-using BookNow.Models;
+﻿using BookNow.Application.DTOs.Analytics;
 using BookNow.Application.RepoInterfaces;
+using BookNow.DataAccess.Data;
+using BookNow.Models;
+using BookNow.Utility;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +73,23 @@ namespace BookNow.DataAccess.Repositories
                 .AsNoTracking()
                 .AnyAsync(m => m.Title.ToLower() == title.ToLower() &&
                                m.ReleaseDate == releaseDate);
+        }
+
+
+        public async Task<IEnumerable<RawRevenueDto>> GetMovieRevenueRawData(int movieId)
+        {
+          
+            const string paymentStatus = SD.PaymentStatus_Success;
+
+            var sql = "EXEC [dbo].[GetMovieRevenueRawData] @MovieId, @PaymentStatus";
+
+            var movieIdParam = new SqlParameter("MovieId", movieId);
+            var statusParam = new SqlParameter("PaymentStatus", paymentStatus);
+
+
+            return await _db.SpRawRevenue
+         .FromSqlRaw(sql, movieIdParam, statusParam)
+         .ToListAsync();
         }
 
     }

@@ -27,7 +27,8 @@
     using BookNow.Web.Customer.Infrastructure.Filters;
     using Serilog;
     using Serilog.Events;
-using BookNow.Application.Validation.PaymentValidations;
+    using BookNow.Application.Validation.PaymentValidations;
+using BookNow.Application.Services.BackgroundTasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,7 @@ var builder = WebApplication.CreateBuilder(args);
         .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day) 
         .CreateLogger();
 
+    builder.Host.UseSerilog();
     builder.Host.UseSerilog();
 
 
@@ -97,16 +99,31 @@ builder.Services.AddAutoMapper(cfg =>
 
     builder.Services.AddStackExchangeRedisCache(options =>
     {
-        // Replace "localhost:6379" with your actual Redis connection string
         options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
         options.InstanceName = "BookNow_";
     });
-    builder.Services.AddSignalR();
+
+
+     builder.Services.AddHttpClient<IExchangeRateService, RedisExchangeRateService>(client =>
+      {
+    var configuration = builder.Configuration;
+    var baseUrl = configuration["FixerApi:BaseUrl"];
+    if (string.IsNullOrEmpty(baseUrl))
+    {
+        throw new InvalidOperationException("Fixer API BaseUrl is missing in configuration. Check appsettings.json.");
+    }
+
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Accept.Clear();
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+builder.Services.AddHostedService<RateCacheWarmerJob>();
+builder.Services.AddSignalR();
     builder.Services.AddRazorPages();
 
 
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-    builder.Services.AddScoped<IRedisLockService, RedisLockService>();
+    builder.Services.AddSingleton<IRedisLockService, RedisLockService>();
     builder.Services.AddScoped<IRealTimeNotifier, SignalRRealTimeNotifier>();
 
     builder.Services.AddScoped<IMovieService, MovieService>();
@@ -117,8 +134,11 @@ builder.Services.AddAutoMapper(cfg =>
     builder.Services.AddScoped<ISeatBookingService, SeatBookingService>();
     builder.Services.AddScoped<IPaymentService, PaymentService>();
     builder.Services.AddScoped<IBookingHistoryService, BookingHistoryService>();
+    builder.Services.AddScoped<IProducerAnalyticsService, ProducerAnalyticsService>();
 
-    builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
+
+
+builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
     builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
     builder.Services.AddTransient<IEmailService, EmailSender>();
     builder.Services.AddScoped<TheatreOwnershipFilter>();

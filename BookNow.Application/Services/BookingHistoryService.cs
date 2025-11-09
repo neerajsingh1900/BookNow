@@ -56,7 +56,7 @@ namespace BookNow.Application.Services
                     Country = b.Show.Screen.Theatre.City.Country.Name ?? "N/A",
                     TicketNumber = b.TicketNumber,
                     TotalAmount = b.TotalAmount,
-                    CurrencySymbol = CurrencyMapper.GetSymbolByCountryCode(latestPayment?.Currency),
+                    CurrencySymbol = CurrencyMapper.GetSymbolByCurrencyCode(latestPayment?.Currency),
                     TxnNo = latestPayment?.PaymentTxnId ??0,
                 };
             }).ToList();
