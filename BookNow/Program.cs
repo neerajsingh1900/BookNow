@@ -28,7 +28,7 @@
     using Serilog;
     using Serilog.Events;
     using BookNow.Application.Validation.PaymentValidations;
-using BookNow.Application.Services.BackgroundTasks;
+    using BookNow.Application.Services.BackgroundTasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,14 +117,16 @@ builder.Services.AddAutoMapper(cfg =>
     client.DefaultRequestHeaders.Accept.Clear();
     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
+    builder.Services.AddSingleton<IMessageBus, InMemoryMessageBus>();
 builder.Services.AddHostedService<RateCacheWarmerJob>();
+builder.Services.AddHostedService<ReminderBackgroundService>();
 builder.Services.AddSignalR();
     builder.Services.AddRazorPages();
 
 
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddSingleton<IRedisLockService, RedisLockService>();
-    builder.Services.AddScoped<IRealTimeNotifier, SignalRRealTimeNotifier>();
+builder.Services.AddScoped<IRealTimeNotifier, SignalRRealTimeNotifier>();
 
     builder.Services.AddScoped<IMovieService, MovieService>();
     builder.Services.AddScoped<ITheatreService, TheatreService>();

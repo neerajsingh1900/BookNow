@@ -1,9 +1,11 @@
-﻿using BookNow.Application.DTOs.PaymentDTOs;
+﻿using BookNow.Application.DTOs.EventDTOs;
+using BookNow.Application.DTOs.PaymentDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Application.RepoInterfaces;
 using BookNow.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,14 +20,16 @@ namespace BookNow.Application.Services
         private readonly IRedisLockService _redisLockService;
         private readonly IRealTimeNotifier _notifier;
         private readonly ILogger<PaymentService> _logger;
+        private readonly IMessageBus _bus;
 
         public PaymentService(IUnitOfWork unitOfWork, IRedisLockService redisLockService,
-                              IRealTimeNotifier notifier, ILogger<PaymentService> logger)
+                              IRealTimeNotifier notifier, ILogger<PaymentService> logger, IMessageBus bus)
         {
             _unitOfWork = unitOfWork;
             _redisLockService = redisLockService;
             _notifier = notifier;
             _logger = logger;
+            _bus = bus;
         }
 
        
@@ -127,7 +131,7 @@ namespace BookNow.Application.Services
                 
             try
             {
-                // 1. Update DB States
+                
                 booking.BookingStatus = finalBookingStatus;
                 _unitOfWork.Booking.Update(booking);
 
@@ -167,12 +171,22 @@ namespace BookNow.Application.Services
                     _logger.LogInformation("PaymentTransaction record created for Booking {BookingId}", booking.BookingId);
                 }
 
-                // 2. Commit DB transaction
+                
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
+               
+                var reminder = new ShowReminderEventDTO
+                {
+                    BookingId = booking.BookingId,
+                    UserId = booking.UserId,
+                    TriggerAtUtc = booking.Show.StartTime.AddMinutes(-10)
+                };
 
-                // 3. Post-Commit Cleanup (Redis Locks and Notifier)
+               
+
                 await FinalizePostCommit(booking.Show.ShowId, seatInstanceIds, finalSeatState, booking.IdempotencyKey);
+              
+               await _bus.PublishAsync(reminder);
 
                 return redirectPath;
             }
@@ -185,24 +199,24 @@ namespace BookNow.Application.Services
             }
         }
 
-        // --- FinalizePostCommit (Helper) ---
+       
 
         private async Task FinalizePostCommit(int showId, List<int> seatInstanceIds, string finalSeatState, string lockToken)
         {
           
-            // Release Redis Locks
+          
             foreach (var seatInstanceId in seatInstanceIds)
             {
                 var lockKey = $"hold:{seatInstanceId}";
-                // Assumes IRedisLockService uses the userId for lock token
+              
                 await _redisLockService.ReleaseLockAsync(lockKey, lockToken);
             }
 
-            // Notify Real-time Clients
+            
             await _notifier.NotifySeatUpdatesAsync(showId, seatInstanceIds, finalSeatState);
         }
 
-        // --- ReleaseSeatsAndLocksAsync (Cleanup Utility) ---
+       
 
         public async Task ReleaseSeatsAndLocksAsync(int bookingId)
         {

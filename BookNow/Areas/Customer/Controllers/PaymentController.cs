@@ -42,15 +42,14 @@ namespace BookNow.Web.Areas.Customer.Controllers
             return View(summary);
         }
 
-        // POST /Customer/Payment/HandleGatewayResponse
+      
         [ServiceFilter(typeof(BookingOwnershipFilter))]
         [HttpPost]
         public async Task<IActionResult> HandleGatewayResponse([FromBody] GatewayResponseDTO response)
         {
-            // The service returns the redirect action name (e.g., "Success")
+           
             string redirectActionName = await _paymentService.ProcessGatewayResponseAsync(response);
 
-            // Need to use Url.Action with the Area specified for client-side AJAX redirect
             return Json(new
             {
                 success = true,
@@ -68,15 +67,15 @@ namespace BookNow.Web.Areas.Customer.Controllers
             return Ok();
         }
 
-        // GET /Customer/Payment/Success
+      
         [AllowAnonymous]
         public IActionResult Success() => View();
 
-        // GET /Customer/Payment/Failed
+       
         [AllowAnonymous]
         public IActionResult Failed() => View();
 
-        // GET /Customer/Payment/Timeout
+        
         [AllowAnonymous]
         public IActionResult Timeout() => View();
     }

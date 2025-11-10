@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 
 namespace BookNow.Web.Services
 {
-    // This service lives in the Web/Infrastructure layer and depends on the Application interface.
-    public class SignalRRealTimeNotifier : IRealTimeNotifier
+     public class SignalRRealTimeNotifier : IRealTimeNotifier
     {
         private readonly IHubContext<SeatMapHub> _hubContext;
 

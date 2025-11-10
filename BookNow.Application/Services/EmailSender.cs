@@ -2,6 +2,7 @@
 using BookNow.Utility;
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
@@ -13,16 +14,17 @@ namespace BookNow.Utility
     public class EmailSender : IEmailService
     {
         private readonly EmailSettings _emailSettings;
+        private readonly ILogger<EmailSender> _logger;
 
-        public EmailSender(IOptions<EmailSettings> emailSettings)
+        public EmailSender(IOptions<EmailSettings> emailSettings, ILogger<EmailSender> logger)
         {
             _emailSettings = emailSettings.Value;
+            _logger = logger;
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var message = new MimeMessage();
-
            
             message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
 
@@ -41,6 +43,8 @@ namespace BookNow.Utility
             {
                 using (var client = new SmtpClient())
                 {
+                    _logger.LogInformation("Connecting to SMTP {Host}:{Port}", _emailSettings.SmtpHost, _emailSettings.SmtpPort);
+
                     await client.ConnectAsync(_emailSettings.SmtpHost, _emailSettings.SmtpPort, SecureSocketOptions.StartTls);
 
                     await client.AuthenticateAsync(_emailSettings.SmtpUser, _emailSettings.SmtpPass);
@@ -52,7 +56,7 @@ namespace BookNow.Utility
             catch (Exception ex)
             {
                 
-                Console.WriteLine($"Error sending email: {ex.Message}");
+                _logger.LogError($"Error sending email: {ex.Message}");
                 throw;
             }
         }

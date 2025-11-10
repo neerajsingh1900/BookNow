@@ -15,7 +15,6 @@ public class BookingController : Controller
 {
     private readonly ISeatBookingService _bookingService;
    
-
     public BookingController(ISeatBookingService bookingService)
     {
         _bookingService = bookingService;

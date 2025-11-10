@@ -67,8 +67,13 @@ namespace BookNow.Application.Services
             var endTime = dto.StartTime.AddMinutes(dto.DurationMinutes);
 
             var seats = await _unitOfWork.Seat.GetSeatsByScreenAsync(dto.ScreenId);
+          
+            if (seats == null || !seats.Any())
+            {
+                _logger.LogWarning("Cannot add show; no seats found for ScreenId: {ScreenId}", dto.ScreenId);
+                throw new NotFoundException($"No seats configured for Screen ID {dto.ScreenId}. Cannot create show.");
+            }
 
-           
             var show = new Show
             {
                 ScreenId = dto.ScreenId,

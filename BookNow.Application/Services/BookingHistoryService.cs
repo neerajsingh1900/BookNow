@@ -22,8 +22,7 @@ namespace BookNow.Application.Services
 
         public async Task<List<BookingHistoryDTO>> GetFullHistoryAsync(string userId)
         {
-            // MOST OPTIMAL QUERY: Single database trip with Eager Loading and Projection (using DTO).
-            var bookings = await _unitOfWork.Booking.GetAllAsync(
+             var bookings = await _unitOfWork.Booking.GetAllAsync(
                 filter: b => b.UserId == userId && b.BookingStatus == SD.BookingStatus_Confirmed,
                 orderBy: q => q.OrderByDescending(b => b.Show.StartTime),
                 includeProperties: "Show.Movie,Show.Screen.Theatre.City.Country,BookingSeats.SeatInstance.Seat,PaymentTransactions"

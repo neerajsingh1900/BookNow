@@ -119,7 +119,6 @@ namespace BookNow.Application.Services.Booking
                 {
                     _logger.LogWarning("Redis lock failed for Seat {SeatId}", seatInstanceId);
 
-                    // Release any partial locks acquired in this batch
                     await ReleasePartialRedisLocks(successfullyLockedSeats, lockToken, command.ShowId);
 
                     return new BookingRedirectDTO
@@ -133,18 +132,17 @@ namespace BookNow.Application.Services.Booking
             }
             _logger.LogInformation("Successfully acquired Redis locks for all seats.");
 
-            //1 Start DB transaction
+         
             using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // 3️⃣ Fetch all requested seat instances ONCE, tracked, including Seat + Screen
                 var seatsListTracked = (await _unitOfWork.SeatInstance.GetAllAsync(
                         filter: si => command.SeatInstanceIds.Contains(si.SeatInstanceId),
                         includeProperties: "Seat,Seat.Screen",
                         orderBy: q => q.OrderBy(si => si.Seat.RowLabel).ThenBy(si => si.Seat.SeatIndex)))
                     .ToList();
 
-                // Validate seat count integrity
+                
                 if (seatsListTracked.Count != command.SeatInstanceIds.Count)
                 {
                     _logger.LogWarning("Seat validation failed: requested {Requested}, found {Found}", command.SeatInstanceIds.Count, seatsListTracked.Count);
@@ -159,10 +157,10 @@ namespace BookNow.Application.Services.Booking
 
                 decimal totalAmount = 0m;
 
-                // 4️⃣ Manual concurrency + availability check
+              
                 foreach (var seat in seatsListTracked)
                 {
-                    // Must be available
+                   
                     if (seat.State != SD.State_Available)
                     {
               _logger.LogWarning("Seat {SeatId} ({SeatNumber}) unavailable during hold attempt", seat.SeatInstanceId, seat.Seat.SeatNumber);
@@ -175,19 +173,6 @@ namespace BookNow.Application.Services.Booking
                         };
                     }
 
-                    // RowVersion (client vs server)
-                    //if (!command.SeatVersions.TryGetValue(seat.SeatInstanceId, out string clientVersionBase64) ||
-                    //    !Convert.ToBase64String(seat.RowVersion).Equals(clientVersionBase64))
-                    //{
-                    //    _logger.LogWarning("RowVersion mismatch for SeatInstanceId {SeatId}", seat.SeatInstanceId);
-
-                    //    await transaction.RollbackAsync();
-                    //    return new BookingRedirectDTO
-                    //    {
-                    //        Success = false,
-                    //        ErrorMessage = "A concurrency error occurred (RowVersion mismatch). Please refresh the page."
-                    //    };
-                    //}
                 }
 
                 // 5️⃣ Lock seats (mark as held) and calculate total
@@ -278,7 +263,7 @@ namespace BookNow.Application.Services.Booking
                 {
                     _logger.LogDebug("Released Redis lock for Seat {SeatId}", seatId);
 
-                    // Use the passed-in showId
+                   
                     await _notifier.NotifySeatUpdatesAsync(showId, new List<int> { seatId }, SD.State_Available);
                 }
             }

@@ -27,7 +27,7 @@ namespace BookNow.Application.Services
                                         ILogger<RedisExchangeRateService> logger,
                                         HttpClient httpClient, IConfiguration configuration)
         {
-            // Reuse connection from existing Redis service
+           
             _redisDb = redisLockService.GetDatabase();
             _logger = logger;
             _httpClient = httpClient;
@@ -37,7 +37,7 @@ namespace BookNow.Application.Services
 
         public async Task<Dictionary<string, decimal>> GetRatesAsync()
         {
-            // 1. ATTEMPT CACHE READ (Fast Path)
+           
             HashEntry[] hashEntries = await _redisDb.HashGetAllAsync(IExchangeRateService.CurrencyRatesHashKey);
 
             if (hashEntries.Length > 0 && hashEntries.Any(e => e.Name.HasValue))
@@ -46,13 +46,13 @@ namespace BookNow.Application.Services
               return hashEntries.ToDictionary(h => h.Name.ToString()!, h => (decimal)h.Value);
             }
 
-            // 2. CACHE MISS / EXPIRED (Slow Path)
+          
             _logger.LogWarning("Cache miss for exchange rates. Calling external API...");
             var rates = await FetchRatesFromExternalApiAsync();
-            // 3. WRITE TO CACHE
+          
             if (rates != null && rates.Any())
             {
-                // Set the rates and the 24-hour TTL
+                
                 await SetRatesAsync(rates);
             }
             return rates ?? new Dictionary<string, decimal>();
@@ -107,14 +107,13 @@ namespace BookNow.Application.Services
          ))
          .ToArray();
 
-            
             await _redisDb.HashSetAsync(IExchangeRateService.CurrencyRatesHashKey, hashEntries);
             await _redisDb.KeyExpireAsync(IExchangeRateService.CurrencyRatesHashKey, _cacheDuration);
         }
 
         private async Task<Dictionary<string, decimal>?> FetchRatesFromExternalApiAsync()
         {
-            // Implementation specific to the Fixer API structure
+           
             string relativeUrlWithQuery =
                  $"{FixerApiEndpoint}?access_key={_fixerApiKey}";
             try

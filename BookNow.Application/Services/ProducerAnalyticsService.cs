@@ -1,7 +1,7 @@
 ﻿using BookNow.Application.DTOs.Analytics;
 using BookNow.Application.Interfaces;
 using BookNow.Application.RepoInterfaces; 
-using BookNow.Models; // For Movie
+using BookNow.Models;
 using BookNow.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,6 @@ namespace BookNow.Application.Services
 
         public async Task<IEnumerable<CountryRevenueDto>> GetRevenueByCountryAsync(int movieId, string targetCurrency)
         {
-            // 1. Get current exchange rates (FAST: from Redis cache)
             var rates = await _exchangeRateService.GetRatesAsync();
          
             if (rates == null || !rates.Any())
@@ -38,7 +37,6 @@ namespace BookNow.Application.Services
                 return Enumerable.Empty<CountryRevenueDto>();
             }
 
-            // 2. Get raw aggregated data (FAST: from Stored Procedure)
             var rawData = await _unitOfWork.Movie.GetMovieRevenueRawData(movieId);
         
             _logger.LogInformation("Raw revenue data fetched for MovieId {MovieId}: {@RawData}", movieId, rawData);
@@ -46,14 +44,13 @@ namespace BookNow.Application.Services
             {
                 return Enumerable.Empty<CountryRevenueDto>();
             }
-
-            // 3. Perform In-Memory Conversion and Final Grouping
-            var convertedData = rawData
+             
+            
+               var convertedData = rawData
                 .GroupBy(r => new { r.CountryName, r.CountryCode })
                 .Select(g =>
                 {
-                    // Sum all raw amounts after converting each currency group to the target currency
-                    decimal totalConvertedRevenue = g.Sum(r =>
+                     decimal totalConvertedRevenue = g.Sum(r =>
                         _exchangeRateService.Convert(
                             r.TotalRawAmount,
                            r.TransactionCurrency,
@@ -78,7 +75,7 @@ namespace BookNow.Application.Services
             return convertedData;
         }
 
-        // Helper to populate movie list for the view's dropdown
+       
         public async Task<ProducerAnalyticsInputDto> GetInputDataAsync(string producerUserId)
         {
             var todayDateOnly = DateOnly.FromDateTime(DateTime.Today);
