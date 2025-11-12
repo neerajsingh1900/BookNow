@@ -17,7 +17,5 @@ namespace BookNow.Application.Interfaces
             string userId,
             string userEmail
         );
-
-        
      }
 }

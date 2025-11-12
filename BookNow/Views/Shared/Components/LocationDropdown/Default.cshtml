@@ -7,7 +7,7 @@
 
 <button class="btn dropdown-toggle location-dropdown-toggle" type="button" id="locationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
     <i class="bi bi-geo-alt-fill me-1" style="color:var(--brand-primary) !important;"></i>
-    <span id="selectedCityText">@(!string.IsNullOrEmpty(selectedCityName) ? selectedCityName : "Select City")</span>
+    <span id="selectedCityText" class="fw-normal">@(!string.IsNullOrEmpty(selectedCityName) ? selectedCityName : "Select City")</span>
 </button>
 
 <div class="dropdown-menu dropdown-menu-start location-dropdown-menu" aria-labelledby="locationDropdown">

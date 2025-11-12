@@ -37,7 +37,7 @@
 
                 const seatElement = $(`[data-seat-instance-id="${seatInstanceId}"]`);
 
-                if (seatElement.length === 0) return; // Ignore if element doesn't exist
+                if (seatElement.length === 0) return; 
 
                 seatElement.removeClass('seat-available seat-held seat-sold seat-selected clickable-seat');
 

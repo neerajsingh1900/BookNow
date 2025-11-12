@@ -74,29 +74,33 @@ namespace BookNow.Application.Services
                 throw new NotFoundException($"No seats configured for Screen ID {dto.ScreenId}. Cannot create show.");
             }
 
+           
             var show = new Show
             {
                 ScreenId = dto.ScreenId,
                 MovieId = dto.MovieId,
                 StartTime = dto.StartTime,
-                EndTime = endTime,
-                SeatInstances = seats.Select(seat => new SeatInstance
-                {
-                    SeatId = seat.SeatId,
-                    State = SD.State_Available,
-                    LastUpdated = DateTime.UtcNow
-                }).ToList()
+                EndTime = endTime
             };
 
-         
             await _unitOfWork.Show.AddAsync(show);
             await _unitOfWork.SaveAsync();
-           
+
+            var seatInstances = seats.Select(seat => new SeatInstance
+            {
+                ShowId = show.ShowId,
+                SeatId = seat.SeatId,
+                State = SD.State_Available,
+                LastUpdated = DateTime.UtcNow
+            }).ToList();
+
+            await _unitOfWork.SeatInstance.BulkInsertAsync(seatInstances);
+
             _logger.LogInformation("Successfully added new show (ShowId: {ShowId}) for ScreenId: {ScreenId}", show.ShowId, dto.ScreenId);
 
             return show;
         }
-
+                
 
 
 

@@ -1,4 +1,4 @@
-﻿@* 
+﻿
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
@@ -10,184 +10,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Producer Dashboard - Movie Management</title>
 
-    <!-- Link to global Bootstrap and your custom theme -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="stylesheet" href="~/css/custom-theme.css" />
-    <!-- Link to specific Producer dashboard styles -->
-    <link rel="stylesheet" href="~/css/producer/dashboard.css" />
-
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" xintegrity="sha512-z3gLpd7yknf1yWutW51z8sF5g+o14792h9F1G12gR0wFw8F9gPzY2K8Q7e4fK4j5c6gR4v2O0i05g0T8D4w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <style>
-        /* CSS specific to this layout that uses your theme variables */
-        .dashboard-wrapper {
-            display: flex;
-            min-height: 100vh;
-            background-color: var(--bg-light); /* from site.css theme */
-        }
-
-        .sidebar {
-            width: 250px;
-            background-color: #fff;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-            padding: 15px;
-            position: fixed;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-            .sidebar a {
-                padding: 10px 15px;
-                display: block;
-                color: var(--text-color);
-                text-decoration: none;
-                border-radius: 0.5rem;
-                transition: background-color 0.2s;
-            }
-
-                .sidebar a:hover {
-                    background-color: rgba(var(--brand-primary), 0.1);
-                    color: var(--brand-primary) !important;
-                    text-decoration: none;
-                }
-
-            .sidebar .active {
-                background-color: var(--brand-primary);
-                color: white !important;
-                font-weight: 600;
-            }
-
-        .main-content {
-            flex-grow: 1;
-            margin-left: 250px; /* Offset for the fixed sidebar */
-            padding: 20px;
-        }
-    </style>
-</head>
-<body class="light-theme">
-
-    <!-- Toast container for TempData messages -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index:1055">
-        @if (TempData["success"] != null)
-        {
-            <div class="toast bg-success text-white border-0 shadow mb-2 show" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        @TempData["success"]
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>
-        }
-        @if (TempData["error"] != null)
-        {
-            <div class="toast bg-danger text-white border-0 shadow mb-2 show" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        @TempData["error"]
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>
-        }
-    </div>
-
-
-
-       
-
-       
-        <div class="sidebar">
-            <h4 class="mb-4 text-center" style="color: var(--brand-primary);">Producer Portal</h4>
-
-            <p class="text-muted small text-uppercase mt-4 mb-2">Management</p>
-            <a asp-area="Producer" asp-controller="Movie" asp-action="Index" class="active">
-                <i class="fas fa-video me-2"></i> Manage Movies
-            </a>
-            <a asp-area="Producer" asp-controller="Show" asp-action="Index">
-                <i class="fas fa-calendar-alt me-2"></i> Shows Analytics
-            </a>
-
-            <p class="text-muted small text-uppercase mt-4 mb-2">Account</p>
-
-        <a id="manage" class="sidebar-text-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
-            <i class="fas fa-user-circle me-2"></i> Account Management
-        </a>
-
-            <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
-                <button type="submit" class="btn btn-outline-danger w-100 mt-2">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                </button>
-            </form>
-        </div>
    
-       
-        <div class="main-content">
-            <main role="main" class="pb-3">
-               
-                @RenderBody()
-            </main>
-        </div>
-    </div>
-
- 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
-  
-    <script src="~/js/producer/movie.js" asp-append-version="true"></script>
-  
-    <script>
-        $(function(){
-            $('.toast').each(function(){
-                var toast = new bootstrap.Toast(this, { delay: 3000 });
-                toast.show();
-            });
-        });
-    </script>
-
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
-
- *@
-
-@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Producer Dashboard - Movie Management</title>
-
-    <!-- Standard ASP.NET & Bootstrap includes -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/custom-theme.css" />
     <link rel="stylesheet" href="~/css/producer/dashboard.css" />
 
-    <!-- Font Awesome for icons -->
+   
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
-        /* === RESPONSIVENESS FIX & STYLING === */
+        
+        :root {
+                --sidebar-width: 250px;
+        }
 
-        /* 1. Global Wrapper: Uses flex to manage sidebar and content height */
         .dashboard-wrapper {
             display: flex;
             min-height: 100vh;
             background-color: var(--bg-light);
         }
 
-        /* 2. Desktop Sidebar Styling (d-lg-flex) */
-        .nav-sidebar {
-            width: 250px;
+         .nav-sidebar {
+            width: var(--sidebar-width);
             background-color: #fff;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
             padding: 15px;
@@ -198,46 +43,87 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            transition: transform 0.3s ease;
         }
 
-        /* 3. Responsive Margin Fix for Main Content:
-                   We apply 250px margin-left ONLY on large screens (lg) where the fixed sidebar is visible. */
         .main-content {
             flex-grow: 1;
             padding: 20px;
+            transition: margin-left 0.3s ease;
+            min-width: 0;
         }
 
-        /* Custom responsive margin for the main content area */
-        @@media (min-width: 992px) { /* Applies only to Bootstrap 'lg' breakpoint and up */
-            .lg-push-sidebar {
-                margin-left: 250px !important;
+       
+        @@media (min-width: 768px) { /* Changed from 992px to 768px (md breakpoint) */
+            .md-push-sidebar { /* New class name */
+                margin-left: var(--sidebar-width) !important;
             }
         }
 
-        /* Sidebar Link Styles */
+        @@media (min-width: 768px) {
+                .nav-sidebar.collapsed {
+                        transform: translateX(calc(var(--sidebar-width) * -1)); /* Slides off-screen */
+
+            }
+
+                .main-content.collapsed-margin {
+                        margin-left: 0px !important; /* Content takes full width */
+
+            }
+        }
+
+        .sidebar-toggle-btn {
+                position: fixed;
+                top: 20px;
+                left: calc(var(--sidebar-width) + 20px); /* Initial position next to open sidebar */
+                z-index: 100;
+                transition: left 0.3s ease;
+        }
+
+            .sidebar-toggle-btn.collapsed-left {
+                    left: 20px; /* Moves to the left edge when sidebar is hidden */
+            }
+
+
+
+
+        /* Sidebar Links */
         .sidebar a {
-            padding: 10px 15px;
-            display: block;
+            display: flex; /* Horizontal layout */
+            align-items: center; /* Vertically center icon & text */
+            padding: 12px 16px;
             color: var(--text-color);
             text-decoration: none;
             border-radius: 0.5rem;
-            transition: background-color 0.2s;
-            /* FIX: Use flex to ensure icon and text are aligned vertically */
-            display: flex;
-            align-items: center;
+            transition: background-color 0.2s, color 0.2s;
+            white-space: nowrap; /* Prevents text wrapping */
         }
 
             .sidebar a:hover {
                 background-color: rgba(var(--brand-primary), 0.1);
                 color: var(--brand-primary) !important;
-                text-decoration: none;
             }
-
 
         .sidebar .active {
             background-color: var(--brand-primary);
-            color: white !important;
+            color: #fff !important;
             font-weight: 600;
+        }
+
+        /* Icon wrapper */
+        .sidebar-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px; /* Fixed width for all icons */
+            margin-right: 10px; /* Gap between icon and text */
+            font-size: 16px; /* Adjust icon size */
+        }
+
+        /* Text wrapper */
+        .sidebar-text {
+            flex: 1; /* Take remaining space */
+            display: inline-block;
         }
 
         /* Ensure offcanvas body uses flex for sticky footer */
@@ -251,11 +137,13 @@
 <body class="light-theme">
 
     <!-- Mobile Menu Toggle Button (Visible only on non-large screens) -->
-    <button class="btn btn-light d-lg-none position-fixed top-0 start-0 m-2 shadow-sm" type="button"
+    <button class="btn btn-light d-md-none position-fixed top-0 start-0 m-2 shadow-sm" type="button"
             data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" style="z-index: 1050;">
         <i class="fas fa-bars"></i> Menu
     </button>
-
+    <button id="sidebarToggle" class="btn btn-light d-none d-md-block shadow-sm sidebar-toggle-btn">
+        <i id="toggleIcon" class="fas fa-angle-left"></i>
+    </button>
 
     <!-- Toast container for TempData messages -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index:1055">
@@ -285,24 +173,26 @@
 
         @* === 1. DESKTOP Sidebar (Fixed, Visible LG and up) === *@
         <!-- Applies fixed positioning and is hidden on small screens -->
-        <div class="nav-sidebar d-none d-lg-flex">
+        <div class="nav-sidebar d-none d-md-flex" id="navSidebar">
 
             @* -- Top Section (Logo/Nav Links) -- *@
             <div>
                 <h4 class="mb-4 text-center" style="color: var(--brand-primary);">Producer Portal</h4>
 
                 <p class="text-muted small text-uppercase mt-4 mb-2">Management</p>
-                <!-- FIX: Added 'sidebar' class to ensure base styling is applied -->
+
+                <!-- Link 1: Manage Movies (CLEANED) -->
                 <a asp-area="Producer" asp-controller="Movie" asp-action="Index" class="sidebar active">
-                    <i class="fas fa-video me-2"></i> Manage Movies
+                    <span class="sidebar-icon"> <i class="fas fa-video me-2"></i></span>
+                    <span class="sidebar-text">  Manage Movies</span>
                 </a>
-              
-                <a asp-area="Producer" asp-controller="Analytics" asp-action="RevenueByCountry" class="sidebar">
-                    <i class="fas fa-chart-bar me-2"></i> Revenue Analytics
-                </a>
+
+                <!-- Link 2: Revenue Analytics (CLEANED) -->
                
-                <a asp-area="Producer" asp-controller="Show" asp-action="Index" class="sidebar">
-                    <i class="fas fa-calendar-alt me-2"></i> Shows Analytics
+                <p class="text-muted small text-uppercase mt-3 mb-1"></p>
+                <a asp-area="Producer" asp-controller="Analytics" asp-action="RevenueByCountry" class="sidebar">
+                    <span class="sidebar-icon"><i class="fas fa-chart-bar me-2"></i></span>
+                    <span class="sidebar-text">Revenue Analytics</span>
                 </a>
 
                 <p class="text-muted small text-uppercase mt-4 mb-2">Account</p>
@@ -312,8 +202,7 @@
                 </a>
             </div>
 
-            @* -- Bottom Section (Sticky Logout) -- *@
-            <div class="border-top pt-3">
+           <div class="border-top pt-3">
                 <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
                     <button type="submit" class="btn btn-outline-danger w-100 mt-2">
                         <i class="fas fa-sign-out-alt me-2"></i> Logout
@@ -323,17 +212,15 @@
         </div>
 
 
-        @* === 2. MOBILE Sidebar (Offcanvas, Hidden LG and below) === *@
         <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
             <div class="offcanvas-header">
                 <h5 id="sidebarOffcanvasLabel" class="mb-0" style="color:var(--brand-primary); font-weight:800;">Producer Portal</h5>
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
 
-            <!-- offcanvas-body uses flex-column and justify-content-between (defined in style block) -->
             <div class="offcanvas-body">
 
-                @* -- Top Section (Nav Links) -- *@
+      
                 <div>
                     <p class="text-muted small text-uppercase mb-2">Management</p>
                     <a asp-area="Producer" asp-controller="Movie" asp-action="Index" class="sidebar active">
@@ -343,10 +230,7 @@
                     <a asp-area="Producer" asp-controller="Analytics" asp-action="RevenueByCountry" class="sidebar">
                         <i class="fas fa-chart-bar me-2"></i> Revenue Analytics
                     </a>
-                   
-                    <a asp-area="Producer" asp-controller="Show" asp-action="Index" class="sidebar">
-                        <i class="fas fa-calendar-alt me-2"></i> Shows Analytics
-                    </a>
+              
 
                     <p class="text-muted small text-uppercase mt-4 mb-2">Account</p>
                     <a id="manage" class="sidebar" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
@@ -354,7 +238,7 @@
                     </a>
                 </div>
 
-                @* -- Bottom Section (Sticky Logout) -- *@
+             
                 <div class="border-top pt-3">
                     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
                         <button type="submit" class="btn btn-outline-danger w-100">
@@ -366,32 +250,31 @@
         </div>
 
 
-        @* === 3. Main Content Area === *@
-        <!-- lg-push-sidebar ensures content is not off-screen on mobile -->
-        <div class="main-content lg-push-sidebar">
+      
+        <div class="main-content md-push-sidebar" id="mainContent">
             <main role="main" class="pb-3">
                 @RenderBody()
             </main>
         </div>
     </div>
 
-    @* Standard Scripts *@
+   
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    @* Producer-specific JS *@
-    <script src="~/js/producer/movie.js" asp-append-version="true"></script>
+   
+   
 
     <script>
-        // Toast initialization
+        
         $(function(){
             $('.toast').each(function(){
                 var toast = new bootstrap.Toast(this, { delay: 3000 });
                 toast.show();
             });
 
-            // Auto-hide mobile offcanvas on link click
+          
             $('.offcanvas .sidebar a').on('click', function() {
                 var offcanvasElement = document.getElementById('sidebarOffcanvas');
                 var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
@@ -400,6 +283,34 @@
                 }
             });
         });
+       
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const navSidebar = document.getElementById('navSidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (sidebarToggle && navSidebar && mainContent && toggleIcon) {
+                sidebarToggle.addEventListener('click', function() {
+
+                   
+                    navSidebar.classList.toggle('collapsed');
+
+                    // 2. Toggle the main content margin (push/unpush)
+                    mainContent.classList.toggle('collapsed-margin');
+
+                    // 3. Toggle the button position
+                    sidebarToggle.classList.toggle('collapsed-left');
+
+                    // 4. Toggle the icon (angle left/right)
+                    if (navSidebar.classList.contains('collapsed')) {
+                        toggleIcon.classList.remove('fa-angle-left');
+                        toggleIcon.classList.add('fa-angle-right');
+                    } else {
+                        toggleIcon.classList.remove('fa-angle-right');
+                        toggleIcon.classList.add('fa-angle-left');
+                    }
+                });
+            }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

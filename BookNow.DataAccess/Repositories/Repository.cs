@@ -1,6 +1,7 @@
-﻿using BookNow.DataAccess.Data;
+﻿using BookNow.Application.RepoInterfaces;
+using BookNow.DataAccess.Data;
 using BookNow.Models;
-using BookNow.Application.RepoInterfaces;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -133,6 +134,11 @@ namespace BookNow.DataAccess.Repositories
             return await query.AnyAsync();
         }
 
+        public async Task BulkInsertAsync(IEnumerable<T> entities)
+        {
+            var list = entities.ToList();
+            await _db.BulkInsertAsync(list);
         }
+    }
 }
 

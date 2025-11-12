@@ -19,5 +19,6 @@ namespace BookNow.DataAccess.Repositories
                 includeProperties: includeProperties
             );
         }
+
     }
 }

@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EFCore.BulkExtensions;
+
 
 namespace BookNow.DataAccess.Repositories
 {
@@ -33,6 +35,28 @@ namespace BookNow.DataAccess.Repositories
                 .ThenBy(si => si.Seat.SeatIndex)
                 .ToListAsync();
         }
+        
 
-    }
+  public async Task ExecuteSeatStateUpdateAsync(List<int> seatInstanceIds, string state)
+    {
+            if (seatInstanceIds == null || seatInstanceIds.Count == 0)
+                return;
+
+            const int batchSize = 10000; 
+            int total = seatInstanceIds.Count;
+
+            for (int i = 0; i < total; i += batchSize)
+            {
+                var batch = seatInstanceIds.Skip(i).Take(batchSize).ToList();
+
+                await _db.SeatInstances
+                    .Where(s => batch.Contains(s.SeatInstanceId))
+                    .ExecuteUpdateAsync(updates =>
+                        updates.SetProperty(s => s.State, state)
+                    );
+            }
+        }
+
+
+}
 }

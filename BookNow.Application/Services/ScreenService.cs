@@ -109,8 +109,9 @@ namespace BookNow.Application.Services
                         }
                     }
 
-                    await _unitOfWork.Seat.AddRangeAsync(seatsToGenerate);
-                    await _unitOfWork.SaveAsync();
+               
+                await _unitOfWork.Seat.BulkInsertAsync(seatsToGenerate);
+                await _unitOfWork.SaveAsync();
 
                 await transaction.CommitAsync();
                 _logger.LogInformation("Screen created successfully with ScreenId: {ScreenId}", screen.ScreenId);

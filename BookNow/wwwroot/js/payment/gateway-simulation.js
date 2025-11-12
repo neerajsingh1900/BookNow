@@ -1,5 +1,4 @@
-﻿// This script runs only on the /Payment/Gateway page.
-
+﻿
 $(document).ready(function () {
     // --- 1. DOM Elements & Constants ---
     const timerDisplay = $('#payment-timer');
@@ -7,7 +6,8 @@ $(document).ready(function () {
     const failButton = $('#btn-simulate-failure');
     const processingSpinner = '<span class="spinner-border spinner-border-sm"></span> Processing...';
 
-    // Retrieve the essential BookingId from the button's data attribute
+
+
     const bookingId = successButton.data('booking-id');
     const CityCookieKey = "BN_CityId";
     function getCookieValue(name) {
@@ -16,13 +16,22 @@ $(document).ready(function () {
         if (parts.length === 2) return parts.pop().split(';').shift();
         return '1'; 
     }
-    const cityId = getCookieValue(CityCookieKey); // <--- READ CITY ID FROM COOKIE
+    const cityId = getCookieValue(CityCookieKey); 
 
     if (!bookingId || !cityId) {
         console.error("CRITICAL: Booking ID or City ID not found. Cannot start simulation.");
         return;
     }
-
+    function lockPaymentUI() {
+        // Disable all form inputs and accordion buttons to prevent changes during processing
+        $('input, select, button[data-bs-toggle="collapse"]').prop('disabled', true);
+    }
+    function disableButtons(statusText) {
+        lockPaymentUI(); // <--- CALL THE NEW LOCK FUNCTION HERE
+        // Disable both buttons and show processing text/spinner on the Success button
+        successButton.prop('disabled', true).html(processingSpinner);
+        failButton.prop('disabled', true).text(statusText);
+    }
     // Timer setup (5 minutes hold duration, matching your backend logic)
     const holdDurationMinutes = 5;
     let timeRemaining = holdDurationMinutes * 60;
@@ -36,20 +45,25 @@ $(document).ready(function () {
     }
 
 
-    if (!bookingId) {
-        console.error("CRITICAL: Booking ID not found. Cannot start simulation.");
-        return;
-    }
 
     // --- 2. Utility & Core Logic ---
     function updateTimerDisplay() {
         const minutes = Math.floor(timeRemaining / 60);
         const seconds = timeRemaining % 60;
-        timerDisplay.text(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        timerDisplay.text(timeString);
+
+      
+        if (timeRemaining <= 60 && timeRemaining > 0) {
+            timerDisplay.addClass('text-danger').removeClass('text-warning');
+        } else if (timeRemaining <= 0) {
+            timerDisplay.removeClass('text-danger').text('TIME OUT');
+        }
     }
 
     function disableButtons(statusText) {
-        // Disable both buttons and show processing text/spinner on the Success button
+      
         successButton.prop('disabled', true).html(processingSpinner);
         failButton.prop('disabled', true).text(statusText);
     }
@@ -57,7 +71,7 @@ $(document).ready(function () {
     // Sends the status update to the backend service
     function handleResponse(status) {
 
-        if (isFinalized) return; // Prevent multiple triggers
+        if (isFinalized) return; 
         isFinalized = true;
 
         clearInterval(timerInterval);
@@ -85,7 +99,7 @@ $(document).ready(function () {
                 if (response.success && response.redirectUrl) {
                     window.location.href = response.redirectUrl;
                 } else {
-                    // Fallback for severe backend errors
+                   
                     window.location.href = '/Customer/Payment/Failed';
                 }
             },

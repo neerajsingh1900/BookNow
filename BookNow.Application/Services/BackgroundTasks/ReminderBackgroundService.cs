@@ -19,11 +19,12 @@ public class ReminderBackgroundService : BackgroundService
         _serviceProvider = serviceProvider;
         _logger = logger;
         _messageBus.Subscribe<ShowReminderEventDTO>(ScheduleReminder);
+        _messageBus.Subscribe<BookingConfirmedEventDTO>(SendConfirmationEmail);
     }
     public Task ScheduleReminder(ShowReminderEventDTO reminder)
     {
         _logger.LogInformation(
-           "Scheduled reminder for BookingId {BookingId} at {TriggerAtUtc}",
+           "Scheduled reminder for BookingId {BookingId} at {TriggerAt}",
            reminder.BookingId,
            reminder.TriggerAtUtc);
 
@@ -31,7 +32,37 @@ public class ReminderBackgroundService : BackgroundService
         return Task.CompletedTask;
     }
 
+    public async Task SendConfirmationEmail(BookingConfirmedEventDTO confirmation)
+    {
+        _logger.LogInformation("Sending confirmation email for BookingId {BookingId} to {Email}",
+            confirmation.BookingId, confirmation.UserEmail);
 
+       
+        using var scope = _serviceProvider.CreateScope();
+        var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+
+        string subject = $"Booking Confirmed: {confirmation.MovieTitle}";
+        string body = $@"
+            <h1>Your Booking is Confirmed!</h1>
+            <p>Thank you for booking with us. Here are your details:</p>
+            <ul>
+                <li>Movie: <strong>{confirmation.MovieTitle}</strong></li>
+                <li>Show Time: <strong>{confirmation.ShowTime:yyyy-MM-dd HH:mm tt}</strong></li>
+                <li>Total Paid: <strong>{confirmation.CurrencySymbol}{confirmation.TotalAmount:N2}</strong></li>
+            </ul>
+            <p>Please find your e-ticket attached or available in your profile .</p>
+        ";
+
+        try
+        {
+            await emailService.SendEmailAsync(confirmation.UserEmail, subject, body);
+            _logger.LogInformation("Confirmation email sent successfully for BookingId {BookingId}.", confirmation.BookingId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send confirmation email for BookingId {BookingId}.", confirmation.BookingId);
+        }
+    }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Reminder background service started.");
@@ -68,19 +99,12 @@ public class ReminderBackgroundService : BackgroundService
 
                 if (booking != null && booking.BookingStatus == SD.BookingStatus_Confirmed)
                 {
-                    _logger.LogInformation(
-                           "Booking {BookingId}  confirmed  (status: {Status})",
-                           booking.BookingId,
-                           booking.BookingStatus);
+       _logger.LogInformation("Booking {BookingId}  confirmed  (status: {Status})",booking.BookingId,booking.BookingStatus);
 
-                  
-                    await notifier.NotifySeatUpdatesAsync(booking.Show.ShowId,
-                        booking.BookingSeats.Select(bs => bs.SeatInstanceId).ToList(),
-                        "Reminder");
 
                     // Email notification
                     await emailService.SendEmailAsync(
-                        user?.Email,
+                        user?.Email!,
                         $"Reminder: {booking.Show.Movie.Title} starts in 10 minutes",
                         $"Your show {booking.Show.Movie.Title} starts at {booking.Show.StartTime:HH:mm}");
                 }

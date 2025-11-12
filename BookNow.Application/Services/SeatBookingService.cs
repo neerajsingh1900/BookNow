@@ -63,7 +63,7 @@ namespace BookNow.Application.Services.Booking
                 .Select(c => c.Country.Code)
                 .FirstOrDefault();
 
-            var currencySymbol = CurrencyMapper.GetSymbolByCountryCode(countryCode);
+            var currencySymbol = CurrencyMapper.GetSymbolByCountryCode(countryCode!);
 
             
             var seatInstances = await _unitOfWork.SeatInstance.GetSeatsWithStatusForShowAsync(showId);
@@ -85,7 +85,7 @@ namespace BookNow.Application.Services.Booking
                 TheatreName = firstSeat.Show.Screen.Theatre.TheatreName,
                 ScreenName = firstSeat.Show.Screen.ScreenNumber,
                 StartTime = firstSeat.Show.StartTime,
-                MovieLanguage = firstSeat.Show.Movie.Language,
+                MovieLanguage = firstSeat.Show.Movie.Language!,
                 CurrencySymbol = currencySymbol,
                 SeatsByRow = allSeatsDto
                     .GroupBy(s => s.RowLabel)
@@ -188,7 +188,7 @@ namespace BookNow.Application.Services.Booking
                 {
                     UserId = userId,
                     ShowId = command.ShowId,
-                    TotalAmount = totalAmount,
+                    TotalAmount = totalAmount+18,
                     BookingStatus = SD.BookingStatus_Pending,
                     CreatedAt = DateTime.UtcNow,
                     TicketNumber = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),

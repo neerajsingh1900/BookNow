@@ -33,5 +33,7 @@ namespace BookNow.Application.RepoInterfaces
         Task AddRangeAsync(IEnumerable<T> entities);
 
         Task<bool> AnyAsync(Expression<Func<T, bool>> filter);
+       
+        Task BulkInsertAsync(IEnumerable<T> entities);
     }
 }

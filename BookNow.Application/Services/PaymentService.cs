@@ -2,11 +2,13 @@
 using BookNow.Application.DTOs.PaymentDTOs;
 using BookNow.Application.Interfaces;
 using BookNow.Application.RepoInterfaces;
+using BookNow.Models;
 using BookNow.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.Pkcs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,8 +33,6 @@ namespace BookNow.Application.Services
             _logger = logger;
             _bus = bus;
         }
-
-       
 
         public async Task<PaymentSummaryDTO?> GetBookingSummaryAsync(int bookingId, int cityId)
         {
@@ -61,57 +61,26 @@ namespace BookNow.Application.Services
                 ScreenName = booking.Show.Screen.ScreenNumber,
                 ShowDateTime = booking.Show.StartTime,
                 SeatLabels = seatLabels,
-                TotalAmount = booking.TotalAmount +18,
+                TotalAmount = booking.TotalAmount,
                 CurrencySymbol = currencySymbol,
-                UserEmail = booking.User.Email
+                UserEmail = booking.User?.Email!,
             };
         }
 
-       
         public async Task<string> ProcessGatewayResponseAsync(GatewayResponseDTO response)
         {
-            var booking = await _unitOfWork.Booking.GetAsync(
-                b => b.BookingId == response.BookingId,
-                includeProperties: "BookingSeats.SeatInstance,Show",
-                tracked: true);
 
-            if (booking == null) return "Failed";
+            var b = await _unitOfWork.Booking.GetBookingSummaryAsync(response.BookingId);
+            if (b == null) return "Failed";
 
-            var existingTxn = await _unitOfWork.PaymentTransaction.GetAsync(
-     pt => pt.IdempotencyKey == response.IdempotencyKey
- );
-
-            if (existingTxn != null)
-            {
-                _logger.LogInformation(
-       "Duplicate payment callback detected. Booking {BookingId}, Key {Key}",
-       response.BookingId, response.IdempotencyKey
-   );
-                return existingTxn.Status switch
-                {
-                    SD.PaymentStatus_Success => "Success",
-                    SD.PaymentStatus_Failed => "Failed",
-                    _ => "Timeout"
-                };
-            }
-
-            int cityId = response.CityId;
-            var city = await _unitOfWork.City.GetAsync( c => c.CityId == cityId,
-        includeProperties: "Country",
-        tracked: false);
-
+            var city = await _unitOfWork.City.GetAsync(c => c.CityId == response.CityId, includeProperties: "Country", tracked: false);
             string countryCode = city?.Country?.Code ?? "IND";
             string currencyCode = CurrencyMapper.GetCurrencyCode(countryCode);
 
-            if (booking.BookingStatus != SD.BookingStatus_Pending)
-            {
-                return booking.BookingStatus.Replace(SD.BookingStatus_Prefix, ""); 
-            }
+            if (b.BookingStatus != SD.BookingStatus_Pending)
+                return b.BookingStatus.Replace(SD.BookingStatus_Prefix, "");
 
-            string finalBookingStatus;
-            string finalSeatState;
-            string redirectPath;
-
+            string finalBookingStatus, finalSeatState, redirectPath;
             if (response.Status == "success")
             {
                 finalBookingStatus = SD.BookingStatus_Confirmed;
@@ -120,86 +89,74 @@ namespace BookNow.Application.Services
             }
             else
             {
-                finalBookingStatus = (response.Status == "timeout")
-                    ? SD.BookingStatus_Expired : SD.BookingStatus_Cancelled;
+                finalBookingStatus = (response.Status == "timeout") ? SD.BookingStatus_Expired : SD.BookingStatus_Cancelled;
                 finalSeatState = SD.State_Available;
                 redirectPath = response.Status == "timeout" ? "Timeout" : "Failed";
             }
-        
-            using IDbContextTransaction transaction = await _unitOfWork.BeginTransactionAsync();
-            List<int> seatInstanceIds = booking.BookingSeats.Select(bs => bs.SeatInstanceId).ToList();
-                
+
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                
-                booking.BookingStatus = finalBookingStatus;
-                _unitOfWork.Booking.Update(booking);
+                await _unitOfWork.Booking.ExecuteStatusUpdateAsync(b.BookingId, finalBookingStatus);
+                await _unitOfWork.SeatInstance.ExecuteSeatStateUpdateAsync(b.SeatInstanceIds, finalSeatState);
 
-                foreach (var bookingSeat in booking.BookingSeats)
-                {
-                    bookingSeat.SeatInstance.State = finalSeatState;
-                    _unitOfWork.SeatInstance.Update(bookingSeat.SeatInstance);
-                }
                 if (response.Status == "success")
                 {
-                    int lastAttempt = (await _unitOfWork.PaymentTransaction.GetAllAsync(
-         pt => pt.BookingId == booking.BookingId
-     ))
-     .Select(pt => pt.AttemptNumber)
-     .DefaultIfEmpty(0)
-     .Max();
-
-                   
-
-                    var paymentTxn = new BookNow.Models.PaymentTransaction
+                    var txn = new PaymentTransaction
                     {
-                        BookingId = booking.BookingId,
+                        BookingId = b.BookingId,
                         Gateway = "SIMULATION",
-                        GatewayOrderId = booking.TicketNumber,
+                        GatewayOrderId = b.TicketNumber,
                         GatewayPaymentId = Guid.NewGuid().ToString(),
-                        Amount = booking.TotalAmount,
-                        Currency = currencyCode, 
-                        Status = SD.PaymentStatus_Success, 
-                        AttemptNumber = lastAttempt + 1,
+                        Amount = b.TotalAmount,
+                        Currency = currencyCode,
+                        Status = SD.PaymentStatus_Success,
+                        AttemptNumber = 1,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        IdempotencyKey = response.IdempotencyKey,   
+                        IdempotencyKey = response.IdempotencyKey,
                         RawResponse = System.Text.Json.JsonSerializer.Serialize(response)
                     };
-
-                    await _unitOfWork.PaymentTransaction.AddAsync(paymentTxn);
-                    _logger.LogInformation("PaymentTransaction record created for Booking {BookingId}", booking.BookingId);
+                    await _unitOfWork.PaymentTransaction.AddAsync(txn);
                 }
 
-                
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
-               
-                var reminder = new ShowReminderEventDTO
-                {
-                    BookingId = booking.BookingId,
-                    UserId = booking.UserId,
-                    TriggerAtUtc = booking.Show.StartTime.AddMinutes(-10)
-                };
-
-               
-
-                await FinalizePostCommit(booking.Show.ShowId, seatInstanceIds, finalSeatState, booking.IdempotencyKey);
-              
-               await _bus.PublishAsync(reminder);
-
-                return redirectPath;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await ReleaseSeatsAndLocksAsync(response.BookingId); // Attempt cleanup regardless of DB failure
+                await ReleaseSeatsAndLocksAsync(response.BookingId);
                 _logger.LogError(ex, "Failed to finalize booking {BookingId}.", response.BookingId);
                 return "Failed";
             }
-        }
 
-       
+            
+            var confirmationEvent = new BookingConfirmedEventDTO
+            {
+                BookingId = b.BookingId,
+                UserEmail = b.UserEmail,
+                MovieTitle = b.MovieTitle,
+                ShowTime = b.ShowTime,
+                TotalAmount = b.TotalAmount,
+                CurrencySymbol = CurrencyMapper.GetSymbolByCountryCode(countryCode)
+            };
+
+            var reminder = new ShowReminderEventDTO
+            {
+                BookingId = b.BookingId,
+                UserId = b.UserId,
+                TriggerAtUtc = b.ShowTime.AddMinutes(-10)
+            };
+
+            await Task.WhenAll(
+                FinalizePostCommit(b.ShowId, b.SeatInstanceIds, finalSeatState, b.IdempotencyKey),
+                _bus.PublishAsync(confirmationEvent),
+                _bus.PublishAsync(reminder)
+            );
+
+            return redirectPath;
+        }
 
         private async Task FinalizePostCommit(int showId, List<int> seatInstanceIds, string finalSeatState, string lockToken)
         {
@@ -217,7 +174,6 @@ namespace BookNow.Application.Services
         }
 
        
-
         public async Task ReleaseSeatsAndLocksAsync(int bookingId)
         {
             var booking = await _unitOfWork.Booking.GetAsync(
