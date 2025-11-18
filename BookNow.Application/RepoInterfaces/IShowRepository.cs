@@ -13,5 +13,7 @@ namespace BookNow.Application.RepoInterfaces
         Task<IEnumerable<Movie>> GetMoviesByCityAsync(int? cityId);
 
         Task<IEnumerable<Show>> GetShowsForMovieAndCityAsync(int movieId, int cityId, DateOnly start, DateOnly end);
+
+        Task<bool> AnyShowsForMovieAsync(int movieId);
     }
 }

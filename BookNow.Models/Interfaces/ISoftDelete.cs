@@ -10,5 +10,7 @@ namespace BookNow.Models.Interfaces
     {
         bool IsDeleted { get; set; }
         DateTime? DeletedAt { get; set; }
+
+        public void SoftDelete();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BookNow.Application.RepoInterfaces;
 using BookNow.DataAccess.Data;
 using BookNow.Models;
+using BookNow.Models.Interfaces;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -80,9 +81,13 @@ namespace BookNow.DataAccess.Repositories
             dbSet.Update(entity);
         }
 
-        public void Remove(T entity)
+         public void Remove(T entity)
         {
-            dbSet.Remove(entity);
+            if (entity is ISoftDelete softDeleteEntity)
+            {
+                softDeleteEntity.SoftDelete();
+                dbSet.Update(entity);
+            }
         }
 
         public void RemoveRange(IEnumerable<T> entities)

@@ -39,5 +39,11 @@ namespace BookNow.Models
 
       
         public virtual ICollection<Show> Shows { get; set; } = new List<Show>();
+
+        public void SoftDelete()
+        {
+            IsDeleted = true;
+            DeletedAt = DateTime.UtcNow;
+        }
     }
 }

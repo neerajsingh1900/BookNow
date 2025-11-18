@@ -55,7 +55,7 @@ namespace BookNow.Application.Services
             PosterUrl = model.PosterUrl ?? string.Empty,
 
             CreatedAt = model.CreatedAt,
-            UpdatedAt = model.UpdatedAt
+            UpdatedAt = model.UpdatedAt       
         };
 
        
@@ -110,7 +110,19 @@ namespace BookNow.Application.Services
                 throw new UnauthorizedAccessException("ProducerId is required.");
 
             var movies = await _unitOfWork.Movie.GetAllMoviesByProducerAsync(producerId);
-            return movies.Select(MapToReadDTO).ToList();
+            var movieReadDTOs = new List<MovieReadDTO>();
+            foreach (var movie in movies)
+            {
+                bool hasBeenListed = await _unitOfWork.Show.AnyShowsForMovieAsync(movie.MovieId);
+
+                var dto = MapToReadDTO(movie);
+
+                dto.CanDeleteOrEditCriticalFields = !hasBeenListed;
+
+                movieReadDTOs.Add(dto);
+            }
+
+            return movieReadDTOs;
         }
 
         public async Task<MovieReadDTO> GetProducerMovieByIdAsync(int movieId, string producerId)
@@ -122,7 +134,11 @@ namespace BookNow.Application.Services
                 throw new ApplicationValidationException($"Movie with ID {movieId} not found or not owned by producer.");
             }
 
-            return MapToReadDTO(movie);
+            bool hasBeenListed = await _unitOfWork.Show.AnyShowsForMovieAsync(movieId);
+
+            var dto = MapToReadDTO(movie);
+            dto.CanDeleteOrEditCriticalFields = !hasBeenListed;
+            return dto;
         }
 
         public async Task UpdateProducerMovieAsync(int movieId, MovieUpdateDTO movieDto, string producerId)

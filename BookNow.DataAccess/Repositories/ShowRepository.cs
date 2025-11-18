@@ -90,6 +90,14 @@ namespace BookNow.DataAccess.Repositories
                 .OrderBy(s => s.StartTime)
                 .ToListAsync();
         }
-      
+
+        public async Task<bool> AnyShowsForMovieAsync(int movieId)
+        {
+          
+            return await dbSet
+                .IgnoreQueryFilters() 
+                .AnyAsync(s => s.MovieId == movieId);
+        }
+
     }
 }

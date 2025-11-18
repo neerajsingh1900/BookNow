@@ -43,7 +43,11 @@ namespace BookNow.Web.Areas.Producer.Controllers
             try
             {
                 var movieReadDto = await _movieService.GetProducerMovieByIdAsync(id.Value, producerId);
-
+                if (!movieReadDto.CanDeleteOrEditCriticalFields)
+                {
+                    TempData["error"] = $"The movie '{movieReadDto.Title}' cannot be edited as it has historical show listings.";
+                    return RedirectToAction(nameof(Index));
+                }
                 movieDto.Title = movieReadDto.Title!;
                 movieDto.Genre = movieReadDto.Genre!;
                 movieDto.Language = movieReadDto.Language!;
