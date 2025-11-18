@@ -2,8 +2,9 @@
 using BookNow.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims; 
+using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Linq; 
 
 namespace BookNow.Web.Areas.Producer.Controllers
 {
@@ -18,38 +19,33 @@ namespace BookNow.Web.Areas.Producer.Controllers
             _analyticsService = analyticsService;
         }
 
-        // GET: /Producer/Analytics/RevenueByCountry - Initial page load action
         [HttpGet]
         public async Task<IActionResult> RevenueByCountry()
         {
-            // 🌟 CRITICAL CHANGE 1: Get the logged-in Producer's UserId 🌟
-            var producerUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            
-
-            // 🌟 CRITICAL CHANGE 2: Pass the UserId to the service to filter the movies 🌟
-            var model = await _analyticsService.GetInputDataAsync(producerUserId);
-
-            // Set defaults for the view 
-            ViewBag.SelectedCurrency ??= "INR";
-
-            // Note: We use the DTO model structure for view presentation
-            return View(model);
+            ViewBag.SelectedCurrency ??= "USD";
+            return View(new ProducerAnalyticsInputDto {});
         }
 
-        // API Endpoint for AJAX requests (Unchanged, as it already accepts movieId and currency)
-        [HttpGet("Producer/Analytics/RevenueData")]
+        [HttpGet("Producer/Analytics/StackedRevenueData")]
         [Produces("application/json")]
-        public async Task<IActionResult> GetRevenueData([FromQuery] int movieId, [FromQuery] string currency)
+        public async Task<IActionResult> GetStackedRevenueData([FromQuery] string currency)
         {
-            if (movieId <= 0 || string.IsNullOrEmpty(currency))
+            if (string.IsNullOrEmpty(currency))
             {
-                return BadRequest("Movie ID and Currency are required.");
+                return BadRequest("Currency is required.");
             }
-                
-            var reportData = await _analyticsService.GetRevenueByCountryAsync(movieId, currency);
+
+            var producerUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var reportData = await _analyticsService.GetStackedRevenueDataAsync(producerUserId, currency);
+
+            if (reportData == null || !reportData.Any())
+            {
+                return Ok(Enumerable.Empty<MovieRevenueStackedDto>());
+            }
 
             return Json(reportData);
         }
+
     }
 }

@@ -12,12 +12,11 @@ namespace BookNow.Application.RepoInterfaces
         
         Task<IEnumerable<Movie>> GetAllMoviesByProducerAsync(string producerId);
 
-        
+        Task<Movie?> GetMovieByProducerAsync(int movieId, string producerId);
         Task<IEnumerable<Movie>> GetCurrentlyShowingMoviesAsync(int cityId);
 
         Task<bool> ExistsByTitleAndDateAsync(string title, DateOnly releaseDate);
-        Task<Movie?> GetMovieByProducerAsync(int movieId, string producerId);
+        Task<IEnumerable<RawRevenueAllMoviesDto>> GetProducerMoviesRevenueRawData(string producerUserId);
 
-        Task<IEnumerable<RawRevenueDto>> GetMovieRevenueRawData(int movieId);
     }
 }

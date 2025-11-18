@@ -27,68 +27,70 @@ namespace BookNow.Application.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<CountryRevenueDto>> GetRevenueByCountryAsync(int movieId, string targetCurrency)
+        public async Task<IEnumerable<MovieRevenueStackedDto>> GetStackedRevenueDataAsync(string producerUserId, string targetCurrency)
         {
+           
             var rates = await _exchangeRateService.GetRatesAsync();
-         
+
             if (rates == null || !rates.Any())
             {
-                _logger.LogError("Currency rates are unavailable. Cannot generate report.");
-                return Enumerable.Empty<CountryRevenueDto>();
+                _logger.LogError("Currency rates are unavailable. Cannot generate stacked report.");
+                return Enumerable.Empty<MovieRevenueStackedDto>();
             }
 
-            var rawData = await _unitOfWork.Movie.GetMovieRevenueRawData(movieId);
-        
-            _logger.LogInformation("Raw revenue data fetched for MovieId {MovieId}: {@RawData}", movieId, rawData);
+            var rawData = await _unitOfWork.Movie.GetProducerMoviesRevenueRawData(producerUserId);
+
             if (!rawData.Any())
             {
-                return Enumerable.Empty<CountryRevenueDto>();
+                return Enumerable.Empty<MovieRevenueStackedDto>();
             }
-             
-            
-               var convertedData = rawData
-                .GroupBy(r => new { r.CountryName, r.CountryCode })
-                .Select(g =>
+
+            var convertedData = rawData
+                .Select(r => new
                 {
-                     decimal totalConvertedRevenue = g.Sum(r =>
-                        _exchangeRateService.Convert(
-                            r.TotalRawAmount,
-                           r.TransactionCurrency,
-                            targetCurrency,
-                            rates)
-                    );
-
-                    return new CountryRevenueDto
-                    {
-                        CountryName = g.Key.CountryName,
-                        CountryCode = g.Key.CountryCode,
-                        TotalRevenue = totalConvertedRevenue
-                    };
+                    r.MovieId,
+                    r.MovieTitle,
+                    r.CountryCode,
+                    r.CountryName,
+                    ConvertedRevenue = _exchangeRateService.Convert(
+                        r.TotalRawAmount,
+                        r.TransactionCurrency,
+                        targetCurrency,
+                        rates
+                    )
                 })
-                .OrderByDescending(d => d.TotalRevenue)
+                .GroupBy(r => new { r.MovieId, r.MovieTitle, r.CountryCode, r.CountryName })
+                .Select(g => new
+                {
+                    g.Key.MovieId,
+                    g.Key.MovieTitle,
+                    g.Key.CountryCode,
+                    g.Key.CountryName,
+                    TotalConvertedRevenue = g.Sum(x => x.ConvertedRevenue)
+                })
                 .ToList();
-            _logger.LogInformation("converted final:{@convertedData}", convertedData);
-            foreach (var d in convertedData)
-            {
-                _logger.LogInformation("Country: {Country} | Revenue: {Revenue}", d.CountryName, d.TotalRevenue);
-            }
-            return convertedData;
+
+            var finalData = convertedData
+               .GroupBy(d => new { d.MovieId, d.MovieTitle })
+                .OrderBy(g => g.Key.MovieId) 
+                .Select(g => new MovieRevenueStackedDto
+                {
+                    MovieId = g.Key.MovieId,
+                    MovieTitle = g.Key.MovieTitle,
+
+                    RevenueBreakdown = g.Select(c => new CountryContributionDto
+                    {
+                        CountryCode = c.CountryCode,
+                        CountryName = c.CountryName,
+                        Revenue = c.TotalConvertedRevenue
+                    })
+                    .OrderByDescending(c => c.Revenue)
+                    .ToList()
+                })
+                .ToList();
+               
+            return finalData;
         }
 
-       
-        public async Task<ProducerAnalyticsInputDto> GetInputDataAsync(string producerUserId)
-        {
-            var todayDateOnly = DateOnly.FromDateTime(DateTime.Today);
-          //  m.ReleaseDate <= todayDateOnly &&
-           var availableMovies = await _unitOfWork.Movie.GetAllAsync(
-     filter: m =>m.ProducerId == producerUserId,   
-     orderBy: q => q.OrderByDescending(m => m.ReleaseDate)
- );
-
-            return new ProducerAnalyticsInputDto
-            {
-                AvailableMovies = availableMovies.ToList()
-            };
-        }
     }
 }

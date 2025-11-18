@@ -1,4 +1,5 @@
 ﻿using BookNow.Application.DTOs.Analytics;
+using BookNow.DataAccess.DTOs;
 using BookNow.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -26,8 +27,8 @@ namespace BookNow.DataAccess.Data
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingSeat> BookingSeats { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
-        public DbSet<RawRevenueDto> SpRawRevenue { get; set; }
-
+     
+        public DbSet<RawRevenueAllMoviesDto> SpRawRevenueAllMovies { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
            
@@ -88,7 +89,13 @@ namespace BookNow.DataAccess.Data
                 .Property(pt => pt.RowVersion)
                 .IsRowVersion();
 
-            modelBuilder.Entity<RawRevenueDto>().HasNoKey();
+            modelBuilder.Entity<RawRevenueAllMoviesDto>().HasNoKey();
+
+           
+            modelBuilder.Entity<Movie>().HasQueryFilter(m => !m.IsDeleted);
+            modelBuilder.Entity<Theatre>().HasQueryFilter(t => !t.IsDeleted);
+            modelBuilder.Entity<Screen>().HasQueryFilter(s => !s.IsDeleted);
+            modelBuilder.Entity<Show>().HasQueryFilter(sh => !sh.IsDeleted);
 
             foreach (var property in modelBuilder.Model.GetEntityTypes()    
                 .SelectMany(t => t.GetProperties()) 

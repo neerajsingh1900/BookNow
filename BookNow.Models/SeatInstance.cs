@@ -14,7 +14,7 @@ namespace BookNow.Models
         public int SeatInstanceId { get; set; } 
 
         
-        public int ShowId { get; set; }
+        public int ?ShowId { get; set; }
 
        
         [ForeignKey("ShowId")]

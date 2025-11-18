@@ -13,6 +13,8 @@ namespace BookNow.Web.Areas.TheatreOwner.ViewModels.Theatre
 
         [Display(Name = "Screens")]
         public int ScreenCount { get; set; }
+
+        public bool HasActiveBookings { get; set; }
     }
 
     public class TheatreDashboardVM

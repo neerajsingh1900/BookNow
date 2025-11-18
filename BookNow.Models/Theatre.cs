@@ -1,9 +1,10 @@
-﻿using System;
+﻿using BookNow.Models.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace BookNow.Models
 {
-    public class Theatre 
+    public class Theatre :ISoftDelete
     {
        public int TheatreId { get; private set; }
 
@@ -13,7 +14,9 @@ namespace BookNow.Models
         public string Address { get; private set; } = null!;
         public string? PhoneNumber { get; private set; }
         public string Email { get; private set; } = null!;
-        public string Status { get; private set; } = null!; 
+        public string Status { get; private set; } = null!;
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
 
         public virtual ApplicationUser Owner { get; private set; } = null!;
         public virtual City City { get; private set; } = null!;
@@ -49,8 +52,12 @@ namespace BookNow.Models
         }
 
 
-     
-      
+        public void SoftDelete() 
+        {
+            IsDeleted = true;
+            DeletedAt = DateTime.UtcNow;
+        }
+
         public void UpdateDetails(string name, string address, int cityId, string? phone, string email)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new DomainException("Name required");

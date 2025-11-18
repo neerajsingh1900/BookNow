@@ -8,6 +8,7 @@ using BookNow.Application.Validation.ScreenValidations;
 using BookNow.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SendGrid.Helpers.Errors.Model;
 using System;
@@ -61,10 +62,17 @@ namespace BookNow.Application.Services
                filter: s => s.TheatreId == theatreId,
                orderBy: q => q.OrderBy(s => s.ScreenNumber),
                includeProperties: "Shows");
-          
-            _logger.LogInformation("Fetched {Count} screens for TheatreId: {TheatreId}", screens.Count(), theatreId);
+            var screenDtos = _mapper.Map<IEnumerable<ScreenDetailsDTO>>(screens).ToList();
 
-            return _mapper.Map<IEnumerable<ScreenDetailsDTO>>(screens);
+            
+            foreach (var dto in screenDtos)
+            {
+                dto.HasActiveBookings = await _unitOfWork.Screen.HasActiveBookings(dto.ScreenId);
+            }
+
+            _logger.LogInformation("Fetched {Count} screens for TheatreId: {TheatreId}", screenDtos.Count(), theatreId);
+
+            return screenDtos;
         }
 
         public async Task<ScreenDetailsDTO> CreateScreenAsync(ScreenUpsertDTO dto)
@@ -127,8 +135,27 @@ namespace BookNow.Application.Services
                 throw;
             }
         }
+       
+        public async Task SoftDeleteScreenAsync(int screenId)
+        {
+          
+            await using var transaction = await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                await _unitOfWork.Screen.CascadeSoftDelete(screenId);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+                _logger.LogInformation("Screen {ScreenId} successfully soft-deleted.", screenId);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Transaction rollback during soft delete for Screen {ScreenId}", screenId);
+                throw;
+            }
+        }
 
-    public async Task UpdateScreenAsync(ScreenUpsertDTO dto)
+        public async Task UpdateScreenAsync(ScreenUpsertDTO dto)
     {
             _logger.LogInformation("Updating ScreenId: {ScreenId}", dto.ScreenId);
 
@@ -204,6 +231,7 @@ namespace BookNow.Application.Services
        _logger.LogInformation("Screen updated successfully with ScreenId: {ScreenId}", screen.ScreenId);
 
         }
+    
     }
 }
 

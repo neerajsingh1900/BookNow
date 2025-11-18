@@ -10,9 +10,11 @@ namespace BookNow.DataAccess.Repositories
 {
     public class ScreenRepository : Repository<Screen>, IScreenRepository
     {
-        
+        private readonly ApplicationDbContext _db;
 
-        public ScreenRepository(ApplicationDbContext db) : base(db) { }
+        public ScreenRepository(ApplicationDbContext db) : base(db) {
+            _db = db;
+        }
 
         public async Task<bool> IsScreenNumberUniqueAsync(int theatreId, string screenNumber, int? excludeScreenId = null)
         {
@@ -37,6 +39,47 @@ namespace BookNow.DataAccess.Repositories
             return await GetAllAsync(
                filter: s => s.TheatreId == theatreId,
                includeProperties: includeProperties);
+        }
+
+        public async Task<Screen?> GetScreenForSoftDelete(int screenId)
+        {
+            return await _db.Screens
+                .IgnoreQueryFilters()
+                .Include(s => s.Shows.Where(sh => sh.EndTime > DateTime.Now && !sh.IsDeleted)) // Load only future, non-deleted shows
+                .FirstOrDefaultAsync(s => s.ScreenId == screenId);
+        }
+
+        public async Task<bool> HasActiveBookings(int screenId)
+        {
+            var now = DateTime.Now;
+          return await _db.Bookings
+                .AnyAsync(b =>
+                    b.Show!.ScreenId == screenId &&
+                    b.Show.EndTime > now &&
+                    (b.BookingStatus == "Confirmed" || b.BookingStatus == "Pending")
+                );
+        }
+
+        public async Task CascadeSoftDelete(int screenId)
+        {
+            var screen = await GetScreenForSoftDelete(screenId);
+
+            if (screen == null)
+            {
+                throw new KeyNotFoundException($"Screen ID {screenId} not found.");
+            }
+
+         
+            screen.SoftDelete();
+            _db.Screens.Update(screen);
+
+          
+            foreach (var show in screen.Shows)
+            {
+                show.SoftDelete();
+            }
+            _db.Shows.UpdateRange(screen.Shows);
+
         }
     }
 }

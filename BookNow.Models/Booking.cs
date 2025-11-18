@@ -24,7 +24,7 @@ namespace BookNow.Models
         public virtual ApplicationUser User { get; set; } = null!;
 
        
-        public int ShowId { get; set; }
+        public int? ShowId { get; set; }
 
        
         [ForeignKey("ShowId")]
@@ -40,10 +40,7 @@ namespace BookNow.Models
       
         public string TicketNumber { get; set; } = null!; 
 
-        public string? TicketUrl { get; set; } 
-        public string? QRCodeUrl { get; set; } 
 
-       
         public string IdempotencyKey { get; set; } = null!; 
 
         [Timestamp]

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BookNow.Models.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BookNow.Models
 {
-    public class Movie
+    public class Movie: ISoftDelete
     {
         [Key]
         public int MovieId { get; set; } // pk, increment
@@ -26,8 +27,10 @@ namespace BookNow.Models
 
     
         public string ProducerId { get; set; } = null!; // string (to match IdentityUser PK)
+        public bool IsDeleted { get; set; } = false; 
+        public DateTime? DeletedAt { get; set; }
 
-        
+
         [ForeignKey("ProducerId")]
         public virtual ApplicationUser Producer { get; set; } = null!;
 

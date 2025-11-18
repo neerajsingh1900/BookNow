@@ -42,5 +42,15 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
            
             return Ok(vm);
         }
+
+
+        [HttpDelete("{id}")]
+        [ServiceFilter(typeof(TheatreOwnershipFilter))]
+        public async Task<IActionResult> DeleteTheatre(int id)
+        {
+            await _theatreService.SoftDeleteTheatreAsync(id);
+
+            return Ok(new { success = true, message = "Theatre and future shows successfully soft-deleted." });
+        }
     }
 }

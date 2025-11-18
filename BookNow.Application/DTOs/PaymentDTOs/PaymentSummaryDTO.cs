@@ -21,6 +21,10 @@ namespace BookNow.Application.DTOs.PaymentDTOs
 
         public string? GatewayPaymentId { get; set; } 
         public string? Gateway { get; set; } 
-        public string? CurrencyIsoCode { get; set; } 
+        public string? CurrencyIsoCode { get; set; }
+
+        public long HoldExpiryUnixTimeSeconds { get; set; }
+
+        public long ServerUnixTimeSeconds { get; set; }
     }
 }

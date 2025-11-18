@@ -21,5 +21,7 @@ namespace BookNow.Application.Interfaces
 
         Task UpdateScreenAsync(ScreenUpsertDTO dto);
 
+        Task SoftDeleteScreenAsync(int screenId);
+
     }
 }

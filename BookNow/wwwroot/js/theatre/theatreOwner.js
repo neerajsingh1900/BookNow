@@ -1,7 +1,6 @@
 ﻿const API_ROOT = '/TheatreOwner/api/theatre';
 const LOCATION_API = '/api/location';
 
-
 function loadTheatreDashboard() {
     const $loadingIndicator = $('#loadingIndicator');
     const $noDataMessage = $('#noDataMessage');
@@ -26,9 +25,11 @@ function loadTheatreDashboard() {
         .then(data => {
             if (data && data.length > 0) {
                 data.forEach(theatre => {
+
                     const screens = theatre.screenCount || 0;
                     totalScreens += screens;
 
+                   
                     if (theatre.status === 'PendingApproval') {
                         pendingCount++;
                     }
@@ -43,8 +44,10 @@ function loadTheatreDashboard() {
                         return `<span class="badge rounded-pill px-3 py-2 ${badgeClass}">${status}</span>`;
                     };
 
-                    const row = `
-                        <tr>
+                    const isEditDisabled = theatre.hasActiveBookings ? 'disabled' : '';
+                    const disabledTitleText = '🛑 Cannot modify while active customer bookings exist.';
+
+                    const row = `    <tr>
                             <td>
                                 <div class="fw-bold">${theatre.theatreName}</div>
                                 <div class="text-muted small">${theatre.phoneNumber}</div>
@@ -54,8 +57,21 @@ function loadTheatreDashboard() {
                             <td>${screens}</td>
                             <td>
                                 <a href="/TheatreOwner/Screen/Index/${theatre.theatreId}" class="btn btn-sm btn-outline-primary me-2">Screens</a>
-                                <a href="/TheatreOwner/Theatre/Upsert/${theatre.theatreId}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            </td>
+
+                            <span ${theatre.hasActiveBookings ? `data-bs-toggle="tooltip" data-bs-placement="top" title="${disabledTitleText}"` : ''}>
+                                <a href="/TheatreOwner/Theatre/Upsert/${theatre.theatreId}"
+                                    class="btn btn-sm btn-outline-secondary ${isEditDisabled}"
+                                    onclick="${isEditDisabled ? 'event.preventDefault()' : ''}"
+                                    ${theatre.hasActiveBookings ? 'tabindex="-1"' : ''} > <i class="fas fa-edit"></i>
+                                </a>
+                            </span>
+
+                        <button onclick="handleSoftDeleteClick(${theatre.theatreId}, 
+                                                                    '${theatre.theatreName}', 
+                                                                    ${theatre.hasActiveBookings})" 
+                                        class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i> 
+                                </button>
                         </tr>
                     `;
                     $tableBody.append(row);
@@ -99,6 +115,61 @@ function loadTheatreDashboard() {
         });
 }
 
+
+
+
+window.confirmSoftDelete = function (theatreId, theatreName) {
+    if (!theatreId) return;
+
+    Swal.fire({
+        title: 'Confirm Delete',
+        text: `Are you sure you want to delete "${theatreName}"? This will cancel all future shows.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#E53935',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            fetch(`${API_ROOT}/${theatreId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+
+                    return response.json().then(errorData => {
+                        const status = response.status;
+                        let message = errorData.message || 'An unknown error occurred.';
+
+                        if (status === 409) {
+                            message = 'Deletion Blocked: ' + message;
+                        }
+                        if (status === 403) {
+                            message = 'Authorization Failed: ' + message;
+                        }
+
+                        throw { status: status, message: message };
+                    });
+                })
+                .then(data => {
+                    
+                    loadTheatreDashboard();
+                    Swal.fire('Soft Deleted!', data.message, 'success');
+                })
+                .catch(error => {
+                    
+                    console.error('Soft Delete Error:', error);
+                    Swal.fire('Error!', error.message || 'The server returned an unexpected error.', 'error');
+                });
+        }
+    });
+};
 
 function initializeTheatreUpsert() {
     const $citySelect = $('#CityId');
@@ -194,6 +265,23 @@ function initializeTheatreUpsert() {
 
 
 
+
+
+window.handleSoftDeleteClick = function (theatreId, theatreName, hasActiveBookings) {
+    if (hasActiveBookings) {
+        // 1. BLOCK: Show informative pop-up if deletion is blocked
+        Swal.fire({
+            title: 'Deletion Blocked 🛑',
+            html: `You cannot delete **${theatreName}** because there are **active, uncompleted customer bookings** tied to its future shows.`,
+            icon: 'info',
+            confirmButtonText: 'Understood',
+            confirmButtonColor: '#007bff'
+        });
+    } else {
+        // 2. PROCEED: Show the actual delete confirmation modal
+        confirmSoftDelete(theatreId, theatreName);
+    }
+};
 
 $(document).ready(function () {
     if (document.getElementById('tblTheatres')) {

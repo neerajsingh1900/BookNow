@@ -8,7 +8,10 @@
     <div class="col-12 col-xxl-10">
         <div class="row g-4">
 
-            <div class="col-lg-7">
+                    <input type="hidden" id="hold-expiry-timestamp" value="@Model.HoldExpiryUnixTimeSeconds" />
+            <input type="hidden" id="server-timestamp" value="@Model.ServerUnixTimeSeconds" />
+
+                    <div class="col-lg-7">
                 <div class="card shadow-lg border-0 h-100">
                     <div class="card-header bg-primary text-white py-3">
                         <h5 class="mb-0 fw-bold d-flex align-items-center">
@@ -21,7 +24,7 @@
                             <span class="d-flex align-items-center">
                                 <i class="fas fa-hourglass-half me-2"></i> Your seats are **held** for:
                             </span>
-                            <span class="display-6 font-weight-bold text-danger" id="payment-timer">05:00</span>
+                            <span class="display-6 font-weight-bold text-danger" id="payment-timer"></span>
                         </div>
 
                         <div class="text-center p-3 border-bottom mb-4">

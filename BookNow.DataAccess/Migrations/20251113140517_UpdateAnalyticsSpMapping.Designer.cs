@@ -4,6 +4,7 @@ using BookNow.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookNow.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251113140517_UpdateAnalyticsSpMapping")]
+    partial class UpdateAnalyticsSpMapping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,18 +72,24 @@ namespace BookNow.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("QRCodeUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int?>("ShowId")
+                    b.Property<int>("ShowId")
                         .HasColumnType("int");
 
                     b.Property<string>("TicketNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TicketUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(10, 2)
@@ -186,17 +195,11 @@ namespace BookNow.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("Duration")
                         .HasColumnType("int");
 
                     b.Property<string>("Genre")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Language")
                         .HasColumnType("nvarchar(max)");
@@ -303,12 +306,6 @@ namespace BookNow.DataAccess.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("ScreenNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -337,7 +334,7 @@ namespace BookNow.DataAccess.Migrations
                     b.Property<string>("RowLabel")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ScreenId")
+                    b.Property<int>("ScreenId")
                         .HasColumnType("int");
 
                     b.Property<int>("SeatIndex")
@@ -350,8 +347,7 @@ namespace BookNow.DataAccess.Migrations
                     b.HasKey("SeatId");
 
                     b.HasIndex("ScreenId", "SeatNumber")
-                        .IsUnique()
-                        .HasFilter("[ScreenId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Seats");
                 });
@@ -376,7 +372,7 @@ namespace BookNow.DataAccess.Migrations
                     b.Property<int>("SeatId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ShowId")
+                    b.Property<int>("ShowId")
                         .HasColumnType("int");
 
                     b.Property<string>("State")
@@ -388,8 +384,7 @@ namespace BookNow.DataAccess.Migrations
                     b.HasIndex("SeatId");
 
                     b.HasIndex("ShowId", "SeatId")
-                        .IsUnique()
-                        .HasFilter("[ShowId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("SeatInstances");
                 });
@@ -402,14 +397,8 @@ namespace BookNow.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ShowId"));
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<int>("MovieId")
                         .HasColumnType("int");
@@ -445,15 +434,9 @@ namespace BookNow.DataAccess.Migrations
                     b.Property<int>("CityId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("OwnerId")
                         .IsRequired()
@@ -725,7 +708,8 @@ namespace BookNow.DataAccess.Migrations
                     b.HasOne("BookNow.Models.Show", "Show")
                         .WithMany("Bookings")
                         .HasForeignKey("ShowId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("BookNow.Models.ApplicationUser", "User")
                         .WithMany("Bookings")
@@ -805,7 +789,9 @@ namespace BookNow.DataAccess.Migrations
                 {
                     b.HasOne("BookNow.Models.Screen", "Screen")
                         .WithMany("Seats")
-                        .HasForeignKey("ScreenId");
+                        .HasForeignKey("ScreenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Screen");
                 });
@@ -821,7 +807,8 @@ namespace BookNow.DataAccess.Migrations
                     b.HasOne("BookNow.Models.Show", "Show")
                         .WithMany("SeatInstances")
                         .HasForeignKey("ShowId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Seat");
 

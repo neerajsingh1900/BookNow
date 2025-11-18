@@ -9,8 +9,6 @@ namespace BookNow.Application.Interfaces
 {
     public interface IProducerAnalyticsService
     {
-        Task<IEnumerable<CountryRevenueDto>> GetRevenueByCountryAsync(int movieId, string targetCurrency);
-
-        Task<ProducerAnalyticsInputDto> GetInputDataAsync(string producerUserId);
+        Task<IEnumerable<MovieRevenueStackedDto>> GetStackedRevenueDataAsync(string producerUserId, string targetCurrency);
     }
 }

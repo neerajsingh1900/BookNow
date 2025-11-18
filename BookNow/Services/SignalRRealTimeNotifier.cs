@@ -24,7 +24,6 @@ namespace BookNow.Web.Services
             var updates = seatInstanceIds.Select(id => new { seatInstanceId = id, state = newState });
             var jsonUpdate = JsonSerializer.Serialize(updates);
 
-            // This is where the dependency on SignalR is contained (Infrastructure)
             await _hubContext.Clients.Group(showId.ToString()).SendAsync("ReceiveSeatUpdate", jsonUpdate);
         }
     }

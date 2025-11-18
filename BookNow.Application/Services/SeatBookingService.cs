@@ -105,7 +105,7 @@ namespace BookNow.Application.Services.Booking
                  userId, command.ShowId, command.SeatInstanceIds.Count);
 
                 var lockToken = $"{userId}:{Guid.NewGuid().ToString()}";
-            var holdDuration = TimeSpan.FromMinutes(5); 
+            var holdDuration = TimeSpan.FromMinutes(2); 
 
             var successfullyLockedSeats = new List<int>();
 
@@ -208,6 +208,13 @@ namespace BookNow.Application.Services.Booking
                 }).ToList();
 
                 await _unitOfWork.BookingSeat.AddRangeAsync(bookingSeats);
+
+                var holdExpiryTime = DateTime.UtcNow.Add(holdDuration);
+
+                await _redisLockService.AddHoldForCleanupAsync(
+                    booking.BookingId,
+                    lockToken,
+                    holdExpiryTime);
 
                 // 8️⃣ Save all + commit transaction (EF handles concurrency here)
                 await _unitOfWork.SaveAsync();

@@ -1,15 +1,22 @@
 ﻿
 $(document).ready(function () {
-    // --- 1. DOM Elements & Constants ---
+    
     const timerDisplay = $('#payment-timer');
     const successButton = $('#btn-simulate-success');
     const failButton = $('#btn-simulate-failure');
     const processingSpinner = '<span class="spinner-border spinner-border-sm"></span> Processing...';
-
-
-
     const bookingId = successButton.data('booking-id');
     const CityCookieKey = "BN_CityId";
+
+
+    const expiryTimestamp = parseInt($('#hold-expiry-timestamp').val());
+    const serverTimestamp = parseInt($('#server-timestamp').val());
+    const clientNow = Math.floor(Date.now() / 1000);
+    const clockOffset = serverTimestamp - clientNow;
+
+    let timeRemaining = expiryTimestamp - (clientNow + clockOffset);
+    console.log("Time remaining (seconds):", timeRemaining, clientNow, clockOffset);
+    if (timeRemaining < 0) timeRemaining = 0;
     function getCookieValue(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -23,18 +30,17 @@ $(document).ready(function () {
         return;
     }
     function lockPaymentUI() {
-        // Disable all form inputs and accordion buttons to prevent changes during processing
         $('input, select, button[data-bs-toggle="collapse"]').prop('disabled', true);
     }
     function disableButtons(statusText) {
-        lockPaymentUI(); // <--- CALL THE NEW LOCK FUNCTION HERE
-        // Disable both buttons and show processing text/spinner on the Success button
+        lockPaymentUI(); 
+       
         successButton.prop('disabled', true).html(processingSpinner);
         failButton.prop('disabled', true).text(statusText);
     }
-    // Timer setup (5 minutes hold duration, matching your backend logic)
-    const holdDurationMinutes = 5;
-    let timeRemaining = holdDurationMinutes * 60;
+    
+  
+    
     let timerInterval;
     let isFinalized = false;
     function generateIdempotencyKey() {
@@ -46,7 +52,7 @@ $(document).ready(function () {
 
 
 
-    // --- 2. Utility & Core Logic ---
+
     function updateTimerDisplay() {
         const minutes = Math.floor(timeRemaining / 60);
         const seconds = timeRemaining % 60;
@@ -62,13 +68,8 @@ $(document).ready(function () {
         }
     }
 
-    function disableButtons(statusText) {
-      
-        successButton.prop('disabled', true).html(processingSpinner);
-        failButton.prop('disabled', true).text(statusText);
-    }
 
-    // Sends the status update to the backend service
+   
     function handleResponse(status) {
 
         if (isFinalized) return; 
@@ -88,7 +89,7 @@ $(document).ready(function () {
             IdempotencyKey: idempotencyKey
         };
 
-        // Use the correct Area route for the AJAX call
+       
         $.ajax({
             url: '/Customer/Payment/HandleGatewayResponse',
             type: 'POST',
@@ -135,26 +136,7 @@ $(document).ready(function () {
         handleResponse('failure');
     });
 
+  
 
-    window.addEventListener('beforeunload', function (e) {
-        if (!isFinalized) {
-            const msg = "Are you sure you want to cancel the payment?";
-            e.preventDefault();
-            e.returnValue = msg;
-            return msg;
-        }
-    });
-    
-
-    window.addEventListener('unload', function () {
-        if (!isFinalized) {
-            const payload = JSON.stringify({ BookingId: bookingId });
-            const blob = new Blob([payload], { type: 'application/json' });
-            navigator.sendBeacon('/Customer/Payment/ReleaseSeats', blob);
-        }
-    });
-
-
-    // Start the whole process upon document load
     startTimer();
 });

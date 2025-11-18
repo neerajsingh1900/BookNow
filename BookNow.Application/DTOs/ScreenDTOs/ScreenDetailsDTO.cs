@@ -26,6 +26,8 @@ namespace BookNow.Application.DTOs.ScreenDTOs
 
             public int NumberOfRows { get; set; }
             public int SeatsPerRow { get; set; }
+
+            public bool HasActiveBookings { get; set; }
         }
     }
 

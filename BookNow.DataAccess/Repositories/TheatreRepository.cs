@@ -58,5 +58,50 @@ namespace BookNow.DataAccess.Repositories
             
             return await query.AnyAsync();
         }
-    }
+
+        public async Task<bool> HasActiveBookings(int theatreId)
+        {
+            var now = DateTime.Now;
+
+            return await _db.Bookings
+                .AnyAsync(b =>
+                    b.Show!.Screen!.TheatreId == theatreId &&
+                    b.Show.EndTime > now &&
+                    (b.BookingStatus == "Confirmed" || b.BookingStatus == "Pending")
+                );
+        }
+        public async Task<Theatre?> GetTheatreForSoftDelete(int theatreId)
+        {
+            return await _db.Theatres
+                .IgnoreQueryFilters()
+                .Include(t => t.Screens)
+                    .ThenInclude(s => s.Shows.Where(sh => sh.EndTime > DateTime.Now && !sh.IsDeleted)) 
+                .FirstOrDefaultAsync(t => t.TheatreId == theatreId);
+        }
+
+        public async Task CascadeSoftDelete(int theatreId)
+        {
+            var theatre = await GetTheatreForSoftDelete(theatreId);
+
+            if (theatre == null)
+            {
+                throw new KeyNotFoundException($"Theatre ID {theatreId} not found.");
+            }
+
+            theatre.SoftDelete();
+
+            foreach (var screen in theatre.Screens)
+            {
+                screen.SoftDelete();
+                _db.Screens.Update(screen);
+
+                foreach (var show in screen.Shows)
+                {
+                    show.SoftDelete();
+                }
+                _db.Shows.UpdateRange(screen.Shows);
+            }
+            _db.Theatres.Update(theatre);
+        }
+}
 }

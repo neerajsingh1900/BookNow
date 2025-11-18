@@ -1,5 +1,6 @@
 ﻿
 using BookNow.Models;
+using BookNow.Models.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -33,6 +34,7 @@ namespace BookNow.Models
        
         [Column(TypeName = "nvarchar(MAX)")]
         public string? ProfileData { get; set; }
+      
 
         public virtual ICollection<Movie> ProducedMovies { get; set; } = new List<Movie>();
         public virtual ICollection<Theatre> OwnedTheatres { get; set; } = new List<Theatre>();

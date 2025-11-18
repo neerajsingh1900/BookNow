@@ -36,7 +36,7 @@ namespace BookNow.Models
         public DateTime CreatedAt { get; set; } // datetime
         public DateTime UpdatedAt { get; set; } // datetime
 
-        // Store RawResponse as string/JSON
+        
         [Column(TypeName = "nvarchar(MAX)")]
         public string? RawResponse { get; set; } // json
 

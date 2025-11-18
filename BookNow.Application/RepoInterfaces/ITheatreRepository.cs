@@ -13,5 +13,10 @@ namespace BookNow.Application.RepoInterfaces
         Task<bool> IsNameConflictingAsync(string name, int? excludeTheatreId = null);
       
         Task<bool> IsEmailConflictingAsync(string email, int? theatreIdToExclude);
+        Task<Theatre?> GetTheatreForSoftDelete(int theatreId);
+        Task<bool> HasActiveBookings(int theatreId);
+
+        Task CascadeSoftDelete(int theatreId);
+
     }
 }

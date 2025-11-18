@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SendGrid.Helpers.Errors.Model;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
@@ -35,6 +36,17 @@ namespace BookNow.Web.Areas.TheatreOwner.Controllers.Api
         {
             var screens = await _screenService.GetScreensByTheatreIdAsync(theatreId);
             return Ok(screens);
+        }
+
+      
+
+        [HttpDelete("{screenId}")]
+        [ServiceFilter(typeof(TheatreOwnershipFilter))] 
+        public async Task<IActionResult> DeleteScreen(int screenId)
+        {
+            await _screenService.SoftDeleteScreenAsync(screenId);
+
+            return Ok(new { success = true, message = "Screen and future shows successfully soft-deleted." });
         }
     }
 }

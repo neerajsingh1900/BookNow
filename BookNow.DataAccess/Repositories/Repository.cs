@@ -117,7 +117,6 @@ namespace BookNow.DataAccess.Repositories
             query = ApplyIncludes(query, includeProperties);
 
           
-
             if (orderBy != null)
             {
                

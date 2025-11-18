@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BookNow.Models.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BookNow.Models
 {
-    public class Screen
+    public class Screen:ISoftDelete
     {
         [Key]
         public int ScreenId { get; set; } 
@@ -21,8 +22,16 @@ namespace BookNow.Models
         public int TotalSeats { get; set; } 
 
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal DefaultSeatPrice { get; set; } 
+        public decimal DefaultSeatPrice { get; set; }
+        public bool IsDeleted { get; set; } = false; 
+        public DateTime? DeletedAt { get; set; }
         public virtual ICollection<Seat> Seats { get; set; } = new List<Seat>();
         public virtual ICollection<Show> Shows { get; set; } = new List<Show>();
+
+        public void SoftDelete() 
+        {
+            IsDeleted = true;
+            DeletedAt = DateTime.UtcNow;
+        }
     }
 }

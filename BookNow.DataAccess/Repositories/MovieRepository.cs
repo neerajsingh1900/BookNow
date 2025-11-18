@@ -75,22 +75,16 @@ namespace BookNow.DataAccess.Repositories
                                m.ReleaseDate == releaseDate);
         }
 
-
-        public async Task<IEnumerable<RawRevenueDto>> GetMovieRevenueRawData(int movieId)
+        public async Task<IEnumerable<RawRevenueAllMoviesDto>> GetProducerMoviesRevenueRawData(string producerUserId)
         {
-          
-            const string paymentStatus = SD.PaymentStatus_Success;
+            const string sql = "EXEC [dbo].[GetProducerMoviesRevenue] @ProducerUserId";
+      
+            var producerIdParam = new SqlParameter("ProducerUserId", producerUserId);
 
-            var sql = "EXEC [dbo].[GetMovieRevenueRawData] @MovieId, @PaymentStatus";
-
-            var movieIdParam = new SqlParameter("MovieId", movieId);
-            var statusParam = new SqlParameter("PaymentStatus", paymentStatus);
-
-
-            return await _db.SpRawRevenue
-         .FromSqlRaw(sql, movieIdParam, statusParam)
-         .ToListAsync();
+            return await _db.SpRawRevenueAllMovies 
+                .FromSqlRaw(sql, producerIdParam)
+                .AsNoTracking() 
+                .ToListAsync();
         }
-
     }
 }

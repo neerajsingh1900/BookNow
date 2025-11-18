@@ -17,8 +17,8 @@ namespace BookNow.Application.Services
         }
 
         public IDatabase GetDatabase() => _redis.GetDatabase();
+        private const string HOLD_CLEANUP_ZSET = "seat_holds_expiry";
 
-      
         public Task<bool> AcquireLockAsync(string key, string value, TimeSpan expiry)
         {
           
@@ -41,6 +41,27 @@ namespace BookNow.Application.Services
                  new RedisValue[] { value });
 
             return (long)result == 1;
+        }
+
+        public Task AddHoldForCleanupAsync(int bookingId, string lockToken, DateTime expiry)
+        {
+            var memberValue = $"{bookingId}|{lockToken}";
+
+            // Score is the Unix timestamp (seconds since epoch) of the expiration time
+            var expiryScore = new DateTimeOffset(expiry).ToUnixTimeSeconds();
+
+            return GetDatabase().SortedSetAddAsync(HOLD_CLEANUP_ZSET, memberValue, expiryScore);
+        }
+
+        public Task<RedisValue[]> GetExpiredHoldsAsync()
+        {
+            var nowScore = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+
+            return GetDatabase().SortedSetRangeByScoreAsync(HOLD_CLEANUP_ZSET, 0, nowScore);
+        }
+        public Task<bool> RemoveHoldFromCleanupAsync(string memberValue)
+        {
+            return GetDatabase().SortedSetRemoveAsync(HOLD_CLEANUP_ZSET, memberValue);
         }
     }
 }

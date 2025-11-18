@@ -6,29 +6,32 @@
     using BookNow.Application.Mappings;
     using BookNow.Application.RepoInterfaces;
     using BookNow.Application.Services;
+    using BookNow.Application.Services.BackgroundTasks;
     using BookNow.Application.Services.Booking;
-    using BookNow.Application.Validation.BookingValidations;
+using BookNow.Application.Services.Cleanup;
+using BookNow.Application.Validation.BookingValidations;
+    using BookNow.Application.Validation.PaymentValidations;
     using BookNow.Application.Validation.ScreenValidations;
     using BookNow.DataAccess.Data;
     using BookNow.DataAccess.Repositories;
     using BookNow.DataAccess.UnitOfWork;
-    using BookNow.Web.Hubs;
     using BookNow.Utility;
     using BookNow.Web.Areas.TheatreOwner.Infrastructure.Filters;
+    using BookNow.Web.Customer.Infrastructure.Filters;
+    using BookNow.Web.Hubs;
     using BookNow.Web.Infrastructure.Filters;
     using BookNow.Web.Middleware;
     using BookNow.Web.Services;
     using FluentValidation;
     using FluentValidation.AspNetCore;
-    using Microsoft.AspNetCore.Identity;
+    using Hangfire;
+using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.UI.Services;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
-    using BookNow.Web.Customer.Infrastructure.Filters;
     using Serilog;
     using Serilog.Events;
-    using BookNow.Application.Validation.PaymentValidations;
-    using BookNow.Application.Services.BackgroundTasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,10 +126,24 @@ builder.Services.AddHostedService<ReminderBackgroundService>();
 builder.Services.AddSignalR();
     builder.Services.AddRazorPages();
 
+  builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true // Ensures better scalability in clustered environments
+    }));
 
-    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddSingleton<IRedisLockService, RedisLockService>();
-builder.Services.AddScoped<IRealTimeNotifier, SignalRRealTimeNotifier>();
+    builder.Services.AddScoped<IRealTimeNotifier, SignalRRealTimeNotifier>();
 
     builder.Services.AddScoped<IMovieService, MovieService>();
     builder.Services.AddScoped<ITheatreService, TheatreService>();
@@ -137,10 +154,10 @@ builder.Services.AddScoped<IRealTimeNotifier, SignalRRealTimeNotifier>();
     builder.Services.AddScoped<IPaymentService, PaymentService>();
     builder.Services.AddScoped<IBookingHistoryService, BookingHistoryService>();
     builder.Services.AddScoped<IProducerAnalyticsService, ProducerAnalyticsService>();
+    builder.Services.AddScoped<ExpiredHoldCleanupLogic>();
 
 
-
-builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
+    builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
     builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
     builder.Services.AddTransient<IEmailService, EmailSender>();
     builder.Services.AddScoped<TheatreOwnershipFilter>();
@@ -154,7 +171,15 @@ builder.Services.AddScoped<IFileStorageService, FileStorageService > ();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseHttpsRedirection();
     app.UseStaticFiles();
-    app.MapHub<SeatMapHub>("/seatMapHub");
+app.UseHangfireDashboard("/hangfire"); // Access dashboard at /hangfire
+
+
+RecurringJob.AddOrUpdate<ExpiredHoldCleanupLogic>(
+    "ExpiredHoldCleanupJob",
+    x => x.CleanupExpiredHoldsAsync(),
+    "*/1 * * * *");
+
+app.MapHub<SeatMapHub>("/seatMapHub");
     app.UseRouting();
     app.UseMiddleware<LocationContextMiddleware>();
     app.UseAuthentication();

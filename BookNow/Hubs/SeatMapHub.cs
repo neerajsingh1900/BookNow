@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using BookNow.Application.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 
 namespace BookNow.Web.Hubs
@@ -6,7 +7,6 @@ namespace BookNow.Web.Hubs
    
     public class SeatMapHub : Hub
     {
-       
         public async Task JoinShowGroup(int showId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, showId.ToString());
@@ -17,5 +17,6 @@ namespace BookNow.Web.Hubs
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, showId.ToString());
         }
+       
     }
 }

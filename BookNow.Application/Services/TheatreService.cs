@@ -108,9 +108,15 @@ namespace BookNow.Application.Services
             var theatres = await _unitOfWork.Theatre.GetAllAsync(
                filter: t => t.OwnerId == ownerId,
                includeProperties: "City.Country,Screens");
-          
-              return  _mapper.Map<IEnumerable<TheatreDetailDTO>>(theatres);
-           
+            var theatreDtos = _mapper.Map<IEnumerable<TheatreDetailDTO>>(theatres);
+
+            foreach (var dto in theatreDtos)
+            {
+                dto.HasActiveBookings = await _unitOfWork.Theatre.HasActiveBookings(dto.TheatreId);
+            }
+
+            return theatreDtos;
+
         }
 
 
@@ -143,6 +149,33 @@ namespace BookNow.Application.Services
                 tracked: false);
 
             return theatre != null;
+        }
+
+
+        public async Task SoftDeleteTheatreAsync(int theatreId)
+        {
+ 
+            using (var transaction = await _unitOfWork.BeginTransactionAsync())
+            {
+                try
+                {
+                    await _unitOfWork.Theatre.CascadeSoftDelete(theatreId);
+
+                    await _unitOfWork.SaveAsync();
+
+                    await transaction.CommitAsync();
+                }
+                catch (KeyNotFoundException)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception($"Theatre ID {theatreId} not found.");
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
         }
 
     }

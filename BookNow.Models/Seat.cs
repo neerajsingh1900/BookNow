@@ -12,7 +12,7 @@ namespace BookNow.Models
     {
         [Key]
         public int SeatId { get; set; } 
-        public int ScreenId { get; set; }
+        public int? ScreenId { get; set; }
 
         [ForeignKey("ScreenId")]
         public virtual Screen Screen { get; set; } = null!;
